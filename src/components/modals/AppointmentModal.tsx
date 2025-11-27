@@ -29,7 +29,7 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         time: existingAppointment?.time || initialTime || '09:00',
         type: existingAppointment?.type || 'presencial',
         price: existingAppointment?.price || 5000,
-        professional: existingAppointment?.professional || user.displayName || ''
+        professional: existingAppointment?.professional || user.displayName || user.email || ''
     });
 
     useEffect(() => {
@@ -48,22 +48,26 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         const patient = patients.find(p => p.id === form.patientId);
         if (!patient) return;
 
+        const professionalName = form.professional || user.displayName || user.email || 'Profesional';
+
         try {
             if (existingAppointment) {
                 await updateAppointment(existingAppointment.id, {
                     ...form,
-                    patientName: patient.name
+                    patientName: patient.name,
+                    professional: professionalName
                 });
-                toast.success('Turno actualizado correctamente');
+                toast.success('Turno actualizado');
             } else {
                 await addAppointment({
                     ...form,
                     patientName: patient.name,
                     status: 'programado',
                     isPaid: false,
-                    duration: 60
+                    duration: 60,
+                    professional: professionalName
                 });
-                toast.success(`Turno creado para ${patient.name}`);
+                toast.success('Turno creado');
             }
             onClose();
         } catch (error) {
@@ -71,6 +75,8 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
             toast.error('Error al guardar el turno');
         }
     };
+
+
 
     return (
         <ModalOverlay onClose={onClose}>

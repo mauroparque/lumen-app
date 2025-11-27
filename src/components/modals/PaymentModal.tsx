@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { doc, collection, writeBatch, Timestamp } from 'firebase/firestore';
-import { db, appId } from '../../lib/firebase';
+import { db, appId, CLINIC_ID } from '../../lib/firebase';
 import { User } from 'firebase/auth';
 import { Appointment } from '../../types';
 import { ModalOverlay } from '../ui';
@@ -22,16 +22,17 @@ export const PaymentModal = ({ appointment, onClose, user }: PaymentModalProps) 
         try {
             const batch = writeBatch(db);
 
-            const paymentRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'payments'));
+            const paymentRef = doc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'payments'));
             batch.set(paymentRef, {
                 appointmentId: appointment.id,
                 patientName: appointment.patientName,
                 amount: parseFloat(amount),
                 concept: concept,
-                date: Timestamp.now()
+                date: Timestamp.now(),
+                createdByUid: user.uid
             });
 
-            const apptRef = doc(db, 'artifacts', appId, 'users', user.uid, 'appointments', appointment.id);
+            const apptRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', appointment.id);
             batch.update(apptRef, {
                 isPaid: true
             });

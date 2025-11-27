@@ -235,7 +235,7 @@ export const CalendarView = ({ user }: CalendarViewProps) => {
             <div className="flex-1 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
                 {viewMode === 'week' ? (
                     <>
-                        <div className="flex border-b bg-slate-50 pr-2">
+                        <div className="flex border-b bg-slate-50 pr-4"> {/* Added pr-4 to compensate for scrollbar */}
                             <div className="w-16 p-3 text-center text-xs text-slate-400 font-bold border-r flex-shrink-0">HORA</div>
                             <div className="flex-1 grid grid-cols-5">
                                 {weekDays.map((d, i) => (
@@ -300,34 +300,40 @@ export const CalendarView = ({ user }: CalendarViewProps) => {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 grid grid-cols-7 grid-rows-5">
-                        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-                            <div key={day} className="p-2 text-center text-xs font-bold text-slate-500 border-b border-r bg-slate-50">{day}</div>
-                        ))}
-                        {monthDays.map((d, i) => {
-                            const dayAppts = getDayAppts(d.date);
-                            return (
-                                <div key={i}
-                                    onClick={() => { setSelectedDate(d.date); setViewMode('week'); }}
-                                    className={`p-2 border-b border-r min-h-[100px] cursor-pointer hover:bg-slate-50 transition-colors ${!d.isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : ''}`}
-                                >
-                                    <div className={`text-right text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}>{d.date.getDate()}</div>
-                                    <div className="space-y-1">
-                                        {dayAppts.slice(0, 3).map(appt => {
-                                            const colors = getProfessionalColor(appt.professional);
-                                            return (
-                                                <div key={appt.id} className={`text-[10px] truncate px-1 rounded ${colors.bg} ${colors.text}`}>
-                                                    {appt.time} {appt.patientName}
-                                                </div>
-                                            )
-                                        })}
-                                        {dayAppts.length > 3 && (
-                                            <div className="text-[10px] text-slate-400 text-center">+{dayAppts.length - 3} más</div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div className="flex flex-col h-full overflow-hidden">
+                        <div className="grid grid-cols-7 border-b bg-slate-50 min-h-[40px] shrink-0">
+                            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
+                                <div key={day} className="p-2 text-center text-xs font-bold text-slate-500 border-r last:border-r-0 flex items-center justify-center">{day}</div>
+                            ))}
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="grid grid-cols-7 auto-rows-fr h-full min-h-[500px]">
+                                {monthDays.map((d, i) => {
+                                    const dayAppts = getDayAppts(d.date);
+                                    return (
+                                        <div key={i}
+                                            onClick={() => { setSelectedDate(d.date); setViewMode('week'); }}
+                                            className={`p-2 border-b border-r cursor-pointer hover:bg-slate-50 transition-colors flex flex-col ${!d.isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : ''}`}
+                                        >
+                                            <div className={`text-right text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}>{d.date.getDate()}</div>
+                                            <div className="space-y-1 overflow-y-auto flex-1 custom-scrollbar">
+                                                {dayAppts.slice(0, 3).map(appt => {
+                                                    const colors = getProfessionalColor(appt.professional);
+                                                    return (
+                                                        <div key={appt.id} className={`text-[10px] truncate px-1 rounded ${colors.bg} ${colors.text}`}>
+                                                            {appt.time} {appt.patientName}
+                                                        </div>
+                                                    )
+                                                })}
+                                                {dayAppts.length > 3 && (
+                                                    <div className="text-[10px] text-slate-400 text-center">+{dayAppts.length - 3} más</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

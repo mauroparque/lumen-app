@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User } from 'firebase/auth';
 import { ModalOverlay } from '../ui';
 import { useDataActions } from '../../hooks/useDataActions';
+import { usePatients } from '../../hooks/usePatients';
 import { toast } from 'sonner';
 
 interface PatientModalProps {
@@ -21,6 +22,19 @@ export const PatientModal = ({ onClose, user }: PatientModalProps) => {
         office: '',
         professional: user.displayName || ''
     });
+
+    const { patients } = usePatients(user);
+    const [isCustomProfessional, setIsCustomProfessional] = useState(false);
+
+    // Get unique professionals from existing patients
+    const existingProfessionals = React.useMemo(() => {
+        const pros = new Set<string>();
+        if (user.displayName) pros.add(user.displayName);
+        patients.forEach(p => {
+            if (p.professional) pros.add(p.professional);
+        });
+        return Array.from(pros);
+    }, [patients, user.displayName]);
 
     const { addPatient } = useDataActions(user);
 
@@ -94,8 +108,44 @@ export const PatientModal = ({ onClose, user }: PatientModalProps) => {
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Profesional Asignado</label>
-                        <input className="w-full p-2 border rounded-lg" value={form.professional} onChange={e => setForm({ ...form, professional: e.target.value })} />
+                        <div className="flex justify-between items-center mb-1">
+                            <label className="block text-sm font-medium text-slate-700">Profesional Asignado</label>
+                            <button
+                                type="button"
+                                onClick={() => setIsCustomProfessional(!isCustomProfessional)}
+                                className="text-xs text-teal-600 hover:text-teal-700 underline"
+                            >
+                                {isCustomProfessional ? 'Seleccionar de lista' : '¿No está en la lista?'}
+                            </button>
+                        </div>
+
+                        {isCustomProfessional ? (
+                            <input
+                                className="w-full p-2 border rounded-lg"
+                                value={form.professional}
+                                onChange={e => setForm({ ...form, professional: e.target.value })}
+                                placeholder="Escribir nombre del profesional..."
+                                autoFocus
+                            />
+                        ) : (
+                            <select
+                                className="w-full p-2 border rounded-lg bg-white"
+                                value={form.professional}
+                                onChange={e => {
+                                    if (e.target.value === 'custom') {
+                                        setIsCustomProfessional(true);
+                                        setForm({ ...form, professional: '' });
+                                    } else {
+                                        setForm({ ...form, professional: e.target.value });
+                                    }
+                                }}
+                            >
+                                {existingProfessionals.map(p => (
+                                    <option key={p} value={p}>{p === user.displayName ? `${p} (Yo)` : p}</option>
+                                ))}
+                                <option value="custom">+ Otro profesional...</option>
+                            </select>
+                        )}
                     </div>
 
                     <div className="flex justify-end space-x-3 pt-4">

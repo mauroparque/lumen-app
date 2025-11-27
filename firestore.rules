@@ -1,8 +1,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Permitir acceso a la colección compartida de la clínica
     match /artifacts/{appId}/clinics/{clinicId}/{document=**} {
       allow read, write: if request.auth != null;
+    }
+    // Mantener compatibilidad con la estructura vieja (opcional, por si acaso)
+    match /artifacts/{appId}/users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
