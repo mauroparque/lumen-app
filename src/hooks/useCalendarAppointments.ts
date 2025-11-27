@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import { db, appId } from '../lib/firebase';
+import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { Appointment } from '../types';
 import { MOCK_APPOINTMENTS } from '../lib/mockData';
 
@@ -29,7 +29,7 @@ export const useCalendarAppointments = (user: User | null, startDate: string, en
         }
 
         // REAL FIRESTORE MODE
-        const appointmentsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'appointments');
+        const appointmentsRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments');
         const q = query(
             appointmentsRef,
             where('date', '>=', startDate),

@@ -33,3 +33,4 @@ export const db = getFirestore(app);
 // Esto reemplaza al dinámico __app_id del entorno de prueba.
 // IMPORTANTE: Mantén este string constante para no perder referencia a los datos.
 export const appId = 'lumen-production';
+export const CLINIC_ID = 'lumen-general';

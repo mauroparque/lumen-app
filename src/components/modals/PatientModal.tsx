@@ -19,7 +19,7 @@ export const PatientModal = ({ onClose, user }: PatientModalProps) => {
         fee: '',
         preference: 'presencial' as 'presencial' | 'online',
         office: '',
-        professional: ''
+        professional: user.displayName || ''
     });
 
     const { addPatient } = useDataActions(user);

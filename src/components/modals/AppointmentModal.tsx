@@ -29,7 +29,7 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         time: existingAppointment?.time || initialTime || '09:00',
         type: existingAppointment?.type || 'presencial',
         price: existingAppointment?.price || 5000,
-        professional: existingAppointment?.professional || ''
+        professional: existingAppointment?.professional || user.displayName || ''
     });
 
     useEffect(() => {

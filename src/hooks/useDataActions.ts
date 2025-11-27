@@ -1,6 +1,6 @@
 import { User } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, doc, updateDoc, writeBatch, Timestamp } from 'firebase/firestore';
-import { db, appId } from '../lib/firebase';
+import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { MOCK_PATIENTS, MOCK_APPOINTMENTS, MOCK_PAYMENTS } from '../lib/mockData';
 
 export const useDataActions = (user: User | null) => {
@@ -12,7 +12,12 @@ export const useDataActions = (user: User | null) => {
             MOCK_PATIENTS.push(newPatient);
             return newPatient;
         }
-        return addDoc(collection(db, 'artifacts', appId, 'users', user!.uid, 'patients'), patient);
+        const patientData = {
+            ...patient,
+            professional: patient.professional || user?.displayName || user?.email,
+            createdByUid: user?.uid
+        };
+        return addDoc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'patients'), patientData);
     };
 
     const addAppointment = async (appointment: any) => {
@@ -21,7 +26,12 @@ export const useDataActions = (user: User | null) => {
             MOCK_APPOINTMENTS.push(newAppt);
             return newAppt;
         }
-        return addDoc(collection(db, 'artifacts', appId, 'users', user!.uid, 'appointments'), appointment);
+        const appointmentData = {
+            ...appointment,
+            professional: appointment.professional || user?.displayName || user?.email,
+            createdByUid: user?.uid
+        };
+        return addDoc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'), appointmentData);
     };
 
     const addPayment = async (payment: any, appointmentId?: string) => {
@@ -37,11 +47,11 @@ export const useDataActions = (user: User | null) => {
         }
 
         const batch = writeBatch(db);
-        const paymentRef = doc(collection(db, 'artifacts', appId, 'users', user!.uid, 'payments'));
-        batch.set(paymentRef, { ...payment, date: Timestamp.now() });
+        const paymentRef = doc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'payments'));
+        batch.set(paymentRef, { ...payment, date: Timestamp.now(), createdByUid: user?.uid });
 
         if (appointmentId) {
-            const apptRef = doc(db, 'artifacts', appId, 'users', user!.uid, 'appointments', appointmentId);
+            const apptRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', appointmentId);
             batch.update(apptRef, { isPaid: true });
         }
 
@@ -62,7 +72,7 @@ export const useDataActions = (user: User | null) => {
             }
             return;
         }
-        return deleteDoc(doc(db, 'artifacts', appId, 'users', user!.uid, collectionName, id));
+        return deleteDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, collectionName, id));
     };
 
     const updateAppointment = async (id: string, data: any) => {
@@ -73,7 +83,7 @@ export const useDataActions = (user: User | null) => {
             }
             return;
         }
-        return updateDoc(doc(db, 'artifacts', appId, 'users', user!.uid, 'appointments', id), data);
+        return updateDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', id), data);
     };
 
     return { addPatient, addAppointment, updateAppointment, addPayment, deleteItem };

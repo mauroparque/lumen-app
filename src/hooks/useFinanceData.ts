@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import { db, appId } from '../lib/firebase';
+import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { Appointment, Payment } from '../types';
 import { MOCK_APPOINTMENTS, MOCK_PAYMENTS } from '../lib/mockData';
 
@@ -31,8 +31,8 @@ export const useFinanceData = (user: User | null) => {
         }
 
         // REAL FIRESTORE MODE
-        const appointmentsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'appointments');
-        const paymentsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'payments');
+        const appointmentsRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments');
+        const paymentsRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'payments');
 
         // Query 1: Debts (Unpaid appointments)
         // Note: This might require a composite index if we add more filters or sorting

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import { db, appId } from '../lib/firebase';
+import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { Patient } from '../types';
 import { MOCK_PATIENTS } from '../lib/mockData';
 
@@ -25,7 +25,7 @@ export const usePatients = (user: User | null) => {
         }
 
         // REAL FIRESTORE MODE
-        const patientsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'patients');
+        const patientsRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'patients');
 
         const unsubscribe = onSnapshot(patientsRef, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Patient));
