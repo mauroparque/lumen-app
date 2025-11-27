@@ -101,8 +101,11 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
         appointments.forEach(app => {
             if (app.professional) pros.add(app.professional);
         });
+        // Eliminar al usuario actual de la lista genérica (ya tiene su opción "Mis Turnos")
+        if (profile?.name) pros.delete(profile.name);
+        if (profile?.email) pros.delete(profile.email);
         return Array.from(pros);
-    }, [appointments]);
+    }, [appointments, profile]);
 
     const filteredAppointments = useMemo(() => {
         if (selectedProfessional === 'all') return appointments;

@@ -28,6 +28,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         patientId: existingAppointment?.patientId || '',
         date: existingAppointment?.date || initialDate || getTodayString(),
         time: existingAppointment?.time || initialTime || '09:00',
+        duration: existingAppointment?.duration || 45,
         type: existingAppointment?.type || 'presencial',
         price: existingAppointment?.price || 5000,
         professional: existingAppointment?.professional || profile?.name || user.displayName || ''
@@ -65,7 +66,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                     patientName: patient.name,
                     status: 'programado',
                     isPaid: false,
-                    duration: 60,
+                    duration: Number(form.duration),
                     professional: professionalName
                 });
                 toast.success('Turno creado');
@@ -76,8 +77,6 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
             toast.error('Error al guardar el turno');
         }
     };
-
-
 
     return (
         <ModalOverlay onClose={onClose}>
@@ -98,8 +97,18 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                             <input type="date" className="w-full p-2 border rounded-lg" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Hora</label>
-                            <input type="time" className="w-full p-2 border rounded-lg" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} required />
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Hora y Duración</label>
+                            <div className="flex space-x-2">
+                                <input type="time" className="w-full p-2 border rounded-lg" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} required />
+                                <input
+                                    type="number"
+                                    className="w-24 p-2 border rounded-lg"
+                                    value={form.duration}
+                                    onChange={e => setForm({ ...form, duration: Number(e.target.value) })}
+                                    placeholder="Min"
+                                    title="Duración en minutos"
+                                />
+                            </div>
                         </div>
                     </div>
 

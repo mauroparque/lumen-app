@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { deleteDoc, doc } from 'firebase/firestore';
-import { db, appId } from '../lib/firebase';
+import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { User } from 'firebase/auth';
 import { Patient } from '../types';
 import { Trash2 } from 'lucide-react';
@@ -22,7 +22,7 @@ export const PatientsView = ({ user, profile }: PatientsViewProps) => {
     const handleDelete = async (patient: Patient) => {
         if (confirm(`¿Estás seguro de que deseas eliminar a ${patient.name}?`)) {
             try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'patients', patient.id));
+                await deleteDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'patients', patient.id));
                 toast.success(`Paciente ${patient.name} eliminado`);
             } catch (error) {
                 console.error(error);
