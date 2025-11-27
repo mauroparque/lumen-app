@@ -67,6 +67,8 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
 
         // Calculate Debt from unpaid past appointments
         const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+
         history.forEach(appt => {
             const apptDate = new Date(appt.date + 'T' + appt.time);
 
@@ -75,7 +77,11 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
                 lastVisitDate = apptDate;
             }
 
-            if (!appt.isPaid && appt.price) {
+            // Only count debt if:
+            // 1. Not paid
+            // 2. Date is strictly before today (past)
+            // 3. Status is not cancelled
+            if (!appt.isPaid && appt.date < today && appt.status !== 'cancelado' && appt.price) {
                 debt += appt.price;
             }
         });
