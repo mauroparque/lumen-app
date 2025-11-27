@@ -8,11 +8,14 @@ import { PatientModal } from '../components/modals/PatientModal';
 import { usePatients } from '../hooks/usePatients';
 import { toast } from 'sonner';
 
+import { StaffProfile } from '../types';
+
 interface PatientsViewProps {
     user: User;
+    profile: StaffProfile | null;
 }
 
-export const PatientsView = ({ user }: PatientsViewProps) => {
+export const PatientsView = ({ user, profile }: PatientsViewProps) => {
     const [showAdd, setShowAdd] = useState(false);
     const { patients } = usePatients(user);
 
@@ -39,7 +42,7 @@ export const PatientsView = ({ user }: PatientsViewProps) => {
                     </div>
                 ))}
             </div>
-            {showAdd && <PatientModal onClose={() => setShowAdd(false)} user={user} />}
+            {showAdd && <PatientModal onClose={() => setShowAdd(false)} user={user} profile={profile} />}
         </div>
     );
 };

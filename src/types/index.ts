@@ -38,3 +38,13 @@ export interface Payment {
     date: any; // Firebase Timestamp
     concept: string;
 }
+
+export interface StaffProfile {
+    uid: string;
+    email: string;
+    name: string;
+    role: 'admin' | 'professional' | 'secretary';
+    specialty?: string;
+    color?: string;
+    createdAt: any;
+}

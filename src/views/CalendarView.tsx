@@ -7,11 +7,14 @@ import { AppointmentDetailsModal } from '../components/modals/AppointmentDetails
 import { useCalendarAppointments } from '../hooks/useCalendarAppointments';
 import { usePatients } from '../hooks/usePatients';
 
+import { StaffProfile } from '../types';
+
 interface CalendarViewProps {
     user: User;
+    profile: StaffProfile | null;
 }
 
-export const CalendarView = ({ user }: CalendarViewProps) => {
+export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showModal, setShowModal] = useState(false);
     const [selectedProfessional, setSelectedProfessional] = useState<string>('all');
@@ -343,6 +346,7 @@ export const CalendarView = ({ user }: CalendarViewProps) => {
                     onClose={handleCloseModal}
                     patients={patients}
                     user={user}
+                    profile={profile}
                     existingAppointment={isEditing ? selectedAppointment! : undefined}
                     initialDate={modalData?.date}
                     initialTime={modalData?.time}

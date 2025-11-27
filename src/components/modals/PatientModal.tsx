@@ -5,12 +5,15 @@ import { useDataActions } from '../../hooks/useDataActions';
 import { usePatients } from '../../hooks/usePatients';
 import { toast } from 'sonner';
 
+import { StaffProfile } from '../../types';
+
 interface PatientModalProps {
     onClose: () => void;
     user: User;
+    profile: StaffProfile | null;
 }
 
-export const PatientModal = ({ onClose, user }: PatientModalProps) => {
+export const PatientModal = ({ onClose, user, profile }: PatientModalProps) => {
     const [form, setForm] = useState({
         firstName: '',
         lastName: '',
@@ -20,7 +23,7 @@ export const PatientModal = ({ onClose, user }: PatientModalProps) => {
         fee: '',
         preference: 'presencial' as 'presencial' | 'online',
         office: '',
-        professional: user.displayName || ''
+        professional: profile?.name || user.displayName || ''
     });
 
     const { patients } = usePatients(user);

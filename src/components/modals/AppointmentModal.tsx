@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { Patient, Appointment } from '../../types';
+import { Patient, Appointment, StaffProfile } from '../../types';
 import { ModalOverlay } from '../ui';
 import { toast } from 'sonner';
 import { useDataActions } from '../../hooks/useDataActions';
@@ -9,12 +9,13 @@ interface AppointmentModalProps {
     onClose: () => void;
     patients: Patient[];
     user: User;
+    profile: StaffProfile | null;
     existingAppointment?: Appointment;
     initialDate?: string;
     initialTime?: string;
 }
 
-export const AppointmentModal = ({ onClose, patients, user, existingAppointment, initialDate, initialTime }: AppointmentModalProps) => {
+export const AppointmentModal = ({ onClose, patients, user, profile, existingAppointment, initialDate, initialTime }: AppointmentModalProps) => {
     const getTodayString = () => {
         const d = new Date();
         const year = d.getFullYear();
@@ -29,7 +30,7 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         time: existingAppointment?.time || initialTime || '09:00',
         type: existingAppointment?.type || 'presencial',
         price: existingAppointment?.price || 5000,
-        professional: existingAppointment?.professional || localStorage.getItem('lumen_last_professional') || user.displayName || user.email || ''
+        professional: existingAppointment?.professional || profile?.name || user.displayName || ''
     });
 
     useEffect(() => {
@@ -48,8 +49,7 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         const patient = patients.find(p => p.id === form.patientId);
         if (!patient) return;
 
-        const professionalName = form.professional || user.displayName || user.email || 'Profesional';
-        localStorage.setItem('lumen_last_professional', professionalName);
+        const professionalName = form.professional || profile?.name || user.displayName || 'Profesional';
 
         try {
             if (existingAppointment) {
