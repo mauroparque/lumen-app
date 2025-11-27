@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db, appId } from '../lib/firebase';
 import { User } from 'firebase/auth';
 import { Patient } from '../types';
 import { Trash2 } from 'lucide-react';
 import { PatientModal } from '../components/modals/PatientModal';
+import { usePatients } from '../hooks/usePatients';
 
 interface PatientsViewProps {
-    patients: Patient[];
     user: User;
 }
 
-export const PatientsView = ({ patients, user }: PatientsViewProps) => {
+export const PatientsView = ({ user }: PatientsViewProps) => {
     const [showAdd, setShowAdd] = useState(false);
+    const { patients } = usePatients(user);
+
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <div className="flex justify-between mb-6"><h1 className="text-2xl font-bold">Pacientes</h1><button onClick={() => setShowAdd(true)} className="bg-teal-600 text-white px-3 py-2 rounded hover:bg-teal-700">+ Nuevo</button></div>

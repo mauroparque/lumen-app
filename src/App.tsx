@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User, signInWithCustomToken } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { View } from './types';
-import { useFirebaseData } from './hooks/useFirebaseData';
 
 // Components
 import { Sidebar } from './components/layout/Sidebar';
 import { MobileHeader } from './components/layout/MobileHeader';
-import { LoadingSpinner } from './components/ui';
 
 // Views
 import { AuthScreen } from './views/AuthScreen';
@@ -28,9 +26,6 @@ export default function LumenApp() {
     const [currentView, setCurrentView] = useState<View>('calendar');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Custom Hook for Data
-    const { patients, appointments, payments, loadingData } = useFirebaseData(activeUser);
-
     // Auth Init
     useEffect(() => {
         const init = async () => {
@@ -50,7 +45,6 @@ export default function LumenApp() {
                 user={activeUser}
                 currentView={currentView}
                 setCurrentView={setCurrentView}
-                appointments={appointments}
             />
 
             <MobileHeader
@@ -61,23 +55,14 @@ export default function LumenApp() {
 
             {/* Content */}
             <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
-                {loadingData ? <LoadingSpinner /> : (
-                    <>
-                        {currentView === 'calendar' && (
-                            <CalendarView appointments={appointments} patients={patients} user={activeUser} />
-                        )}
-                        {currentView === 'patients' && (
-                            <PatientsView patients={patients} user={activeUser} />
-                        )}
-                        {currentView === 'finance' && (
-                            <FinanceView
-                                payments={payments}
-                                appointments={appointments}
-                                patients={patients}
-                                user={activeUser}
-                            />
-                        )}
-                    </>
+                {currentView === 'calendar' && (
+                    <CalendarView user={activeUser} />
+                )}
+                {currentView === 'patients' && (
+                    <PatientsView user={activeUser} />
+                )}
+                {currentView === 'finance' && (
+                    <FinanceView user={activeUser} />
                 )}
             </main>
         </div>

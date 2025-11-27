@@ -1,17 +1,17 @@
 import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { Appointment, Patient } from '../types';
+import { Appointment } from '../types';
 import { ChevronLeft, ChevronRight, Plus, Video, MapPin, CheckCircle } from 'lucide-react';
 import { AppointmentModal } from '../components/modals/AppointmentModal';
 import { AppointmentDetailsModal } from '../components/modals/AppointmentDetailsModal';
+import { useCalendarAppointments } from '../hooks/useCalendarAppointments';
+import { usePatients } from '../hooks/usePatients';
 
 interface CalendarViewProps {
-    appointments: Appointment[];
-    patients: Patient[];
     user: User;
 }
 
-export const CalendarView = ({ appointments, patients, user }: CalendarViewProps) => {
+export const CalendarView = ({ user }: CalendarViewProps) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showModal, setShowModal] = useState(false);
     const [selectedProfessional, setSelectedProfessional] = useState<string>('all');
@@ -19,8 +19,28 @@ export const CalendarView = ({ appointments, patients, user }: CalendarViewProps
     const [isEditing, setIsEditing] = useState(false);
     const [modalData, setModalData] = useState<{ date?: string, time?: string } | null>(null);
 
+    // Calculate start and end of the visible week
     const startOfWeek = new Date(selectedDate);
-    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay() + 1);
+    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay() + 1); // Monday
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday
+
+    const toLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Fetch appointments for the visible range
+    const { appointments } = useCalendarAppointments(
+        user,
+        toLocalDateString(startOfWeek),
+        toLocalDateString(endOfWeek)
+    );
+
+    const { patients } = usePatients(user);
+
     const weekDays = Array.from({ length: 5 }, (_, i) => {
         const d = new Date(startOfWeek);
         d.setDate(startOfWeek.getDate() + i);
@@ -55,13 +75,6 @@ export const CalendarView = ({ appointments, patients, user }: CalendarViewProps
         map.forEach(list => list.sort((a, b) => a.time.localeCompare(b.time)));
         return map;
     }, [filteredAppointments]);
-
-    const toLocalDateString = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
 
     const getAppts = (day: Date, hour: number) => {
         const dStr = toLocalDateString(day);

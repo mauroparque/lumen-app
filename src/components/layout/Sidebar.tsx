@@ -1,18 +1,26 @@
-import React from 'react';
 import { Calendar as CalendarIcon, Users, DollarSign, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { User } from 'firebase/auth';
-import { View, Appointment } from '../../types';
+import { View } from '../../types';
+import { useFinanceData } from '../../hooks/useFinanceData';
 
 interface SidebarProps {
     user: User;
     currentView: View;
     setCurrentView: (view: View) => void;
-    appointments: Appointment[];
 }
 
-export const Sidebar = ({ user, currentView, setCurrentView, appointments }: SidebarProps) => {
+export const Sidebar = ({ user, currentView, setCurrentView }: SidebarProps) => {
+    const { debts } = useFinanceData(user);
+
+    const hasPendingDebts = debts.some(a => {
+        const apptDate = new Date(a.date + 'T00:00:00');
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return apptDate < now;
+    });
+
     return (
         <aside className="hidden md:flex w-56 flex-col bg-white border-r border-slate-200 z-20 shadow-sm">
             <div className="p-6 border-b border-slate-100">
@@ -24,7 +32,7 @@ export const Sidebar = ({ user, currentView, setCurrentView, appointments }: Sid
 
                 <div className="relative">
                     <SidebarItem icon={DollarSign} label="Finanzas" active={currentView === 'finance'} onClick={() => setCurrentView('finance')} />
-                    {appointments.some(a => !a.isPaid && new Date(a.date) < new Date() && a.status !== 'cancelado') && (
+                    {hasPendingDebts && (
                         <span className="absolute right-4 top-3 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                 </div>

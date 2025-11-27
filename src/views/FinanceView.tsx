@@ -1,30 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db, appId } from '../lib/firebase';
 import { User } from 'firebase/auth';
-import { Payment, Appointment, Patient } from '../types';
+import { Appointment, Payment } from '../types';
 import { AlertTriangle, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { PaymentModal } from '../components/modals/PaymentModal';
+import { useFinanceData } from '../hooks/useFinanceData';
 
 interface FinanceViewProps {
-    payments: Payment[];
-    appointments: Appointment[];
-    patients: Patient[];
     user: User;
 }
 
-export const FinanceView = ({ payments, appointments, patients, user }: FinanceViewProps) => {
+export const FinanceView = ({ user }: FinanceViewProps) => {
     const [tab, setTab] = useState<'history' | 'debt'>('debt');
     const [showPayModal, setShowPayModal] = useState<Appointment | null>(null);
 
-    const debts = useMemo(() => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        return appointments.filter((a: Appointment) => {
-            const apptDate = new Date(a.date + 'T00:00:00');
-            return apptDate < now && !a.isPaid && a.status !== 'cancelado';
-        }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    }, [appointments]);
+    const { debts, payments } = useFinanceData(user);
 
     const totalIncome = payments.reduce((acc: number, p: Payment) => acc + p.amount, 0);
     const totalDebt = debts.reduce((acc: number, a: Appointment) => acc + (a.price || 0), 0);
