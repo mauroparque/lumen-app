@@ -70,7 +70,7 @@ export const FinanceView = ({ payments, appointments, patients, user }: FinanceV
                             <tbody className="divide-y divide-slate-100">
                                 {debts.map((d: Appointment) => (
                                     <tr key={d.id} className="hover:bg-slate-50">
-                                        <td className="p-4 text-slate-600">{new Date(d.date).toLocaleDateString()} <span className="text-xs text-slate-400 ml-1">({d.time})</span></td>
+                                        <td className="p-4 text-slate-600">{d.date.split('-').reverse().join('/')} <span className="text-xs text-slate-400 ml-1">({d.time})</span></td>
                                         <td className="p-4 font-bold text-slate-800">{d.patientName}</td>
                                         <td className="p-4 font-mono text-slate-600">${d.price || 0}</td>
                                         <td className="p-4 text-right">

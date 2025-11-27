@@ -14,6 +14,14 @@ interface AppointmentModalProps {
 }
 
 export const AppointmentModal = ({ onClose, patients, user, existingAppointment, initialDate, initialTime }: AppointmentModalProps) => {
+    const getTodayString = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const [form, setForm] = useState<{
         patientId: string;
         date: string;
@@ -25,7 +33,7 @@ export const AppointmentModal = ({ onClose, patients, user, existingAppointment,
         professional: string;
     }>({
         patientId: existingAppointment?.patientId || '',
-        date: existingAppointment?.date || initialDate || new Date().toISOString().split('T')[0],
+        date: existingAppointment?.date || initialDate || getTodayString(),
         time: existingAppointment?.time || initialTime || '09:00',
         duration: existingAppointment?.duration || 45,
         type: existingAppointment?.type || 'presencial',
