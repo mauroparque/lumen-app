@@ -28,7 +28,8 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
         const appointmentsQuery = query(
             collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'),
             where('patientId', '==', patientId),
-            orderBy('date', 'desc')
+            orderBy('date', 'desc'),
+            orderBy('time', 'desc')
         );
 
         const unsubscribeAppointments = onSnapshot(appointmentsQuery, (snapshot) => {
