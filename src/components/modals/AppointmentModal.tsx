@@ -16,6 +16,8 @@ interface AppointmentModalProps {
 }
 
 export const AppointmentModal = ({ onClose, patients, user, profile, existingAppointment, initialDate, initialTime }: AppointmentModalProps) => {
+    const { addAppointment, updateAppointment, addRecurringAppointments } = useDataActions(user);
+
     const getTodayString = () => {
         const d = new Date();
         const year = d.getFullYear();
@@ -24,6 +26,8 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         return `${year}-${month}-${day}`;
     };
 
+    const professionalName = existingAppointment?.professional || profile?.name || '';
+
     const [form, setForm] = useState({
         patientId: existingAppointment?.patientId || '',
         date: existingAppointment?.date || initialDate || getTodayString(),
@@ -31,73 +35,47 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         duration: existingAppointment?.duration || 45,
         type: existingAppointment?.type || 'presencial',
         price: existingAppointment?.price || 5000,
-        professional: existingAppointment?.professional || profile?.name || user.displayName || '',
-        office: existingAppointment?.office || ''
+        isPaid: existingAppointment?.isPaid || false,
+        professional: professionalName,
+        office: existingAppointment?.office || '',
     });
 
     const [isRecurrent, setIsRecurrent] = useState(false);
-    const [occurrences, setOccurrences] = useState(4);
-
-    useEffect(() => {
-        if (!existingAppointment && form.patientId) {
-            const selectedPatient = patients.find(p => p.id === form.patientId);
-            if (selectedPatient) {
-                setForm(prev => ({
-                    ...prev,
-                    price: selectedPatient.fee || prev.price,
-                    type: selectedPatient.preference || prev.type,
-                    office: selectedPatient.office || prev.office
-                }));
-            }
-        }
-    }, [form.patientId, patients, existingAppointment]);
-
-    const { addAppointment, addRecurringAppointments, updateAppointment } = useDataActions(user);
+    const [recurrenceCount, setRecurrenceCount] = useState(4);
+    const [recurrenceFrequency, setRecurrenceFrequency] = useState<'WEEKLY' | 'BIWEEKLY'>('WEEKLY');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const patient = patients.find(p => p.id === form.patientId);
-        if (!patient) return;
-
-        const professionalName = form.professional || profile?.name || user.displayName || 'Profesional';
-
         try {
+            const patient = patients.find(p => p.id === form.patientId);
+            const appointmentData = {
+                ...form,
+                patientName: patient?.name || 'Unknown',
+                patientEmail: patient?.email,
+            };
+
             if (existingAppointment) {
-                await updateAppointment(existingAppointment.id, {
-                    ...form,
-                    patientName: patient.name,
-                    professional: professionalName
-                });
+                await updateAppointment(existingAppointment.id, appointmentData);
                 toast.success('Turno actualizado');
             } else {
                 if (isRecurrent) {
-                    const dates = [];
-                    const baseDate = new Date(form.date + 'T12:00:00'); // Use noon to avoid timezone issues
+                    // Generate dates
+                    const dates: string[] = [];
+                    const baseDate = new Date(form.date + 'T' + form.time);
+                    const daysToAdd = recurrenceFrequency === 'WEEKLY' ? 7 : 14;
 
-                    for (let i = 0; i < occurrences; i++) {
-                        const nextDate = new Date(baseDate);
-                        nextDate.setDate(baseDate.getDate() + (i * 7));
-                        dates.push(nextDate.toISOString().split('T')[0]);
+                    for (let i = 0; i < recurrenceCount; i++) {
+                        const d = new Date(baseDate);
+                        d.setDate(d.getDate() + (i * daysToAdd));
+                        const year = d.getFullYear();
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        dates.push(`${year}-${month}-${day}`);
                     }
-
-                    await addRecurringAppointments({
-                        ...form,
-                        patientName: patient.name,
-                        status: 'programado',
-                        isPaid: false,
-                        duration: Number(form.duration),
-                        professional: professionalName
-                    }, dates);
-                    toast.success(`Serie de ${occurrences} turnos creada`);
+                    await addRecurringAppointments(appointmentData, dates, recurrenceFrequency);
+                    toast.success('Turnos recurrentes creados');
                 } else {
-                    await addAppointment({
-                        ...form,
-                        patientName: patient.name,
-                        status: 'programado',
-                        isPaid: false,
-                        duration: Number(form.duration),
-                        professional: professionalName
-                    });
+                    await addAppointment(appointmentData);
                     toast.success('Turno creado');
                 }
             }
@@ -144,7 +122,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
 
                     {!existingAppointment && (
                         <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 mb-2">
                                 <input
                                     type="checkbox"
                                     id="isRecurrent"
@@ -152,20 +130,32 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                                     checked={isRecurrent}
                                     onChange={e => setIsRecurrent(e.target.checked)}
                                 />
-                                <label htmlFor="isRecurrent" className="text-sm font-medium text-slate-700">Repetir semanalmente</label>
+                                <label htmlFor="isRecurrent" className="text-sm text-slate-700">Repetir turno</label>
                             </div>
-
                             {isRecurrent && (
-                                <div className="mt-3 flex items-center space-x-3">
-                                    <label className="text-sm text-slate-600">Cantidad de sesiones:</label>
-                                    <input
-                                        type="number"
-                                        min="2"
-                                        max="12"
-                                        className="w-20 p-1 border rounded text-center"
-                                        value={occurrences}
-                                        onChange={e => setOccurrences(Number(e.target.value))}
-                                    />
+                                <div className="grid grid-cols-2 gap-4 mb-2">
+                                    <div>
+                                        <label className="block text-sm text-slate-600 mb-1">Frecuencia</label>
+                                        <select
+                                            className="w-full p-2 border rounded-lg bg-white"
+                                            value={recurrenceFrequency}
+                                            onChange={e => setRecurrenceFrequency(e.target.value as 'WEEKLY' | 'BIWEEKLY')}
+                                        >
+                                            <option value="WEEKLY">Semanal</option>
+                                            <option value="BIWEEKLY">Quincenal</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-slate-600 mb-1">Cantidad de sesiones</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-2 border rounded-lg"
+                                            value={recurrenceCount}
+                                            onChange={e => setRecurrenceCount(Number(e.target.value))}
+                                            min="2"
+                                            max="52"
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -173,7 +163,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Modalidad</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
                             <select className="w-full p-2 border rounded-lg bg-white" value={form.type} onChange={e => setForm({ ...form, type: e.target.value as any })}>
                                 <option value="presencial">Presencial</option>
                                 <option value="online">Online</option>

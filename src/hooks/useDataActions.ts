@@ -1,5 +1,5 @@
 import { User } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, doc, updateDoc, writeBatch, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, updateDoc, writeBatch, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { MOCK_PATIENTS, MOCK_APPOINTMENTS, MOCK_PAYMENTS } from '../lib/mockData';
 
@@ -34,7 +34,7 @@ export const useDataActions = (user: User | null) => {
         return addDoc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'), appointmentData);
     };
 
-    const addRecurringAppointments = async (baseAppointment: any, dates: string[]) => {
+    const addRecurringAppointments = async (baseAppointment: any, dates: string[], recurrenceRule: string = 'WEEKLY') => {
         if (isDemo) {
             const seriesId = Math.random().toString(36).substr(2, 9);
             dates.forEach((date, index) => {
@@ -44,7 +44,7 @@ export const useDataActions = (user: User | null) => {
                     date,
                     recurrenceId: seriesId,
                     recurrenceIndex: index,
-                    recurrenceRule: 'WEEKLY'
+                    recurrenceRule
                 });
             });
             return;
@@ -60,9 +60,10 @@ export const useDataActions = (user: User | null) => {
                 date,
                 professional: baseAppointment.professional || user?.displayName || user?.email,
                 createdByUid: user?.uid,
+                createdAt: serverTimestamp(),
                 recurrenceId: seriesId,
                 recurrenceIndex: index,
-                recurrenceRule: 'WEEKLY'
+                recurrenceRule
             };
             batch.set(docRef, appointmentData);
         });
