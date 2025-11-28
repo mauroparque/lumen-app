@@ -32,6 +32,9 @@ export interface Appointment {
     hasNotes?: boolean;
     googleEventId?: string;
     googleMeetLink?: string;
+    recurrenceId?: string;
+    recurrenceIndex?: number;
+    recurrenceRule?: string;
 }
 
 export interface Payment {

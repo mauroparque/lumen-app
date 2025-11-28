@@ -137,6 +137,11 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                                             <div className="mt-1 font-medium text-slate-700">
                                                 {appointment.time} hs ({appointment.duration} min)
                                             </div>
+                                            {appointment.recurrenceId && (
+                                                <div className="mt-1 text-xs text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-full inline-block">
+                                                    Parte de una serie (Sesión {appointment.recurrenceIndex !== undefined ? appointment.recurrenceIndex + 1 : '?'})
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

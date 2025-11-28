@@ -34,6 +34,42 @@ export const useDataActions = (user: User | null) => {
         return addDoc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'), appointmentData);
     };
 
+    const addRecurringAppointments = async (baseAppointment: any, dates: string[]) => {
+        if (isDemo) {
+            const seriesId = Math.random().toString(36).substr(2, 9);
+            dates.forEach((date, index) => {
+                MOCK_APPOINTMENTS.push({
+                    ...baseAppointment,
+                    id: Math.random().toString(36).substr(2, 9),
+                    date,
+                    recurrenceId: seriesId,
+                    recurrenceIndex: index,
+                    recurrenceRule: 'WEEKLY'
+                });
+            });
+            return;
+        }
+
+        const batch = writeBatch(db);
+        const seriesId = crypto.randomUUID();
+
+        dates.forEach((date, index) => {
+            const docRef = doc(collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'));
+            const appointmentData = {
+                ...baseAppointment,
+                date,
+                professional: baseAppointment.professional || user?.displayName || user?.email,
+                createdByUid: user?.uid,
+                recurrenceId: seriesId,
+                recurrenceIndex: index,
+                recurrenceRule: 'WEEKLY'
+            };
+            batch.set(docRef, appointmentData);
+        });
+
+        return batch.commit();
+    };
+
     const addPayment = async (payment: any, appointmentId?: string) => {
         if (isDemo) {
             const newPayment = { id: Math.random().toString(36).substr(2, 9), ...payment, date: { toDate: () => new Date() } };
@@ -97,5 +133,5 @@ export const useDataActions = (user: User | null) => {
         return updateDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'patients', id), data);
     };
 
-    return { addPatient, addAppointment, updateAppointment, updatePatient, addPayment, deleteItem };
+    return { addPatient, addAppointment, addRecurringAppointments, updateAppointment, updatePatient, addPayment, deleteItem };
 };

@@ -35,6 +35,9 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         office: existingAppointment?.office || ''
     });
 
+    const [isRecurrent, setIsRecurrent] = useState(false);
+    const [occurrences, setOccurrences] = useState(4);
+
     useEffect(() => {
         if (!existingAppointment && form.patientId) {
             const selectedPatient = patients.find(p => p.id === form.patientId);
@@ -49,7 +52,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         }
     }, [form.patientId, patients, existingAppointment]);
 
-    const { addAppointment, updateAppointment } = useDataActions(user);
+    const { addAppointment, addRecurringAppointments, updateAppointment } = useDataActions(user);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,15 +70,36 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                 });
                 toast.success('Turno actualizado');
             } else {
-                await addAppointment({
-                    ...form,
-                    patientName: patient.name,
-                    status: 'programado',
-                    isPaid: false,
-                    duration: Number(form.duration),
-                    professional: professionalName
-                });
-                toast.success('Turno creado');
+                if (isRecurrent) {
+                    const dates = [];
+                    const baseDate = new Date(form.date + 'T12:00:00'); // Use noon to avoid timezone issues
+
+                    for (let i = 0; i < occurrences; i++) {
+                        const nextDate = new Date(baseDate);
+                        nextDate.setDate(baseDate.getDate() + (i * 7));
+                        dates.push(nextDate.toISOString().split('T')[0]);
+                    }
+
+                    await addRecurringAppointments({
+                        ...form,
+                        patientName: patient.name,
+                        status: 'programado',
+                        isPaid: false,
+                        duration: Number(form.duration),
+                        professional: professionalName
+                    }, dates);
+                    toast.success(`Serie de ${occurrences} turnos creada`);
+                } else {
+                    await addAppointment({
+                        ...form,
+                        patientName: patient.name,
+                        status: 'programado',
+                        isPaid: false,
+                        duration: Number(form.duration),
+                        professional: professionalName
+                    });
+                    toast.success('Turno creado');
+                }
             }
             onClose();
         } catch (error) {
@@ -117,6 +141,35 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                             </div>
                         </div>
                     </div>
+
+                    {!existingAppointment && (
+                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="isRecurrent"
+                                    className="rounded text-teal-600 focus:ring-teal-500"
+                                    checked={isRecurrent}
+                                    onChange={e => setIsRecurrent(e.target.checked)}
+                                />
+                                <label htmlFor="isRecurrent" className="text-sm font-medium text-slate-700">Repetir semanalmente</label>
+                            </div>
+
+                            {isRecurrent && (
+                                <div className="mt-3 flex items-center space-x-3">
+                                    <label className="text-sm text-slate-600">Cantidad de sesiones:</label>
+                                    <input
+                                        type="number"
+                                        min="2"
+                                        max="12"
+                                        className="w-20 p-1 border rounded text-center"
+                                        value={occurrences}
+                                        onChange={e => setOccurrences(Number(e.target.value))}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
