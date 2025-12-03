@@ -89,7 +89,7 @@ export const FinanceView = ({ user }: FinanceViewProps) => {
             </div>
 
             {tab === 'overdue' && (
-                <div className="bg-white rounded-xl border border-red-100 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl border border-red-100 shadow-sm overflow-hidden overflow-x-auto">
                     {overdue.length === 0 ? (
                         <div className="p-12 text-center text-slate-400">
                             <CheckCircle size={48} className="mx-auto mb-4 text-teal-400" />
@@ -98,15 +98,15 @@ export const FinanceView = ({ user }: FinanceViewProps) => {
                     ) : (
                         <table className="w-full text-sm text-left">
                             <thead className="bg-red-50 text-red-700 font-medium">
-                                <tr><th className="p-4">Fecha</th><th className="p-4">Paciente</th><th className="p-4">Monto</th><th className="p-4 text-right">Acción</th></tr>
+                                <tr><th className="p-2 md:p-4">Fecha</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4 text-right">Acción</th></tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {overdue.map((d: Appointment) => (
                                     <tr key={d.id} className="hover:bg-slate-50">
-                                        <td className="p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
-                                        <td className="p-4 font-bold text-slate-800">{d.patientName}</td>
-                                        <td className="p-4 font-mono text-slate-600">${d.price || 0}</td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-2 md:p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
+                                        <td className="p-2 md:p-4 font-bold text-slate-800">{d.patientName}</td>
+                                        <td className="p-2 md:p-4 font-mono text-slate-600">${d.price || 0}</td>
+                                        <td className="p-2 md:p-4 text-right">
                                             <button onClick={() => setShowPayModal(d)} className="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-red-700 shadow-sm">
                                                 Regularizar Pago
                                             </button>
@@ -120,7 +120,7 @@ export const FinanceView = ({ user }: FinanceViewProps) => {
             )}
 
             {tab === 'pending' && (
-                <div className="bg-white rounded-xl border border-yellow-100 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl border border-yellow-100 shadow-sm overflow-hidden overflow-x-auto">
                     {pending.length === 0 ? (
                         <div className="p-12 text-center text-slate-400">
                             <Calendar size={48} className="mx-auto mb-4 text-slate-300" />
@@ -129,15 +129,15 @@ export const FinanceView = ({ user }: FinanceViewProps) => {
                     ) : (
                         <table className="w-full text-sm text-left">
                             <thead className="bg-yellow-50 text-yellow-700 font-medium">
-                                <tr><th className="p-4">Fecha</th><th className="p-4">Paciente</th><th className="p-4">Monto</th><th className="p-4 text-right">Acción</th></tr>
+                                <tr><th className="p-2 md:p-4">Fecha</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4 text-right">Acción</th></tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {pending.map((d: Appointment) => (
                                     <tr key={d.id} className="hover:bg-slate-50">
-                                        <td className="p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
-                                        <td className="p-4 font-bold text-slate-800">{d.patientName}</td>
-                                        <td className="p-4 font-mono text-slate-600">${d.price || 0}</td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-2 md:p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
+                                        <td className="p-2 md:p-4 font-bold text-slate-800">{d.patientName}</td>
+                                        <td className="p-2 md:p-4 font-mono text-slate-600">${d.price || 0}</td>
+                                        <td className="p-2 md:p-4 text-right">
                                             <button onClick={() => setShowPayModal(d)} className="bg-yellow-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-yellow-600 shadow-sm">
                                                 Adelantar Pago
                                             </button>
@@ -151,22 +151,22 @@ export const FinanceView = ({ user }: FinanceViewProps) => {
             )}
 
             {tab === 'history' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50 text-slate-500 font-medium">
-                            <tr><th className="p-4">Fecha Pago</th><th className="p-4">Paciente</th><th className="p-4">Concepto</th><th className="p-4">Monto</th><th className="p-4"></th></tr>
+                            <tr><th className="p-2 md:p-4">Fecha Pago</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Concepto</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4"></th></tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {payments.sort((a: any, b: any) => b.date - a.date).map((p: Payment) => (
                                 <tr key={p.id}>
-                                    <td className="p-4 text-slate-500">{p.date?.toDate().toLocaleDateString()}</td>
-                                    <td className="p-4 font-medium text-slate-800">{p.patientName}</td>
-                                    <td className="p-4 text-slate-600">
+                                    <td className="p-2 md:p-4 text-slate-500">{p.date?.toDate().toLocaleDateString()}</td>
+                                    <td className="p-2 md:p-4 font-medium text-slate-800">{p.patientName}</td>
+                                    <td className="p-2 md:p-4 text-slate-600">
                                         {p.concept}
                                         {p.appointmentId && <span className="ml-2 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] uppercase tracking-wide">Vinculado</span>}
                                     </td>
-                                    <td className="p-4 font-mono text-teal-600 font-bold">+${p.amount}</td>
-                                    <td className="p-4 text-right">
+                                    <td className="p-2 md:p-4 font-mono text-teal-600 font-bold">+${p.amount}</td>
+                                    <td className="p-2 md:p-4 text-right">
                                         <button onClick={() => handleDeletePayment(p)} className="text-slate-300 hover:text-red-500"><Trash2 size={16} /></button>
                                     </td>
                                 </tr>

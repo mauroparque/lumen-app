@@ -188,17 +188,17 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
     return (
         <div className="p-6 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                 <h1 className="text-2xl font-bold text-slate-800">Agenda</h1>
 
-                <div className="flex items-center space-x-4">
-                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+                    <div className="flex bg-slate-100 p-1 rounded-lg self-start md:self-auto">
                         <button onClick={() => setViewMode('week')} className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'week' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}>Semana</button>
                         <button onClick={() => setViewMode('month')} className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'month' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}>Mes</button>
                     </div>
 
                     <select
-                        className="p-2 border rounded-lg bg-white text-sm min-w-[180px]"
+                        className="p-2 border rounded-lg bg-white text-sm w-full md:min-w-[180px]"
                         value={selectedProfessional}
                         onChange={(e) => setSelectedProfessional(e.target.value)}
                     >
@@ -207,7 +207,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                         {professionals.filter(p => p !== user.displayName).map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
 
-                    <div className="flex items-center border rounded-lg bg-white">
+                    <div className="flex items-center border rounded-lg bg-white justify-between md:justify-start">
                         <button onClick={() => {
                             const d = new Date(selectedDate);
                             if (viewMode === 'week') d.setDate(d.getDate() - 7);
@@ -232,125 +232,127 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                             setSelectedDate(d);
                         }} className="p-2 hover:bg-slate-50"><ChevronRight size={18} /></button>
                     </div>
-                    <button onClick={() => handleNewAppointment()} className="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm hover:bg-teal-700">
+                    <button onClick={() => handleNewAppointment()} className="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 shadow-sm hover:bg-teal-700 w-full md:w-auto">
                         <Plus size={18} /> <span>Turno</span>
                     </button>
                 </div>
             </div>
 
             <div className="flex-1 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-                {viewMode === 'week' ? (
-                    <>
-                        <div className="flex border-b bg-slate-50 pr-4"> {/* Added pr-4 to compensate for scrollbar */}
-                            <div className="w-16 p-3 text-center text-xs text-slate-400 font-bold border-r flex-shrink-0">HORA</div>
-                            <div className="flex-1 grid grid-cols-5">
-                                {weekDays.map((d, i) => (
-                                    <div key={i} className={`p-3 text-center border-r ${d.toDateString() === new Date().toDateString() ? 'bg-teal-50' : ''}`}>
-                                        <div className="text-xs text-slate-500 uppercase">{d.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
-                                        <div className="font-bold">{d.getDate()}</div>
+                <div className="w-full h-full flex flex-col">
+                    {viewMode === 'week' ? (
+                        <>
+                            <div className="flex border-b bg-slate-50 pr-1 md:pr-4">
+                                <div className="w-10 md:w-16 p-1 md:p-3 text-center text-[10px] md:text-xs text-slate-400 font-bold border-r flex-shrink-0 flex items-center justify-center">HORA</div>
+                                <div className="flex-1 grid grid-cols-5">
+                                    {weekDays.map((d, i) => (
+                                        <div key={i} className={`p-1 md:p-3 text-center border-r ${d.toDateString() === new Date().toDateString() ? 'bg-teal-50' : ''}`}>
+                                            <div className="text-[8px] md:text-xs text-slate-500 uppercase truncate">{d.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
+                                            <div className="font-bold text-xs md:text-base">{d.getDate()}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto">
+                                {hours.map(hour => (
+                                    <div key={hour} className="flex min-h-[80px] md:min-h-[100px] border-b last:border-0">
+                                        <div className="w-10 md:w-16 p-1 md:p-2 text-[10px] md:text-xs text-slate-400 text-center border-r pt-3 font-bold flex-shrink-0">{hour}:00</div>
+                                        <div className="flex-1 grid grid-cols-5">
+                                            {weekDays.map((day, i) => {
+                                                const appts = getAppts(day, hour);
+                                                return (
+                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50 flex flex-col space-y-1">
+                                                        {appts.map(appt => {
+                                                            const colors = getProfessionalColor(appt.professional);
+                                                            const isOnline = appt.type === 'online';
+                                                            const stripColor = colors.bg.replace('bg-', 'bg-').replace('-50', '-500');
+
+                                                            return (
+                                                                <div key={appt.id}
+                                                                    onClick={() => setSelectedAppointment(appt)}
+                                                                    className={`w-full rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md mb-1 pl-2 md:pl-3
+                                                                ${isOnline ? `bg-white border ${colors.border}` : `${colors.bg} border border-transparent`}
+                                                                ${colors.text}`}
+                                                                >
+                                                                    {/* Professional Color Indicator Strip */}
+                                                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
+
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div className="font-bold truncate leading-tight text-[9px] md:text-xs">{appt.patientName}</div>
+                                                                        <div className="text-[8px] md:text-[10px] font-mono opacity-80 hidden md:block">{appt.time}</div>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center mt-0.5 md:mt-1">
+                                                                        <div className="flex items-center space-x-1 opacity-80 scale-75 md:scale-90 origin-left">
+                                                                            {isOnline ? <Video size={10} /> : <MapPin size={10} />}
+                                                                            <span className="truncate max-w-[40px] md:max-w-[60px] text-[8px] md:text-[10px]">{appt.professional || 'General'}</span>
+
+                                                                            {/* Clinical Note Indicator */}
+                                                                            {appt.hasNotes ? (
+                                                                                <FileText size={10} className="text-slate-600 ml-1" />
+                                                                            ) : (
+                                                                                new Date(appt.date) < new Date() && (
+                                                                                    <AlertCircle size={10} className="text-amber-500 ml-1" />
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                        {appt.isPaid ? (
+                                                                            <CheckCircle size={10} className="text-green-600" />
+                                                                        ) : (
+                                                                            <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <button onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)} className="w-full flex-1 min-h-[20px] flex items-center justify-center opacity-0 group-hover:opacity-100 text-teal-300 hover:text-teal-600 transition-opacity">
+                                                            <Plus size={12} />
+                                                        </button>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            {hours.map(hour => (
-                                <div key={hour} className="flex min-h-[100px] border-b last:border-0">
-                                    <div className="w-16 p-2 text-xs text-slate-400 text-center border-r pt-3 font-bold flex-shrink-0">{hour}:00</div>
-                                    <div className="flex-1 grid grid-cols-5">
-                                        {weekDays.map((day, i) => {
-                                            const appts = getAppts(day, hour);
-                                            return (
-                                                <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50 flex flex-col space-y-1">
-                                                    {appts.map(appt => {
+                        </>
+                    ) : (
+                        <div className="flex flex-col h-full overflow-hidden">
+                            <div className="grid grid-cols-7 border-b bg-slate-50 min-h-[30px] md:min-h-[40px] shrink-0 pr-1 md:pr-4">
+                                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
+                                    <div key={day} className="p-1 md:p-2 text-center text-[10px] md:text-xs font-bold text-slate-500 border-r last:border-r-0 flex items-center justify-center">{day}</div>
+                                ))}
+                            </div>
+                            <div className="flex-1 overflow-y-auto">
+                                <div className="grid grid-cols-7 auto-rows-fr h-full min-h-[500px]">
+                                    {monthDays.map((d, i) => {
+                                        const dayAppts = getDayAppts(d.date);
+                                        return (
+                                            <div key={i}
+                                                onClick={() => { setSelectedDate(d.date); setViewMode('week'); }}
+                                                className={`p-1 md:p-2 border-b border-r cursor-pointer hover:bg-slate-50 transition-colors flex flex-col ${!d.isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : ''}`}
+                                            >
+                                                <div className={`text-right text-xs md:text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}>{d.date.getDate()}</div>
+                                                <div className="space-y-1 overflow-y-auto flex-1 custom-scrollbar">
+                                                    {dayAppts.slice(0, 3).map(appt => {
                                                         const colors = getProfessionalColor(appt.professional);
-                                                        const isOnline = appt.type === 'online';
-                                                        const stripColor = colors.bg.replace('bg-', 'bg-').replace('-50', '-500');
-
                                                         return (
-                                                            <div key={appt.id}
-                                                                onClick={() => setSelectedAppointment(appt)}
-                                                                className={`w-full rounded p-2 text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md mb-1 pl-3
-                                                                ${isOnline ? `bg-white border ${colors.border}` : `${colors.bg} border border-transparent`}
-                                                                ${colors.text}`}
-                                                            >
-                                                                {/* Professional Color Indicator Strip */}
-                                                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
-
-                                                                <div className="flex justify-between items-start">
-                                                                    <div className="font-bold truncate leading-tight">{appt.patientName}</div>
-                                                                    <div className="text-[10px] font-mono opacity-80">{appt.time}</div>
-                                                                </div>
-                                                                <div className="flex justify-between items-center mt-1">
-                                                                    <div className="flex items-center space-x-1 opacity-80 scale-90 origin-left">
-                                                                        {isOnline ? <Video size={10} /> : <MapPin size={10} />}
-                                                                        <span className="truncate max-w-[60px]">{appt.professional || 'General'}</span>
-
-                                                                        {/* Clinical Note Indicator */}
-                                                                        {appt.hasNotes ? (
-                                                                            <FileText size={10} className="text-slate-600 ml-1" />
-                                                                        ) : (
-                                                                            new Date(appt.date) < new Date() && (
-                                                                                <AlertCircle size={10} className="text-amber-500 ml-1" />
-                                                                            )
-                                                                        )}
-                                                                    </div>
-                                                                    {appt.isPaid ? (
-                                                                        <CheckCircle size={10} className="text-green-600" />
-                                                                    ) : (
-                                                                        <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
-                                                                    )}
-                                                                </div>
+                                                            <div key={appt.id} className={`text-[8px] md:text-[10px] truncate px-0.5 md:px-1 rounded ${colors.bg} ${colors.text}`}>
+                                                                <span className="hidden md:inline">{appt.time} </span>{appt.patientName}
                                                             </div>
-                                                        );
+                                                        )
                                                     })}
-                                                    <button onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)} className="w-full flex-1 min-h-[20px] flex items-center justify-center opacity-0 group-hover:opacity-100 text-teal-300 hover:text-teal-600 transition-opacity">
-                                                        <Plus size={12} />
-                                                    </button>
+                                                    {dayAppts.length > 3 && (
+                                                        <div className="text-[8px] md:text-[10px] text-slate-400 text-center">+{dayAppts.length - 3}</div>
+                                                    )}
                                                 </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex flex-col h-full overflow-hidden">
-                        <div className="grid grid-cols-7 border-b bg-slate-50 min-h-[40px] shrink-0 pr-4">
-                            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-                                <div key={day} className="p-2 text-center text-xs font-bold text-slate-500 border-r last:border-r-0 flex items-center justify-center">{day}</div>
-                            ))}
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="grid grid-cols-7 auto-rows-fr h-full min-h-[500px]">
-                                {monthDays.map((d, i) => {
-                                    const dayAppts = getDayAppts(d.date);
-                                    return (
-                                        <div key={i}
-                                            onClick={() => { setSelectedDate(d.date); setViewMode('week'); }}
-                                            className={`p-2 border-b border-r cursor-pointer hover:bg-slate-50 transition-colors flex flex-col ${!d.isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : ''}`}
-                                        >
-                                            <div className={`text-right text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}>{d.date.getDate()}</div>
-                                            <div className="space-y-1 overflow-y-auto flex-1 custom-scrollbar">
-                                                {dayAppts.slice(0, 3).map(appt => {
-                                                    const colors = getProfessionalColor(appt.professional);
-                                                    return (
-                                                        <div key={appt.id} className={`text-[10px] truncate px-1 rounded ${colors.bg} ${colors.text}`}>
-                                                            {appt.time} {appt.patientName}
-                                                        </div>
-                                                    )
-                                                })}
-                                                {dayAppts.length > 3 && (
-                                                    <div className="text-[10px] text-slate-400 text-center">+{dayAppts.length - 3} más</div>
-                                                )}
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {showModal && (
