@@ -3,6 +3,9 @@ import { User } from 'firebase/auth';
 import { Patient } from '../../types';
 import { usePatientData } from '../../hooks/usePatientData';
 import { X, Phone, Mail, Calendar, DollarSign, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { useInvoiceStatus } from '../../hooks/useInvoiceStatus';
+import { requestBatchInvoice } from '../../lib/queue';
+import { toast } from 'sonner';
 
 interface PatientDetailsDrawerProps {
     patient: Patient;
@@ -13,6 +16,27 @@ interface PatientDetailsDrawerProps {
 export const PatientDetailsDrawer = ({ patient, onClose, user }: PatientDetailsDrawerProps) => {
     const [activeTab, setActiveTab] = useState<'details' | 'history' | 'finance'>('details');
     const { history, payments, loading, stats } = usePatientData(user, patient.id);
+
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [trackingId, setTrackingId] = useState<string | null>(null);
+    const invoiceStatus = useInvoiceStatus(trackingId);
+
+    // Filter appointments for "To Bill" section
+    const toBill = history.filter(h => h.isPaid && (!h.billingStatus || h.billingStatus !== 'invoiced'));
+
+    const handleBatchBilling = async () => {
+        try {
+            const appointmentsToBill = toBill.filter(a => selectedIds.includes(a.id));
+            if (appointmentsToBill.length === 0) return;
+
+            const id = await requestBatchInvoice(appointmentsToBill, user, patient);
+            setTrackingId(id);
+            toast.success('Solicitud de facturación enviada');
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al solicitar facturación');
+        }
+    };
 
     // Combine history and payments for "Cuenta Corriente" view
     const movements = [
@@ -187,6 +211,86 @@ export const PatientDetailsDrawer = ({ patient, onClose, user }: PatientDetailsD
 
                                     {activeTab === 'finance' && (
                                         <div className="space-y-6">
+                                            {/* To Bill Section */}
+                                            <div>
+                                                <h3 className="text-sm font-bold text-slate-800 mb-3 flex justify-between items-center">
+                                                    <span>A Facturar</span>
+                                                    {toBill.length > 0 && (
+                                                        <button
+                                                            onClick={() => setSelectedIds(selectedIds.length === toBill.length ? [] : toBill.map(a => a.id))}
+                                                            className="text-xs text-teal-600 font-medium hover:underline"
+                                                        >
+                                                            {selectedIds.length === toBill.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                                        </button>
+                                                    )}
+                                                </h3>
+                                                {toBill.length === 0 ? (
+                                                    <div className="text-sm text-slate-500 italic bg-slate-50 p-3 rounded-lg text-center">
+                                                        No hay turnos pendientes de facturación.
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-2">
+                                                        {toBill.map(appt => (
+                                                            <div key={appt.id} className="flex items-center p-3 bg-white border border-slate-200 rounded-lg hover:border-teal-200 transition-colors">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedIds.includes(appt.id)}
+                                                                    onChange={() => {
+                                                                        if (selectedIds.includes(appt.id)) {
+                                                                            setSelectedIds(prev => prev.filter(id => id !== appt.id));
+                                                                        } else {
+                                                                            setSelectedIds(prev => [...prev, appt.id]);
+                                                                        }
+                                                                    }}
+                                                                    className="h-4 w-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 mr-3"
+                                                                />
+                                                                <div className="flex-1">
+                                                                    <div className="text-sm font-medium text-slate-900">
+                                                                        {new Date(appt.date + 'T00:00:00').toLocaleDateString()}
+                                                                    </div>
+                                                                    <div className="text-xs text-slate-500">
+                                                                        {appt.consultationType || 'Consulta'} - ${appt.price}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {selectedIds.length > 0 && (
+                                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                                        {invoiceStatus.status === 'completed' && invoiceStatus.invoiceUrl ? (
+                                                            <a
+                                                                href={invoiceStatus.invoiceUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full py-2.5 bg-green-50 border border-green-200 text-green-700 rounded-xl hover:bg-green-100 font-medium flex items-center justify-center transition-colors"
+                                                            >
+                                                                <CheckCircle size={18} className="mr-2" /> Ver Factura Generada
+                                                            </a>
+                                                        ) : (invoiceStatus.status === 'pending' || invoiceStatus.status === 'processing') ? (
+                                                            <div className="w-full py-2.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-xl font-medium flex items-center justify-center cursor-wait">
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-500 mr-2"></div>
+                                                                Procesando ({selectedIds.length})...
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={handleBatchBilling}
+                                                                className="w-full py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 shadow-sm font-medium flex items-center justify-center transition-colors"
+                                                            >
+                                                                <DollarSign size={18} className="mr-2" />
+                                                                Facturar ({selectedIds.length}) - Total: ${toBill.filter(a => selectedIds.includes(a.id)).reduce((sum, a) => sum + (a.price || 0), 0)}
+                                                            </button>
+                                                        )}
+                                                        {invoiceStatus.error && (
+                                                            <div className="mt-2 text-xs text-red-600 text-center">
+                                                                Error: {invoiceStatus.error}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             {/* Balance Box */}
                                             <div className={`p-4 rounded-xl border ${stats.totalDebt > 0 ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                                 <div className="text-sm font-medium text-slate-500 uppercase mb-1">Saldo Pendiente</div>

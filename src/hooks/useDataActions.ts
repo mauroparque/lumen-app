@@ -28,6 +28,7 @@ export const useDataActions = (user: User | null) => {
         }
         const appointmentData = {
             ...appointment,
+            status: appointment.status || 'programado',
             professional: appointment.professional || user?.displayName || user?.email,
             createdByUid: user?.uid
         };
@@ -58,6 +59,7 @@ export const useDataActions = (user: User | null) => {
             const appointmentData = {
                 ...baseAppointment,
                 date,
+                status: baseAppointment.status || 'programado',
                 professional: baseAppointment.professional || user?.displayName || user?.email,
                 createdByUid: user?.uid,
                 createdAt: serverTimestamp(),

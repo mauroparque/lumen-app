@@ -4,6 +4,7 @@ import { Patient, Appointment, StaffProfile } from '../../types';
 import { ModalOverlay } from '../ui';
 import { toast } from 'sonner';
 import { useDataActions } from '../../hooks/useDataActions';
+import { CONSULTATION_TYPES } from '../../lib/constants';
 
 interface AppointmentModalProps {
     onClose: () => void;
@@ -38,6 +39,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
         isPaid: existingAppointment?.isPaid || false,
         professional: professionalName,
         office: existingAppointment?.office || '',
+        consultationType: existingAppointment?.consultationType || CONSULTATION_TYPES[0],
     });
 
     const [isRecurrent, setIsRecurrent] = useState(false);
@@ -187,9 +189,23 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
                                 <option value="online">Online</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Valor Sesión</label>
-                            <input type="number" className="w-full p-2 border rounded-lg" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Consulta</label>
+                                <select
+                                    className="w-full p-2 border rounded-lg bg-white"
+                                    value={form.consultationType}
+                                    onChange={e => setForm({ ...form, consultationType: e.target.value })}
+                                >
+                                    {CONSULTATION_TYPES.map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Valor Sesión</label>
+                                <input type="number" className="w-full p-2 border rounded-lg" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} />
+                            </div>
                         </div>
                     </div>
 

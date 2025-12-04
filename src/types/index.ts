@@ -35,6 +35,9 @@ export interface Appointment {
     recurrenceId?: string;
     recurrenceIndex?: number;
     recurrenceRule?: string;
+    consultationType?: string;
+    billingStatus?: 'pending' | 'requested' | 'invoiced';
+    invoiceRequestId?: string;
 }
 
 export interface Payment {
