@@ -28,7 +28,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
 
     const { patients } = usePatients(user);
     const [isCustomProfessional, setIsCustomProfessional] = useState(false);
-    const { addPatient, updatePatient } = useDataActions(user);
+    const { addPatient, updatePatient } = useDataActions();
 
     useEffect(() => {
         if (existingPatient) {
