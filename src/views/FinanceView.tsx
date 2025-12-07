@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { User } from 'firebase/auth';
-import { Appointment, Payment } from '../types';
-import { AlertTriangle, AlertCircle, CheckCircle, Trash2, Clock, Calendar } from 'lucide-react';
-import { PaymentModal } from '../components/modals/PaymentModal';
-import { useFinanceData } from '../hooks/useFinanceData';
+import { useFinanceData, PatientBillingSummary } from '../hooks/useFinanceData';
+import { ChevronLeft, ChevronRight, DollarSign, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useDataActions } from '../hooks/useDataActions';
 import { toast } from 'sonner';
 
 interface FinanceViewProps {
@@ -13,176 +10,180 @@ interface FinanceViewProps {
 }
 
 export const FinanceView = ({ user }: FinanceViewProps) => {
-    const [tab, setTab] = useState<'overdue' | 'pending' | 'history'>('overdue');
-    const [showPayModal, setShowPayModal] = useState<Appointment | null>(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const { summary, loading } = useFinanceData(user, selectedDate);
+    const { requestBatchInvoice } = useDataActions();
+    const [processingIds, setProcessingIds] = useState<string[]>([]);
 
-    const { unpaidAppointments, payments } = useFinanceData(user);
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    // Helper to parse YYYY-MM-DD to local Date
-    const getApptDate = (dateStr: string) => {
-        const [y, m, d] = dateStr.split('-').map(Number);
-        return new Date(y, m - 1, d);
+    const handlePrevMonth = () => {
+        setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
     };
 
-    // Filter 1: Overdue (Real Debt)
-    const overdue = unpaidAppointments.filter(a => getApptDate(a.date) < today);
+    const handleNextMonth = () => {
+        setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
+    };
 
-    // Filter 2: Pending/Future (Projected)
-    const pending = unpaidAppointments.filter(a => getApptDate(a.date) >= today);
+    const totalMonthAmount = summary.reduce((acc, s) => acc + s.totalAmount, 0);
+    const totalSessions = summary.reduce((acc, s) => acc + s.sessionCount, 0);
 
-    const totalIncome = payments.reduce((acc: number, p: Payment) => acc + p.amount, 0);
-    const totalOverdue = overdue.reduce((acc: number, a: Appointment) => acc + (a.price || 0), 0);
-    const totalPending = pending.reduce((acc: number, a: Appointment) => acc + (a.price || 0), 0);
+    const handleBillPatient = async (patientSummary: PatientBillingSummary) => {
+        if (processingIds.includes(patientSummary.patientId)) return;
 
-    const handleDeletePayment = async (payment: Payment) => {
-        if (confirm('¿Eliminar registro de pago?')) {
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'payments', payment.id));
-                toast.success('Pago eliminado correctamente');
-            } catch (error) {
-                console.error(error);
-                toast.error('Error al eliminar el pago');
-            }
+        // Filter out appointments that are already invoiced
+        const toBill = patientSummary.appointments.filter(a => a.billingStatus !== 'invoiced');
+
+        if (toBill.length === 0) {
+            toast.info('Todos los turnos de este paciente ya están facturados.');
+            return;
+        }
+
+        setProcessingIds(prev => [...prev, patientSummary.patientId]);
+
+        try {
+            const patientData = {
+                id: patientSummary.patientId,
+                name: patientSummary.patientName,
+                email: patientSummary.patientEmail,
+                dni: ''
+            };
+
+            await requestBatchInvoice(toBill, patientData);
+            toast.success(`Solicitud de facturación enviada para ${patientSummary.patientName}`);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al procesar la facturación');
+        } finally {
+            setProcessingIds(prev => prev.filter(id => id !== patientSummary.patientId));
         }
     };
 
     return (
-        <div className="p-6 max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold text-slate-800 mb-6">Panel Financiero</h1>
+        <div className="p-6 max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <h1 className="text-2xl font-bold text-slate-800">Facturación Mensual</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white border border-red-100 p-6 rounded-2xl shadow-sm relative overflow-hidden">
-                    <div className="absolute right-0 top-0 p-6 opacity-10 text-red-500"><AlertTriangle size={64} /></div>
-                    <p className="text-red-500 font-medium mb-1">Vencidos (Deuda Real)</p>
-                    <h2 className="text-3xl font-bold text-slate-800">${totalOverdue.toLocaleString()}</h2>
-                    <p className="text-xs text-slate-400 mt-2">{overdue.length} sesiones vencidas</p>
-                </div>
-
-                <div className="bg-white border border-yellow-100 p-6 rounded-2xl shadow-sm relative overflow-hidden">
-                    <div className="absolute right-0 top-0 p-6 opacity-10 text-yellow-500"><Clock size={64} /></div>
-                    <p className="text-yellow-600 font-medium mb-1">Pendientes (Proyección)</p>
-                    <h2 className="text-3xl font-bold text-slate-800">${totalPending.toLocaleString()}</h2>
-                    <p className="text-xs text-slate-400 mt-2">{pending.length} sesiones futuras</p>
-                </div>
-
-                <div className="bg-teal-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
-                    <div className="absolute right-0 top-0 p-6 opacity-10 text-white"><CheckCircle size={64} /></div>
-                    <p className="text-teal-100 mb-1">Ingresos Totales</p>
-                    <h2 className="text-3xl font-bold">${totalIncome.toLocaleString()}</h2>
-                    <p className="text-xs text-teal-200 mt-2">{payments.length} pagos registrados</p>
+                <div className="flex items-center bg-white rounded-xl shadow-sm border border-slate-200 p-1">
+                    <button onClick={handlePrevMonth} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <ChevronLeft size={20} className="text-slate-600" />
+                    </button>
+                    <div className="px-4 font-bold text-slate-800 w-40 text-center capitalize">
+                        {selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                    </div>
+                    <button onClick={handleNextMonth} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <ChevronRight size={20} className="text-slate-600" />
+                    </button>
                 </div>
             </div>
 
-            <div className="flex space-x-6 border-b border-slate-200 mb-6 overflow-x-auto">
-                <button onClick={() => setTab('overdue')} className={`pb-3 px-2 font-medium text-sm flex items-center space-x-2 border-b-2 transition-colors whitespace-nowrap ${tab === 'overdue' ? 'border-red-500 text-red-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-                    <AlertCircle size={16} /> <span>Vencidos ({overdue.length})</span>
-                </button>
-                <button onClick={() => setTab('pending')} className={`pb-3 px-2 font-medium text-sm flex items-center space-x-2 border-b-2 transition-colors whitespace-nowrap ${tab === 'pending' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-                    <Clock size={16} /> <span>Pendientes ({pending.length})</span>
-                </button>
-                <button onClick={() => setTab('history')} className={`pb-3 px-2 font-medium text-sm flex items-center space-x-2 border-b-2 transition-colors whitespace-nowrap ${tab === 'history' ? 'border-teal-600 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
-                    <CheckCircle size={16} /> <span>Historial de Pagos</span>
-                </button>
+            {/* KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                    <p className="text-slate-500 font-medium text-sm mb-1">Total a Facturar (Estimado)</p>
+                    <h2 className="text-3xl font-bold text-teal-600 flex items-center">
+                        <DollarSign size={24} className="mr-1" />
+                        {totalMonthAmount.toLocaleString()}
+                    </h2>
+                </div>
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                    <p className="text-slate-500 font-medium text-sm mb-1">Total Sesiones</p>
+                    <h2 className="text-3xl font-bold text-slate-800">
+                        {totalSessions}
+                    </h2>
+                </div>
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                    <p className="text-slate-500 font-medium text-sm mb-1">Estado del Mes</p>
+                    <div className="flex items-center mt-1">
+                        <div className="w-full bg-slate-100 rounded-full h-2.5 mr-3">
+                            <div
+                                className="bg-teal-500 h-2.5 rounded-full"
+                                style={{ width: `${summary.length > 0 ? (summary.filter(s => s.status === 'completed').length / summary.length) * 100 : 0}%` }}
+                            ></div>
+                        </div>
+                        <span className="text-sm font-bold text-slate-600">
+                            {summary.length > 0 ? Math.round((summary.filter(s => s.status === 'completed').length / summary.length) * 100) : 0}%
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            {tab === 'overdue' && (
-                <div className="bg-white rounded-xl border border-red-100 shadow-sm overflow-hidden overflow-x-auto">
-                    {overdue.length === 0 ? (
-                        <div className="p-12 text-center text-slate-400">
-                            <CheckCircle size={48} className="mx-auto mb-4 text-teal-400" />
-                            <p>¡Excelente! No hay pagos vencidos.</p>
-                        </div>
-                    ) : (
+            {/* Main Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                {loading ? (
+                    <div className="p-12 flex justify-center items-center text-slate-500">
+                        <Loader2 size={24} className="animate-spin mr-3" />
+                        Cargando datos...
+                    </div>
+                ) : summary.length === 0 ? (
+                    <div className="p-12 text-center text-slate-500 flex flex-col items-center">
+                        <FileText size={48} className="text-slate-200 mb-4" />
+                        <p>No hay actividad registrada en este mes.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-red-50 text-red-700 font-medium">
-                                <tr><th className="p-2 md:p-4">Fecha</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4 text-right">Acción</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {overdue.map((d: Appointment) => (
-                                    <tr key={d.id} className="hover:bg-slate-50">
-                                        <td className="p-2 md:p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
-                                        <td className="p-2 md:p-4 font-bold text-slate-800">{d.patientName}</td>
-                                        <td className="p-2 md:p-4 font-mono text-slate-600">${d.price || 0}</td>
-                                        <td className="p-2 md:p-4 text-right">
-                                            <button onClick={() => setShowPayModal(d)} className="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-red-700 shadow-sm">
-                                                Regularizar Pago
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            )}
-
-            {tab === 'pending' && (
-                <div className="bg-white rounded-xl border border-yellow-100 shadow-sm overflow-hidden overflow-x-auto">
-                    {pending.length === 0 ? (
-                        <div className="p-12 text-center text-slate-400">
-                            <Calendar size={48} className="mx-auto mb-4 text-slate-300" />
-                            <p>No hay sesiones futuras pendientes de cobro.</p>
-                        </div>
-                    ) : (
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-yellow-50 text-yellow-700 font-medium">
-                                <tr><th className="p-2 md:p-4">Fecha</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4 text-right">Acción</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {pending.map((d: Appointment) => (
-                                    <tr key={d.id} className="hover:bg-slate-50">
-                                        <td className="p-2 md:p-4 text-slate-600">{d.date.split('-').reverse().join('/')}</td>
-                                        <td className="p-2 md:p-4 font-bold text-slate-800">{d.patientName}</td>
-                                        <td className="p-2 md:p-4 font-mono text-slate-600">${d.price || 0}</td>
-                                        <td className="p-2 md:p-4 text-right">
-                                            <button onClick={() => setShowPayModal(d)} className="bg-yellow-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-yellow-600 shadow-sm">
-                                                Adelantar Pago
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            )}
-
-            {tab === 'history' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-medium">
-                            <tr><th className="p-2 md:p-4">Fecha Pago</th><th className="p-2 md:p-4">Paciente</th><th className="p-2 md:p-4">Concepto</th><th className="p-2 md:p-4">Monto</th><th className="p-2 md:p-4"></th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {payments.sort((a: any, b: any) => b.date - a.date).map((p: Payment) => (
-                                <tr key={p.id}>
-                                    <td className="p-2 md:p-4 text-slate-500">{p.date?.toDate().toLocaleDateString()}</td>
-                                    <td className="p-2 md:p-4 font-medium text-slate-800">{p.patientName}</td>
-                                    <td className="p-2 md:p-4 text-slate-600">
-                                        {p.concept}
-                                        {p.appointmentId && <span className="ml-2 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] uppercase tracking-wide">Vinculado</span>}
-                                    </td>
-                                    <td className="p-2 md:p-4 font-mono text-teal-600 font-bold">+${p.amount}</td>
-                                    <td className="p-2 md:p-4 text-right">
-                                        <button onClick={() => handleDeletePayment(p)} className="text-slate-300 hover:text-red-500"><Trash2 size={16} /></button>
-                                    </td>
+                            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th className="p-4 pl-6">Paciente</th>
+                                    <th className="p-4 text-center">Sesiones</th>
+                                    <th className="p-4">Estado</th>
+                                    <th className="p-4 text-right">Total ($)</th>
+                                    <th className="p-4 pr-6 text-right">Acción</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {showPayModal && (
-                <PaymentModal
-                    appointment={showPayModal}
-                    onClose={() => setShowPayModal(null)}
-                    user={user}
-                />
-            )}
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {summary.map((item) => (
+                                    <tr key={item.patientId} className="hover:bg-slate-50 transition-colors">
+                                        <td className="p-4 pl-6">
+                                            <div className="font-bold text-slate-800">{item.patientName}</div>
+                                            <div className="text-xs text-slate-500">{item.patientEmail}</div>
+                                        </td>
+                                        <td className="p-4 text-center text-slate-600 font-medium">
+                                            {item.sessionCount}
+                                        </td>
+                                        <td className="p-4">
+                                            {item.status === 'completed' ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <CheckCircle size={12} className="mr-1" /> Facturado
+                                                </span>
+                                            ) : item.status === 'partial' ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <AlertCircle size={12} className="mr-1" /> Parcial
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                    Pendiente
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="p-4 text-right font-bold text-slate-700">
+                                            ${item.totalAmount.toLocaleString()}
+                                        </td>
+                                        <td className="p-4 pr-6 text-right">
+                                            {item.status === 'completed' ? (
+                                                <button disabled className="text-green-600 font-medium text-sm flex items-center justify-end w-full cursor-default opacity-50">
+                                                    <CheckCircle size={18} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleBillPatient(item)}
+                                                    disabled={processingIds.includes(item.patientId)}
+                                                    className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 shadow-sm transition-all disabled:opacity-50 flex items-center justify-center ml-auto min-w-[120px]"
+                                                >
+                                                    {processingIds.includes(item.patientId) ? (
+                                                        <> <Loader2 size={16} className="animate-spin mr-2" /> Procesando </>
+                                                    ) : (
+                                                        'Facturar Mes'
+                                                    )}
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

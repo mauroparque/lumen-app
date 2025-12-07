@@ -12,14 +12,14 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ user, currentView, setCurrentView }: SidebarProps) => {
-    const { unpaidAppointments } = useFinanceData(user);
+    const { allUnpaidAppointments } = useFinanceData(user);
 
-    const hasPendingDebts = unpaidAppointments.some(a => {
+    const hasPendingDebts = allUnpaidAppointments?.some(a => {
         const apptDate = new Date(a.date + 'T00:00:00');
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         return apptDate < now;
-    });
+    }) ?? false;
 
     return (
         <aside className="hidden md:flex w-56 flex-col bg-white border-r border-slate-200 z-20 shadow-sm">
