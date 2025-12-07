@@ -3,9 +3,10 @@ import { deleteDoc, doc } from 'firebase/firestore';
 import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { User } from 'firebase/auth';
 import { Patient } from '../types';
-import { Trash2, Search, Edit2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { PatientModal } from '../components/modals/PatientModal';
 import { PatientDetailsDrawer } from '../components/drawers/PatientDetailsDrawer';
+import { PatientCard } from '../components/patients/PatientCard';
 import { usePatients } from '../hooks/usePatients';
 import { toast } from 'sonner';
 
@@ -66,42 +67,26 @@ export const PatientsView = ({ user, profile }: PatientsViewProps) => {
                 />
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {filteredPatients.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">
-                        No se encontraron pacientes.
-                    </div>
-                ) : (
-                    filteredPatients.map((p: Patient) => (
-                        <div
-                            key={p.id}
-                            onClick={() => setViewingPatient(p)}
-                            className="p-4 border-b last:border-b-0 flex justify-between items-center hover:bg-slate-50 transition-colors cursor-pointer"
-                        >
-                            <div>
-                                <div className="font-bold text-slate-800">{p.name}</div>
-                                <div className="text-sm text-slate-500">{p.email}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={(e) => handleEdit(e, p)}
-                                    className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                                    title="Editar"
-                                >
-                                    <Edit2 size={18} />
-                                </button>
-                                <button
-                                    onClick={(e) => handleDelete(e, p)}
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Eliminar"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    ))
-                )}
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${filteredPatients.length === 0 ? 'hidden' : ''}`}>
+                {filteredPatients.map((p: Patient) => (
+                    <PatientCard
+                        key={p.id}
+                        patient={p}
+                        onView={() => setViewingPatient(p)}
+                        onEdit={(e) => handleEdit(e, p)}
+                        onDelete={(e) => handleDelete(e, p)}
+                    />
+                ))}
             </div>
+
+            {filteredPatients.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-slate-500">
+                    <div className="flex justify-center mb-4">
+                        <Search size={48} className="text-slate-200" />
+                    </div>
+                    No se encontraron pacientes que coincidan con tu búsqueda.
+                </div>
+            )}
 
             {(showAdd || editingPatient) && (
                 <PatientModal
