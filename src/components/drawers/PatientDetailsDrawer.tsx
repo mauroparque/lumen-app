@@ -4,8 +4,8 @@ import { Patient } from '../../types';
 import { usePatientData } from '../../hooks/usePatientData';
 import { X, Phone, Mail, Calendar, DollarSign, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { useInvoiceStatus } from '../../hooks/useInvoiceStatus';
-import { requestBatchInvoice } from '../../lib/queue';
 import { toast } from 'sonner';
+import { useService } from '../../context/ServiceContext';
 
 interface PatientDetailsDrawerProps {
     patient: Patient;
@@ -21,6 +21,7 @@ export const PatientDetailsDrawer = ({ patient, onClose, user }: PatientDetailsD
     const [trackingId, setTrackingId] = useState<string | null>(null);
     const [confirmingBilling, setConfirmingBilling] = useState(false);
     const invoiceStatus = useInvoiceStatus(trackingId);
+    const service = useService();
 
     // Filter appointments for "To Bill" section
     const toBill = history.filter(h => h.isPaid && (!h.billingStatus || h.billingStatus !== 'invoiced'));
@@ -37,11 +38,12 @@ export const PatientDetailsDrawer = ({ patient, onClose, user }: PatientDetailsD
     const sortedMonths = Object.keys(groupedToBill).sort().reverse();
 
     const handleBatchBilling = async () => {
+        if (!service) return;
         try {
             const appointmentsToBill = toBill.filter(a => selectedIds.includes(a.id));
             if (appointmentsToBill.length === 0) return;
 
-            const id = await requestBatchInvoice(appointmentsToBill, user, patient);
+            const id = await service.requestBatchInvoice(appointmentsToBill, patient);
             setTrackingId(id);
             setConfirmingBilling(false);
             toast.success('Solicitud de facturación enviada');

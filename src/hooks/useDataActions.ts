@@ -45,5 +45,9 @@ export const useDataActions = () => {
         return ensureService().updatePatient(id, data);
     };
 
-    return { addPatient, addAppointment, addRecurringAppointments, updateAppointment, updatePatient, addPayment, deleteItem };
+    const requestBatchInvoice = async (appointments: any[], patientData: any) => {
+        return ensureService().requestBatchInvoice(appointments, patientData);
+    };
+
+    return { addPatient, addAppointment, addRecurringAppointments, updateAppointment, updatePatient, addPayment, deleteItem, requestBatchInvoice };
 };

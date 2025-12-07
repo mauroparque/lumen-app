@@ -6,9 +6,9 @@ import { Appointment } from '../../types';
 import { ModalOverlay } from '../ui';
 import { Edit2, Trash2, Video, MapPin, CheckCircle, FileText, User as UserIcon, DollarSign, Calendar as CalendarIcon, Paperclip, Save, X, Download, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { requestInvoice } from '../../lib/queue';
-import { useClinicalNotes } from '../../hooks/useClinicalNotes';
 import { useInvoiceStatus } from '../../hooks/useInvoiceStatus';
+import { useDataActions } from '../../hooks/useDataActions';
+import { useClinicalNotes } from '../../hooks/useClinicalNotes';
 
 interface AppointmentDetailsModalProps {
     appointment: Appointment;
@@ -21,12 +21,14 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
     const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
     const { useClinicalNote, saveNote, uploadAttachment, loading: saving } = useClinicalNotes(user);
     const { note, loadingNote } = useClinicalNote(appointment.id);
+    const { requestBatchInvoice } = useDataActions();
 
     const [content, setContent] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [trackingId, setTrackingId] = useState<string | null>(null);
+    const [isRequesting, setIsRequesting] = useState(false);
     const invoiceStatus = useInvoiceStatus(trackingId);
 
     useEffect(() => {
@@ -50,14 +52,23 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
     };
 
     const handleRequestInvoice = async () => {
+        setIsRequesting(true);
         try {
-            // const toastId = toast.loading('Solicitando factura...'); // Removed as per instructions
-            const id = await requestInvoice(appointment.id, user);
+            // Adapt patient data from appointment
+            const patientData = {
+                id: appointment.patientId,
+                name: appointment.patientName,
+                email: appointment.patientEmail,
+                dni: '' // Not available in appointment object directly
+            };
+
+            const id = await requestBatchInvoice([appointment], patientData);
             setTrackingId(id);
-            // toast.success('Solicitud enviada a facturación', { id: toastId }); // Removed as per instructions
         } catch (error) {
             console.error(error);
             toast.error('Error al solicitar factura');
+        } finally {
+            setIsRequesting(false);
         }
     };
 
@@ -218,7 +229,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                                         >
                                             <Download size={18} className="mr-2" /> Ver Factura
                                         </a>
-                                    ) : (invoiceStatus.status === 'pending' || invoiceStatus.status === 'processing') ? (
+                                    ) : (invoiceStatus.status === 'pending' || invoiceStatus.status === 'processing' || isRequesting) ? (
                                         <div className="w-full py-2.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-xl font-medium flex items-center justify-center cursor-wait">
                                             <Loader2 size={18} className="mr-2 animate-spin" /> Procesando factura...
                                         </div>
@@ -237,7 +248,8 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                                     ) : (
                                         <button
                                             onClick={handleRequestInvoice}
-                                            className="w-full py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium flex items-center justify-center transition-colors"
+                                            disabled={isRequesting}
+                                            className="w-full py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium flex items-center justify-center transition-colors disabled:opacity-50"
                                         >
                                             <FileText size={18} className="mr-2" /> Solicitar Factura
                                         </button>

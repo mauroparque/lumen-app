@@ -156,4 +156,31 @@ export class FirebaseService implements IDataService {
         const docRef = doc(db, this.baseUrl, 'payments', id);
         await deleteDoc(docRef);
     }
+
+    async requestBatchInvoice(appointments: any[], patientData: any): Promise<string> {
+        const queueRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'integrations', 'billing', 'queue');
+
+        const totalPrice = appointments.reduce((sum, appt) => sum + (appt.price || 0), 0);
+        const lineItems = appointments.map(appt => ({
+            description: `${appt.consultationType || 'Consulta'} - ${appt.date}`,
+            amount: appt.price || 0
+        }));
+
+        const docRef = await addDoc(queueRef, {
+            type: 'batch',
+            appointmentIds: appointments.map(a => a.id),
+            patientId: patientData.id,
+            patientName: patientData.name,
+            patientDni: patientData.dni || '',
+            patientEmail: patientData.email,
+            totalPrice,
+            lineItems,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            retryCount: 0,
+            requestedBy: this.uid
+        });
+
+        return docRef.id;
+    }
 }

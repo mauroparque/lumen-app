@@ -114,4 +114,11 @@ export class MockService implements IDataService {
         if (idx > -1) MOCK_PAYMENTS.splice(idx, 1);
         return this.simulateLatency(undefined);
     }
+
+    async requestBatchInvoice(appointments: any[], patientData: any): Promise<string> {
+        // Mock ID return
+        const mockId = Math.random().toString(36).substr(2, 9);
+        console.log("Mock Batch Invoice Requested", { appointments, patientData, mockId });
+        return this.simulateLatency(mockId);
+    }
 }
