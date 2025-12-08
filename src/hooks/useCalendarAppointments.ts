@@ -1,28 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { Appointment } from '../types';
-import { useService } from '../context/ServiceContext';
+import { useData } from '../context/DataContext';
 
 export const useCalendarAppointments = (user: User | null, startDate: string, endDate: string) => {
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [loading, setLoading] = useState(false);
-    const service = useService();
+    const { appointments, loading } = useData();
 
-    useEffect(() => {
-        if (!user || !service) {
-            setAppointments([]);
-            return;
-        }
+    const filteredAppointments = useMemo(() => {
+        return appointments.filter(a => a.date >= startDate && a.date <= endDate);
+    }, [appointments, startDate, endDate]);
 
-        setLoading(true);
-
-        const unsubscribe = service.subscribeToAppointments(startDate, endDate, (data) => {
-            setAppointments(data);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [user, service, startDate, endDate]);
-
-    return { appointments, loading };
+    return { appointments: filteredAppointments, loading };
 };

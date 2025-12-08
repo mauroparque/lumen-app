@@ -1,9 +1,21 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { useFinanceData, PatientBillingSummary } from '../hooks/useFinanceData';
+import { useData } from '../context/DataContext';
+import { Appointment } from '../types';
 import { ChevronLeft, ChevronRight, DollarSign, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useDataActions } from '../hooks/useDataActions';
 import { toast } from 'sonner';
+
+interface PatientBillingSummary {
+    patientId: string;
+    patientName: string;
+    patientEmail?: string;
+    sessionCount: number;
+    totalAmount: number;
+    status: 'ready_to_bill' | 'partial' | 'completed';
+    appointmentIds: string[];
+    appointments: Appointment[];
+}
 
 interface FinanceViewProps {
     user: User;
@@ -11,9 +23,63 @@ interface FinanceViewProps {
 
 export const FinanceView = ({ user }: FinanceViewProps) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const { summary, loading } = useFinanceData(user, selectedDate);
+    const { appointments, loading } = useData();
     const { requestBatchInvoice } = useDataActions();
     const [processingIds, setProcessingIds] = useState<string[]>([]);
+
+    const summary = useMemo(() => {
+        if (loading) return [];
+
+        const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        const startStr = start.toISOString().split('T')[0];
+        const endStr = end.toISOString().split('T')[0];
+
+        // Filter appointments for the selected month
+        const monthlyAppointments = appointments.filter(a =>
+            a.date >= startStr && a.date <= endStr && a.status !== 'cancelado'
+        );
+
+        // Group by patient
+        const grouped = monthlyAppointments.reduce((acc, appt) => {
+            if (!acc[appt.patientId]) {
+                acc[appt.patientId] = {
+                    patientId: appt.patientId,
+                    patientName: appt.patientName,
+                    patientEmail: appt.patientEmail,
+                    sessionCount: 0,
+                    totalAmount: 0,
+                    status: 'ready_to_bill',
+                    appointmentIds: [],
+                    appointments: []
+                };
+            }
+
+            acc[appt.patientId].sessionCount++;
+            acc[appt.patientId].totalAmount += (appt.price || 0);
+            acc[appt.patientId].appointmentIds.push(appt.id);
+            acc[appt.patientId].appointments.push(appt);
+
+            return acc;
+        }, {} as Record<string, PatientBillingSummary>);
+
+        // Calculate statuses
+        return Object.values(grouped).map(summary => {
+            const totalAppts = summary.appointments.length;
+            const invoicedCount = summary.appointments.filter(a => a.billingStatus === 'invoiced').length;
+
+            if (invoicedCount === totalAppts && totalAppts > 0) {
+                summary.status = 'completed';
+            } else if (invoicedCount > 0) {
+                summary.status = 'partial';
+            } else {
+                summary.status = 'ready_to_bill';
+            }
+
+            return summary;
+        });
+
+    }, [appointments, loading, selectedDate]);
 
     const handlePrevMonth = () => {
         setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));

@@ -5,6 +5,7 @@ import { View } from './types';
 import { Toaster } from 'sonner';
 import { useStaff } from './hooks/useStaff';
 import { ServiceProvider } from './context/ServiceContext';
+import { DataProvider } from './context/DataContext';
 
 // Components
 import { Sidebar } from './components/layout/Sidebar';
@@ -59,33 +60,35 @@ export default function LumenApp() {
 
     return (
         <ServiceProvider user={activeUser}>
-            <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
-                <Toaster position="top-center" richColors />
-                <Sidebar
-                    user={activeUser}
-                    currentView={currentView}
-                    setCurrentView={setCurrentView}
-                />
+            <DataProvider>
+                <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+                    <Toaster position="top-center" richColors />
+                    <Sidebar
+                        user={activeUser}
+                        currentView={currentView}
+                        setCurrentView={setCurrentView}
+                    />
 
-                <MobileHeader
-                    mobileMenuOpen={mobileMenuOpen}
-                    setMobileMenuOpen={setMobileMenuOpen}
-                    setCurrentView={setCurrentView}
-                />
+                    <MobileHeader
+                        mobileMenuOpen={mobileMenuOpen}
+                        setMobileMenuOpen={setMobileMenuOpen}
+                        setCurrentView={setCurrentView}
+                    />
 
-                {/* Content */}
-                <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
-                    {currentView === 'calendar' && (
-                        <CalendarView user={activeUser} profile={profile} />
-                    )}
-                    {currentView === 'patients' && (
-                        <PatientsView user={activeUser} profile={profile} />
-                    )}
-                    {currentView === 'finance' && (
-                        <FinanceView user={activeUser} />
-                    )}
-                </main>
-            </div>
+                    {/* Content */}
+                    <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
+                        {currentView === 'calendar' && (
+                            <CalendarView user={activeUser} profile={profile} />
+                        )}
+                        {currentView === 'patients' && (
+                            <PatientsView user={activeUser} profile={profile} />
+                        )}
+                        {currentView === 'finance' && (
+                            <FinanceView user={activeUser} />
+                        )}
+                    </main>
+                </div>
+            </DataProvider>
         </ServiceProvider>
     );
 }
