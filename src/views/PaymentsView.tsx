@@ -1,9 +1,14 @@
 import { useState, useMemo } from 'react';
+import { User } from 'firebase/auth';
 import { useData } from '../context/DataContext';
 import { Search, CheckCircle, AlertCircle, Clock, DollarSign, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaymentModal } from '../components/modals/PaymentModal';
 
-export const PaymentsView = () => {
+interface PaymentsViewProps {
+    user: User;
+}
+
+export const PaymentsView = ({ user }: PaymentsViewProps) => {
     const { appointments, loading } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'overdue' | 'upcoming' | 'history'>('upcoming');
@@ -201,7 +206,6 @@ export const PaymentsView = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {filteredData.map(item => {
-                                const isOverdue = !item.isPaid && new Date(item.date + 'T00:00:00') < new Date(new Date().setHours(0, 0, 0, 0));
                                 return (
                                     <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="p-4 pl-6 font-medium text-slate-700">
@@ -243,6 +247,7 @@ export const PaymentsView = () => {
                     appointment={selectedAppointment}
                     onClose={() => setPaymentModalOpen(false)}
                     onPaymentComplete={() => setPaymentModalOpen(false)}
+                    user={user}
                 />
             )}
         </div>

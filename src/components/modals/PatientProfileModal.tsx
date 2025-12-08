@@ -37,9 +37,9 @@ export const PatientProfileModal = ({ patient, onClose, user }: PatientProfileMo
 
     return (
         <ModalOverlay onClose={onClose}>
-            <div className="w-full max-w-5xl flex flex-col md:flex-row h-[90vh] md:h-[80vh] bg-white rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-                {/* Header */}
-                <div className="w-full md:w-1/3 bg-slate-50 px-6 py-6 border-b md:border-b-0 md:border-r border-slate-200 flex flex-row md:flex-col justify-between items-center md:items-start shrink-0">
+            <div className="flex flex-col md:flex-row h-[85vh] w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                {/* Sidebar */}
+                <div className="w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col justify-between items-center md:items-start shrink-0 overflow-y-auto">
                     <div className="flex items-start space-x-4">
                         <div className="h-16 w-16 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-bold text-2xl border-2 border-white shadow-sm">
                             {(patient.firstName?.[0] || patient.name[0]).toUpperCase()}
@@ -65,10 +65,10 @@ export const PatientProfileModal = ({ patient, onClose, user }: PatientProfileMo
                     </button>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    {/* Tabs */}
-                    <div className="flex border-b border-slate-200 px-6 shrink-0 bg-white sticky top-0 z-10">
+                {/* Content */}
+                <div className="w-full md:w-2/3 p-0 flex flex-col h-full bg-white">
+                    {/* Tabs Header */}
+                    <div className="px-6 pt-4 border-b border-slate-100 flex-shrink-0 bg-white sticky top-0 z-10 flex">
                         <button
                             onClick={() => setActiveTab('details')}
                             className={`mr-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center ${activeTab === 'details' ? 'border-teal-600 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -89,7 +89,7 @@ export const PatientProfileModal = ({ patient, onClose, user }: PatientProfileMo
                         </button>
                     </div>
 
-                    {/* Content */}
+                    {/* Tabs Content */}
                     <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
                         {loading ? (
                             <div className="flex justify-center items-center h-full">
