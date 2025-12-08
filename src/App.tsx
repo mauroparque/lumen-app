@@ -16,7 +16,8 @@ import { ProfileModal } from './components/modals/ProfileModal';
 import { AuthScreen } from './views/AuthScreen';
 import { CalendarView } from './views/CalendarView';
 import { PatientsView } from './views/PatientsView';
-import { FinanceView } from './views/FinanceView';
+import { PaymentsView } from './views/PaymentsView';
+import { BillingView } from './views/BillingView';
 
 // Global declaration for initial auth token
 declare global {
@@ -90,13 +91,10 @@ export default function LumenApp() {
                             <PatientsView user={activeUser} profile={profile} />
                         )}
                         {currentView === 'payments' && (
-                            <FinanceView user={activeUser} />
+                            <PaymentsView user={activeUser} />
                         )}
                         {currentView === 'billing' && (
-                            <div className="p-8 text-center text-slate-500">
-                                <h2 className="text-2xl font-bold mb-2">Facturación</h2>
-                                <p>Módulo de Facturación masiva en desarrollo...</p>
-                            </div>
+                            <BillingView />
                         )}
                     </main>
                 </div>
