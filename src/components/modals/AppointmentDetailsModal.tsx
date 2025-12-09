@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { db, appId, CLINIC_ID } from '../../lib/firebase';
 import { User } from 'firebase/auth';
 import { Appointment } from '../../types';
@@ -31,6 +31,10 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
     const [isRequesting, setIsRequesting] = useState(false);
     const invoiceStatus = useInvoiceStatus(trackingId);
 
+    // Estado para el diálogo de confirmación de borrado
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     useEffect(() => {
         if (note) {
             setContent(note.content);
@@ -38,15 +42,55 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
         }
     }, [note]);
 
-    const handleDelete = async () => {
-        if (confirm('¿Estás seguro de que deseas eliminar este turno?')) {
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', appointment.id));
-                toast.success('Turno eliminado');
-                onClose();
-            } catch (error) {
-                console.error(error);
-                toast.error('Error al eliminar el turno');
+    const handleDeleteSingle = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', appointment.id));
+            toast.success('Turno eliminado');
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al eliminar el turno');
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteDialog(false);
+        }
+    };
+
+    const handleDeleteSeries = async () => {
+        if (!appointment.recurrenceId) return;
+
+        setIsDeleting(true);
+        try {
+            const appointmentsRef = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments');
+            const q = query(appointmentsRef, where('recurrenceId', '==', appointment.recurrenceId));
+            const snapshot = await getDocs(q);
+
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(docSnap => {
+                batch.delete(docSnap.ref);
+            });
+
+            await batch.commit();
+            toast.success(`${snapshot.docs.length} turnos de la serie eliminados`);
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al eliminar la serie');
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteDialog(false);
+        }
+    };
+
+    const handleDelete = () => {
+        if (appointment.recurrenceId) {
+            // Es un turno recurrente, mostrar diálogo con opciones
+            setShowDeleteDialog(true);
+        } else {
+            // Turno simple, confirmar directamente
+            if (confirm('¿Estás seguro de que deseas eliminar este turno?')) {
+                handleDeleteSingle();
             }
         }
     };
@@ -332,6 +376,53 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                     )}
                 </div>
             </div>
+
+            {/* Diálogo de confirmación para borrar turnos recurrentes */}
+            {showDeleteDialog && (
+                <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">Este turno es parte de una serie</h3>
+                        <p className="text-sm text-slate-500 mb-6">
+                            Este turno pertenece a una serie de {appointment.recurrenceIndex !== undefined ? `turnos recurrentes` : 'turnos vinculados'}.
+                            ¿Qué deseas eliminar?
+                        </p>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={handleDeleteSingle}
+                                disabled={isDeleting}
+                                className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50 text-left"
+                            >
+                                <div className="font-semibold">Solo este turno</div>
+                                <div className="text-xs text-slate-500">Los demás turnos de la serie se mantendrán</div>
+                            </button>
+
+                            <button
+                                onClick={handleDeleteSeries}
+                                disabled={isDeleting}
+                                className="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-medium transition-colors disabled:opacity-50 text-left border border-red-200"
+                            >
+                                <div className="font-semibold">Toda la serie</div>
+                                <div className="text-xs text-red-500">Se eliminarán todos los turnos vinculados</div>
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => setShowDeleteDialog(false)}
+                            disabled={isDeleting}
+                            className="w-full mt-4 py-2 text-slate-500 hover:text-slate-700 font-medium disabled:opacity-50"
+                        >
+                            Cancelar
+                        </button>
+
+                        {isDeleting && (
+                            <div className="mt-4 text-center text-sm text-slate-500 flex items-center justify-center">
+                                <Loader2 size={16} className="animate-spin mr-2" /> Eliminando...
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </ModalOverlay>
     );
 };
