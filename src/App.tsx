@@ -27,10 +27,8 @@ declare global {
 
 export default function LumenApp() {
     const [user, setUser] = useState<User | null>(null);
-    const [demoUser, setDemoUser] = useState<User | null>(null);
-    const activeUser = user || demoUser;
 
-    const { profile, loading: loadingProfile, createProfile } = useStaff(activeUser);
+    const { profile, loading: loadingProfile, createProfile } = useStaff(user);
 
     const [currentView, setCurrentView] = useState<View>('dashboard');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,7 +44,7 @@ export default function LumenApp() {
         return onAuthStateChanged(auth, setUser);
     }, []);
 
-    if (!activeUser) return <AuthScreen onDemoLogin={() => setDemoUser({ uid: 'demo-user', email: 'demo@lumen.app', displayName: 'Demo User' } as User)} />;
+    if (!user) return <AuthScreen />;
 
     if (loadingProfile) {
         return (
@@ -61,12 +59,12 @@ export default function LumenApp() {
     }
 
     return (
-        <ServiceProvider user={activeUser}>
+        <ServiceProvider user={user}>
             <DataProvider>
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
                     <Toaster position="top-center" richColors />
                     <Sidebar
-                        user={activeUser}
+                        user={user}
                         currentView={currentView}
                         setCurrentView={setCurrentView}
                     />
@@ -80,16 +78,16 @@ export default function LumenApp() {
                     {/* Content */}
                     <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
                         {(currentView === 'home' || currentView === 'dashboard') && (
-                            <DashboardView user={activeUser} profile={profile} onNavigate={(view) => setCurrentView(view as View)} />
+                            <DashboardView user={user} profile={profile} onNavigate={(view) => setCurrentView(view as View)} />
                         )}
                         {currentView === 'calendar' && (
-                            <CalendarView user={activeUser} profile={profile} />
+                            <CalendarView user={user} profile={profile} />
                         )}
                         {currentView === 'patients' && (
-                            <PatientsView user={activeUser} profile={profile} />
+                            <PatientsView user={user} profile={profile} />
                         )}
                         {currentView === 'payments' && (
-                            <PaymentsView user={activeUser} />
+                            <PaymentsView user={user} />
                         )}
                         {currentView === 'billing' && (
                             <BillingView />

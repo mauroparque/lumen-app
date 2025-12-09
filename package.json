@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.4.0",
     "clsx": "^2.1.1",
     "firebase": "^10.8.0",
     "lucide-react": "^0.344.0",

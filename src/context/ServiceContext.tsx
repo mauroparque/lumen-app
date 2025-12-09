@@ -2,7 +2,6 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { User } from 'firebase/auth';
 import { IDataService } from '../services/IDataService';
 import { FirebaseService } from '../services/FirebaseService';
-import { MockService } from '../services/MockService';
 
 const ServiceContext = createContext<IDataService | null>(null);
 
@@ -18,11 +17,6 @@ interface ServiceProviderProps {
 export const ServiceProvider: React.FC<ServiceProviderProps> = ({ user, children }) => {
     const service = useMemo(() => {
         if (!user) return null;
-
-        if (user.uid === 'demo-user') {
-            return new MockService();
-        }
-
         return new FirebaseService(user.uid);
     }, [user?.uid]);
 
