@@ -60,7 +60,9 @@ export interface ClinicalNote {
     appointmentId: string;
     content: string;
     attachments: string[];
+    tasks?: { text: string; completed: boolean }[];
     createdAt: any;
+    updatedAt?: any;
     createdBy: string;
 }
 

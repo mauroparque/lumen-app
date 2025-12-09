@@ -3,8 +3,8 @@ import { User } from 'firebase/auth';
 import { Patient } from '../../types';
 import { usePatientData } from '../../hooks/usePatientData';
 import {
-    Phone, Mail, Calendar, DollarSign, CheckCircle, AlertCircle,
-    Clock, X, User as UserIcon, FileText, Activity
+    Phone, Mail, Calendar, DollarSign,
+    Clock, X, User as UserIcon, Activity
 } from 'lucide-react';
 import { ModalOverlay } from '../ui';
 
