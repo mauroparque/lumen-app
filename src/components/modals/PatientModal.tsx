@@ -81,7 +81,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
 
     return (
         <ModalOverlay onClose={onClose}>
-            <div className="p-6">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4 text-slate-800">
                     {existingPatient ? 'Editar Paciente' : 'Nuevo Paciente'}
                 </h2>

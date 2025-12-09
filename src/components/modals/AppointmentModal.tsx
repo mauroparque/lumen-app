@@ -108,7 +108,7 @@ export const AppointmentModal = ({ onClose, patients, user, profile, existingApp
 
     return (
         <ModalOverlay onClose={onClose}>
-            <div className="p-5">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-xl font-bold mb-3 text-slate-800">{existingAppointment ? 'Editar Turno' : 'Nuevo Turno'}</h2>
                 <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
