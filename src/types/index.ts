@@ -1,4 +1,4 @@
-export type View = 'home' | 'calendar' | 'patients' | 'payments' | 'billing';
+export type View = 'home' | 'dashboard' | 'calendar' | 'patients' | 'payments' | 'billing';
 
 export interface Patient {
     id: string;

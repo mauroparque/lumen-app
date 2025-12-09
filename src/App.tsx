@@ -32,7 +32,7 @@ export default function LumenApp() {
 
     const { profile, loading: loadingProfile, createProfile } = useStaff(activeUser);
 
-    const [currentView, setCurrentView] = useState<View>('calendar');
+    const [currentView, setCurrentView] = useState<View>('dashboard');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Auth Init
@@ -79,7 +79,7 @@ export default function LumenApp() {
 
                     {/* Content */}
                     <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
-                        {currentView === 'home' && (
+                        {(currentView === 'home' || currentView === 'dashboard') && (
                             <DashboardView user={activeUser} profile={profile} onNavigate={(view) => setCurrentView(view as View)} />
                         )}
                         {currentView === 'calendar' && (
