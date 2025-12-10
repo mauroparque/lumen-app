@@ -231,6 +231,41 @@ export const TasksView = ({ user, profile }: TasksViewProps) => {
         setEditForm({ ...editForm, subtasks: updated });
     };
 
+    // Toggle subtask completion directly from the list view
+    const toggleSubtaskComplete = async (task: PendingTask, subtaskIndex: number) => {
+        try {
+            const noteRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'notes', task.noteId);
+            const noteSnap = await getDoc(noteRef);
+
+            if (noteSnap.exists()) {
+                const noteData = noteSnap.data() as ClinicalNote;
+                const updatedTasks = [...(noteData.tasks || [])];
+
+                if (updatedTasks[task.taskIndex] && updatedTasks[task.taskIndex].subtasks) {
+                    const subtasks = [...(updatedTasks[task.taskIndex].subtasks || [])];
+                    if (subtasks[subtaskIndex]) {
+                        subtasks[subtaskIndex] = {
+                            ...subtasks[subtaskIndex],
+                            completed: !subtasks[subtaskIndex].completed
+                        };
+                        updatedTasks[task.taskIndex] = {
+                            ...updatedTasks[task.taskIndex],
+                            subtasks
+                        };
+                        await updateDoc(noteRef, {
+                            tasks: updatedTasks,
+                            updatedAt: Timestamp.now()
+                        });
+                        toast.success(subtasks[subtaskIndex].completed ? 'Subitem completado' : 'Subitem pendiente');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling subtask:', error);
+            toast.error('Error al actualizar subitem');
+        }
+    };
+
     const formatDate = (dateStr?: string): string => {
         if (!dateStr) return '';
         if (dateStr.startsWith('standalone-')) return 'Tarea independiente';
@@ -388,16 +423,20 @@ export const TasksView = ({ user, profile }: TasksViewProps) => {
                                                     {task.subtasks && task.subtasks.length > 0 && (
                                                         <div className="mt-2 pl-2 border-l-2 border-slate-200 space-y-1">
                                                             {task.subtasks.map((st, stIdx) => (
-                                                                <div key={stIdx} className="flex items-center gap-2 text-sm">
+                                                                <button
+                                                                    key={stIdx}
+                                                                    onClick={() => toggleSubtaskComplete(task, stIdx)}
+                                                                    className="flex items-center gap-2 text-sm w-full text-left hover:bg-slate-100 p-1 rounded transition-colors group"
+                                                                >
                                                                     {st.completed ? (
-                                                                        <span className="text-green-500">✓</span>
+                                                                        <span className="text-green-500 group-hover:text-green-600">✓</span>
                                                                     ) : (
-                                                                        <Square size={12} className="text-slate-300" />
+                                                                        <Square size={12} className="text-slate-300 group-hover:text-amber-400" />
                                                                     )}
                                                                     <span className={st.completed ? 'text-slate-400 line-through' : 'text-slate-600'}>
                                                                         {st.text}
                                                                     </span>
-                                                                </div>
+                                                                </button>
                                                             ))}
                                                         </div>
                                                     )}
