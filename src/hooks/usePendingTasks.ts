@@ -3,6 +3,11 @@ import { collection, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firesto
 import { db, appId, CLINIC_ID } from '../lib/firebase';
 import { ClinicalNote, Appointment } from '../types';
 
+export interface Subtask {
+    text: string;
+    completed: boolean;
+}
+
 export interface PendingTask {
     noteId: string;
     appointmentId: string;
@@ -10,6 +15,7 @@ export interface PendingTask {
     patientName?: string;
     taskIndex: number;
     text: string;
+    subtasks?: Subtask[];
     createdAt: any;
     appointmentDate?: string;
 }
@@ -61,6 +67,7 @@ export const usePendingTasks = (appointments: Appointment[] = []) => {
                                 patientId: data.patientId,
                                 taskIndex: index,
                                 text: task.text,
+                                subtasks: task.subtasks || [],
                                 createdAt: data.createdAt,
                                 appointmentDate: appointment?.date
                             });

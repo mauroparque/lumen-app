@@ -79,13 +79,24 @@ export type PatientInput = Omit<Patient, 'id'>;
 export type AppointmentInput = Omit<Appointment, 'id'>;
 export type PaymentInput = Omit<Payment, 'id'>;
 
+export interface TaskSubitem {
+    text: string;
+    completed: boolean;
+}
+
+export interface TaskItem {
+    text: string;
+    completed: boolean;
+    subtasks?: TaskSubitem[];
+}
+
 export interface ClinicalNote {
     id: string;
     patientId: string;
     appointmentId: string;
     content: string;
     attachments: string[];
-    tasks?: { text: string; completed: boolean }[];
+    tasks?: TaskItem[];
     createdAt: Timestamp;
     updatedAt?: Timestamp;
     createdBy: string;
