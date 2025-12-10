@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { Appointment } from '../types';
 import { ChevronLeft, ChevronRight, Plus, Video, MapPin, CheckCircle, FileText, AlertCircle } from 'lucide-react';
@@ -23,6 +23,23 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     const [modalData, setModalData] = useState<{ date?: string, time?: string } | null>(null);
 
     const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+
+    // Current time state (updates every minute)
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // Update current time every minute
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, []);
+
+    // Constants for time calculations
+    const HOUR_HEIGHT = 100; // px - matches min-h-[100px] on desktop
+    const START_HOUR = 8;
+    const END_HOUR = 20;
 
     // Calculate start and end of the visible range based on view mode
     const startOfRange = new Date(selectedDate);
@@ -63,6 +80,33 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
         }
         return d;
     });
+
+    // Check if we're viewing the current week
+    const isCurrentWeek = useMemo(() => {
+        const today = new Date();
+        return weekDays.some(d => d.toDateString() === today.toDateString());
+    }, [weekDays]);
+
+    // Auto-scroll to current time on mount (only for week view on current week)
+    useEffect(() => {
+        if (viewMode === 'week' && scrollContainerRef.current && isCurrentWeek) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+
+            if (currentHour >= START_HOUR && currentHour <= END_HOUR) {
+                // Calculate scroll position: center the current time in the view
+                const hourOffset = currentHour - START_HOUR;
+                const minuteOffset = currentMinutes / 60;
+                const scrollPosition = (hourOffset + minuteOffset) * HOUR_HEIGHT - 150; // -150 to show some context above
+
+                scrollContainerRef.current.scrollTo({
+                    top: Math.max(0, scrollPosition),
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [viewMode, isCurrentWeek]);
 
     // Month days generation
     const monthDays = useMemo(() => {
@@ -253,58 +297,105 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-y-auto">
+                            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
+                                {/* Current Time Indicator Line */}
+                                {isCurrentWeek && (() => {
+                                    const currentHour = currentTime.getHours();
+                                    const currentMinutes = currentTime.getMinutes();
+
+                                    if (currentHour < START_HOUR || currentHour > END_HOUR) return null;
+
+                                    // Calculate position: (hours from start + fraction of current hour) * row height
+                                    const hourOffset = currentHour - START_HOUR;
+                                    const minuteOffset = currentMinutes / 60;
+                                    const topPosition = (hourOffset + minuteOffset) * HOUR_HEIGHT;
+
+                                    // Find which day column is today
+                                    const todayIndex = weekDays.findIndex(d => d.toDateString() === new Date().toDateString());
+
+                                    return (
+                                        <div
+                                            className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                                            style={{ top: `${topPosition}px` }}
+                                        >
+                                            {/* Time label on the left */}
+                                            <div className="w-10 md:w-16 flex-shrink-0 flex items-center justify-center">
+                                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
+                                            </div>
+                                            {/* Line across the grid */}
+                                            <div className="flex-1 grid grid-cols-6">
+                                                {weekDays.map((_, i) => (
+                                                    <div key={i} className={`h-0.5 ${i === todayIndex ? 'bg-red-500' : 'bg-red-300/50'}`} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
                                 {hours.map(hour => (
-                                    <div key={hour} className="flex min-h-[80px] md:min-h-[100px] border-b last:border-0">
+                                    <div key={hour} className="flex min-h-[80px] md:min-h-[100px] border-b last:border-0 relative">
                                         <div className="w-10 md:w-16 p-1 md:p-2 text-[10px] md:text-xs text-slate-400 text-center border-r pt-3 font-bold flex-shrink-0">{hour}:00</div>
                                         <div className="flex-1 grid grid-cols-6">
                                             {weekDays.map((day, i) => {
                                                 const appts = getAppts(day, hour);
                                                 return (
-                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50 flex flex-col space-y-1">
-                                                        {appts.map(appt => {
-                                                            const colors = getProfessionalColor(appt.professional);
-                                                            const isOnline = appt.type === 'online';
-                                                            const stripColor = colors.bg.replace('bg-', 'bg-').replace('-50', '-500');
+                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50">
+                                                        {/* Appointments container with relative positioning */}
+                                                        <div className="relative h-full">
+                                                            {appts.map(appt => {
+                                                                const colors = getProfessionalColor(appt.professional);
+                                                                const isOnline = appt.type === 'online';
+                                                                const stripColor = colors.bg.replace('bg-', 'bg-').replace('-50', '-500');
 
-                                                            return (
-                                                                <div key={appt.id}
-                                                                    onClick={() => setSelectedAppointment(appt)}
-                                                                    className={`w-full rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md mb-1 pl-2 md:pl-3
-                                                                ${isOnline ? `bg-white border ${colors.border}` : `${colors.bg} border border-transparent`}
-                                                                ${colors.text}`}
-                                                                >
-                                                                    {/* Professional Color Indicator Strip */}
-                                                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
+                                                                // Calculate vertical offset based on minutes
+                                                                const [, minutes] = appt.time.split(':').map(Number);
+                                                                const minuteOffsetPercent = (minutes / 60) * 100;
 
-                                                                    <div className="flex justify-between items-start">
-                                                                        <div className="font-bold truncate leading-tight text-[9px] md:text-xs">{appt.patientName}</div>
-                                                                        <div className="text-[8px] md:text-[10px] font-mono opacity-80 hidden md:block">{appt.time}</div>
-                                                                    </div>
-                                                                    <div className="flex justify-between items-center mt-0.5 md:mt-1">
-                                                                        <div className="flex items-center space-x-1 opacity-80 scale-75 md:scale-90 origin-left">
-                                                                            {isOnline ? <Video size={10} /> : <MapPin size={10} />}
-                                                                            <span className="truncate max-w-[40px] md:max-w-[60px] text-[8px] md:text-[10px]">{appt.professional || 'General'}</span>
+                                                                return (
+                                                                    <div key={appt.id}
+                                                                        onClick={() => setSelectedAppointment(appt)}
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: `${minuteOffsetPercent}%`,
+                                                                            left: 0,
+                                                                            right: 0
+                                                                        }}
+                                                                        className={`rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md hover:z-10 pl-2 md:pl-3
+                                                                    ${isOnline ? `bg-white border ${colors.border}` : `${colors.bg} border border-transparent`}
+                                                                    ${colors.text}`}
+                                                                    >
+                                                                        {/* Professional Color Indicator Strip */}
+                                                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
 
-                                                                            {/* Clinical Note Indicator */}
-                                                                            {appt.hasNotes ? (
-                                                                                <FileText size={10} className="text-slate-600 ml-1" />
+                                                                        <div className="flex justify-between items-start">
+                                                                            <div className="font-bold truncate leading-tight text-[9px] md:text-xs">{appt.patientName}</div>
+                                                                            <div className="text-[8px] md:text-[10px] font-mono opacity-80 hidden md:block">{appt.time}</div>
+                                                                        </div>
+                                                                        <div className="flex justify-between items-center mt-0.5 md:mt-1">
+                                                                            <div className="flex items-center space-x-1 opacity-80 scale-75 md:scale-90 origin-left">
+                                                                                {isOnline ? <Video size={10} /> : <MapPin size={10} />}
+                                                                                <span className="truncate max-w-[40px] md:max-w-[60px] text-[8px] md:text-[10px]">{appt.professional || 'General'}</span>
+
+                                                                                {/* Clinical Note Indicator */}
+                                                                                {appt.hasNotes ? (
+                                                                                    <FileText size={10} className="text-slate-600 ml-1" />
+                                                                                ) : (
+                                                                                    new Date(appt.date) < new Date() && (
+                                                                                        <AlertCircle size={10} className="text-amber-500 ml-1" />
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                            {appt.isPaid ? (
+                                                                                <CheckCircle size={10} className="text-green-600" />
                                                                             ) : (
-                                                                                new Date(appt.date) < new Date() && (
-                                                                                    <AlertCircle size={10} className="text-amber-500 ml-1" />
-                                                                                )
+                                                                                <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
                                                                             )}
                                                                         </div>
-                                                                        {appt.isPaid ? (
-                                                                            <CheckCircle size={10} className="text-green-600" />
-                                                                        ) : (
-                                                                            <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
-                                                                        )}
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                        <button onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)} className="w-full flex-1 min-h-[20px] flex items-center justify-center opacity-0 group-hover:opacity-100 text-teal-300 hover:text-teal-600 transition-opacity">
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        <button onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)} className="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-teal-300 hover:text-teal-600 transition-opacity z-0">
                                                             <Plus size={12} />
                                                         </button>
                                                     </div>
