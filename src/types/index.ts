@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type View = 'home' | 'dashboard' | 'calendar' | 'patients' | 'payments' | 'billing' | 'patient-history';
+export type View = 'home' | 'dashboard' | 'calendar' | 'patients' | 'payments' | 'billing' | 'patient-history' | 'tasks';
 
 // Relationship types for child patient contacts
 export type ContactRelationship = 'padre' | 'madre' | 'amigo' | 'pareja' | 'otro';

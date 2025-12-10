@@ -1,4 +1,4 @@
-import { Home, Calendar as CalendarIcon, Users, DollarSign, FileText, LogOut } from 'lucide-react';
+import { Home, Calendar as CalendarIcon, Users, DollarSign, FileText, LogOut, ListTodo } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { User } from 'firebase/auth';
@@ -32,6 +32,7 @@ export const Sidebar = ({ user, currentView, setCurrentView }: SidebarProps) => 
                 <SidebarItem icon={Home} label="Inicio" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
                 <SidebarItem icon={CalendarIcon} label="Agenda" active={currentView === 'calendar'} onClick={() => setCurrentView('calendar')} />
                 <SidebarItem icon={Users} label="Pacientes" active={currentView === 'patients'} onClick={() => setCurrentView('patients')} />
+                <SidebarItem icon={ListTodo} label="Tareas" active={currentView === 'tasks'} onClick={() => setCurrentView('tasks')} />
 
                 <div className="pt-2 pb-2">
                     <div className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Administración</div>

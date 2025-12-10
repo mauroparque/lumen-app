@@ -20,6 +20,7 @@ import { PaymentsView } from './views/PaymentsView';
 import { BillingView } from './views/BillingView';
 import { DashboardView } from './views/DashboardView';
 import { PatientHistoryView } from './views/PatientHistoryView';
+import { TasksView } from './views/TasksView';
 
 // Global declaration for initial auth token
 declare global {
@@ -106,6 +107,9 @@ export default function LumenApp() {
                         )}
                         {currentView === 'billing' && (
                             <BillingView />
+                        )}
+                        {currentView === 'tasks' && (
+                            <TasksView user={user} profile={profile} />
                         )}
                     </main>
                 </div>
