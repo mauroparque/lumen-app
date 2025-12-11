@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { Appointment } from '../../types';
 import { ModalOverlay } from '../ui';
-import { Edit2, Trash2, Video, MapPin, CheckCircle, FileText, User as UserIcon, DollarSign, Calendar as CalendarIcon, Paperclip, Save, X, Download, RefreshCw, Loader2, Plus, ListTodo, Square, CheckSquare } from 'lucide-react';
+import { Edit2, Trash2, Video, MapPin, CheckCircle, FileText, User as UserIcon, DollarSign, Calendar as CalendarIcon, Paperclip, Save, X, Download, RefreshCw, Loader2, Plus, ListTodo, Square, CheckSquare, UserX, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBillingStatus } from '../../hooks/useBillingStatus';
 import { useDataActions } from '../../hooks/useDataActions';
@@ -19,7 +19,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
     const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
     const { useClinicalNote, saveNote, uploadAttachment, loading: saving } = useClinicalNotes(user);
     const { note, loadingNote } = useClinicalNote(appointment.id);
-    const { requestBatchInvoice, deleteItem, deleteRecurringSeries, deleteRecurringFromDate } = useDataActions();
+    const { requestBatchInvoice, deleteItem, deleteRecurringSeries, deleteRecurringFromDate, updateAppointment } = useDataActions();
 
     const [content, setContent] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]);
@@ -34,6 +34,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
     // Estado para el diálogo de confirmación de borrado
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
     useEffect(() => {
         if (note) {
@@ -168,6 +169,36 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
         }
     };
 
+    const handleStatusChange = async (newStatus: 'ausente' | 'cancelado') => {
+        setIsUpdatingStatus(true);
+        try {
+            await updateAppointment(appointment.id, { status: newStatus });
+            toast.success(newStatus === 'ausente' ? 'Turno marcado como ausente' : 'Turno cancelado');
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al actualizar el estado');
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    // Get status display info
+    const getStatusInfo = () => {
+        switch (appointment.status) {
+            case 'ausente':
+                return { label: 'Ausente', color: 'bg-orange-100 text-orange-700', icon: UserX };
+            case 'cancelado':
+                return { label: 'Cancelado', color: 'bg-red-100 text-red-700', icon: XCircle };
+            case 'completado':
+                return { label: 'Completado', color: 'bg-green-100 text-green-700', icon: CheckCircle };
+            default:
+                return { label: 'Programado', color: 'bg-blue-100 text-blue-700', icon: Clock };
+        }
+    };
+
+    const statusInfo = getStatusInfo();
+
     return (
         <ModalOverlay onClose={onClose}>
             <div className="p-0 w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -288,6 +319,38 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                                 </div>
                             </div>
 
+                            {/* Status Section */}
+                            <div className="pt-4 border-t border-slate-100">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-medium text-slate-700">Estado del turno:</span>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center ${statusInfo.color}`}>
+                                        <statusInfo.icon size={12} className="mr-1" />
+                                        {statusInfo.label}
+                                    </span>
+                                </div>
+
+                                {appointment.status === 'programado' && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleStatusChange('ausente')}
+                                            disabled={isUpdatingStatus}
+                                            className="flex-1 py-2 px-3 border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 font-medium flex items-center justify-center transition-colors disabled:opacity-50 text-sm"
+                                        >
+                                            <UserX size={16} className="mr-2" />
+                                            Marcar Ausente
+                                        </button>
+                                        <button
+                                            onClick={() => handleStatusChange('cancelado')}
+                                            disabled={isUpdatingStatus}
+                                            className="flex-1 py-2 px-3 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium flex items-center justify-center transition-colors disabled:opacity-50 text-sm"
+                                        >
+                                            <XCircle size={16} className="mr-2" />
+                                            Cancelar Turno
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             {appointment.isPaid && (
                                 <div className="pt-4 border-t border-slate-100">
                                     {invoiceStatus.status === 'completed' && invoiceStatus.invoiceUrl ? (
@@ -299,11 +362,11 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                                         >
                                             <Download size={18} className="mr-2" /> Ver Factura
                                         </a>
-                                    ) : (invoiceStatus.status === 'pending' || invoiceStatus.status === 'processing' || isRequesting) ? (
+                                    ) : (trackingId || isRequesting) && (invoiceStatus.status === 'pending' || invoiceStatus.status === 'processing') ? (
                                         <div className="w-full py-2.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-xl font-medium flex items-center justify-center cursor-wait">
                                             <Loader2 size={18} className="mr-2 animate-spin" /> Procesando factura...
                                         </div>
-                                    ) : (invoiceStatus.status === 'error' || invoiceStatus.status === 'error_sending' || invoiceStatus.status === 'error_config') ? (
+                                    ) : (trackingId && (invoiceStatus.status === 'error' || invoiceStatus.status === 'error_sending' || invoiceStatus.status === 'error_config')) ? (
                                         <div className="flex flex-col space-y-2">
                                             <div className="text-sm text-red-600 text-center bg-red-50 p-2 rounded-lg">
                                                 Error: {invoiceStatus.error || 'No se pudo generar la factura'}
