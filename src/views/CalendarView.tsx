@@ -315,19 +315,17 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
                                     return (
                                         <div
-                                            className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
-                                            style={{ top: `${topPosition}px` }}
+                                            className="absolute z-20 pointer-events-none flex items-center"
+                                            style={{
+                                                top: `${topPosition}px`,
+                                                left: `calc(${(todayIndex / 6) * 100}% + 2.5rem)`, // 2.5rem = w-10 (hour column on mobile)
+                                                width: `${100 / 6}%`
+                                            }}
                                         >
-                                            {/* Time label on the left */}
-                                            <div className="w-10 md:w-16 flex-shrink-0 flex items-center justify-center">
-                                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
-                                            </div>
-                                            {/* Line across the grid */}
-                                            <div className="flex-1 grid grid-cols-6">
-                                                {weekDays.map((_, i) => (
-                                                    <div key={i} className={`h-0.5 ${i === todayIndex ? 'bg-red-500' : 'bg-red-300/50'}`} />
-                                                ))}
-                                            </div>
+                                            {/* Circle indicator */}
+                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50 -ml-1" />
+                                            {/* Line only on today */}
+                                            <div className="flex-1 h-0.5 bg-red-500" />
                                         </div>
                                     );
                                 })()}

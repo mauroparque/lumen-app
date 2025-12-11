@@ -98,5 +98,42 @@ export const useClinicalNotes = (user: User | null) => {
         }
     };
 
-    return { useClinicalNote, saveNote, uploadAttachment, loading };
+    // Hook to get all notes for a specific patient
+    const usePatientNotes = (patientId: string | null) => {
+        const [notes, setNotes] = useState<ClinicalNote[]>([]);
+        const [loadingNotes, setLoadingNotes] = useState(true);
+
+        useEffect(() => {
+            if (!patientId) {
+                setLoadingNotes(false);
+                return;
+            }
+
+            const q = query(
+                collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'notes'),
+                where('patientId', '==', patientId)
+            );
+
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const fetchedNotes = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as ClinicalNote));
+                // Sort by createdAt descending
+                fetchedNotes.sort((a, b) => {
+                    const dateA = a.createdAt?.toDate?.() || new Date(0);
+                    const dateB = b.createdAt?.toDate?.() || new Date(0);
+                    return dateB.getTime() - dateA.getTime();
+                });
+                setNotes(fetchedNotes);
+                setLoadingNotes(false);
+            });
+
+            return () => unsubscribe();
+        }, [patientId]);
+
+        return { notes, loadingNotes };
+    };
+
+    return { useClinicalNote, usePatientNotes, saveNote, uploadAttachment, loading };
 };

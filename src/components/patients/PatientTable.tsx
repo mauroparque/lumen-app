@@ -94,7 +94,7 @@ export const PatientTable = ({
 
                             return (
                                 <tr key={patient.id} className="hover:bg-slate-50 transition-colors">
-                                    {/* Name */}
+                                    {/* Name - Clickable to view history */}
                                     <td className="p-3">
                                         <div className="flex items-center gap-2">
                                             {isChild ? (
@@ -103,7 +103,12 @@ export const PatientTable = ({
                                                 <User size={16} className="text-slate-400" />
                                             )}
                                             <div>
-                                                <div className="font-medium text-slate-800">{patient.name}</div>
+                                                <button
+                                                    onClick={() => onViewHistory(patient)}
+                                                    className="font-medium text-slate-800 hover:text-teal-600 hover:underline transition-colors text-left"
+                                                >
+                                                    {patient.name}
+                                                </button>
                                                 <div className="text-xs text-slate-500">{patient.email || patient.phone || '-'}</div>
                                             </div>
                                         </div>
@@ -171,7 +176,7 @@ export const PatientTable = ({
                                         <div className="flex items-center justify-center gap-1">
                                             <button
                                                 onClick={() => onViewHistory(patient)}
-                                                className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
                                                 title="Ver Historia Clínica"
                                             >
                                                 <FileText size={16} />

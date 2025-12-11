@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { ArrowLeft, FileText, ListTodo, Calendar, Phone, Mail, MessageCircle, Baby, Plus, Square, CheckSquare, Trash2 } from 'lucide-react';
-import { View } from '../types';
+import { ArrowLeft, FileText, ListTodo, Calendar, Phone, Mail, MessageCircle, Baby, Plus, Square, CheckSquare, Trash2, ChevronDown, ChevronUp, Paperclip } from 'lucide-react';
+import { View, ClinicalNote } from '../types';
 import { usePatients } from '../hooks/usePatients';
 import { useData } from '../context/DataContext';
 import { usePendingTasks } from '../hooks/usePendingTasks';
+import { useClinicalNotes } from '../hooks/useClinicalNotes';
 import { StaffProfile } from '../types';
 import { formatPhoneNumber } from '../lib/utils';
 import { AddTaskModal } from '../components/modals/AddTaskModal';
@@ -37,9 +38,12 @@ const formatDate = (dateStr: string): string => {
 export const PatientHistoryView = ({ user, profile, patientId, setCurrentView }: PatientHistoryViewProps) => {
     const [activeTab, setActiveTab] = useState<'history' | 'tasks'>('history');
     const [showAddTask, setShowAddTask] = useState(false);
+    const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
     const { patients } = usePatients(user);
     const { appointments } = useData();
     const { pendingTasks, completeTask } = usePendingTasks(appointments);
+    const { usePatientNotes } = useClinicalNotes(user);
+    const { notes: patientNotes, loadingNotes } = usePatientNotes(patientId);
 
     const patient = useMemo(() =>
         patients.find(p => p.id === patientId),
@@ -65,6 +69,27 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView }:
         pendingTasks.filter(t => t.patientId === patientId),
         [pendingTasks, patientId]
     );
+
+    // Create a map of notes by appointmentId for quick lookup
+    const notesByAppointment = useMemo(() => {
+        const map: Record<string, ClinicalNote> = {};
+        patientNotes.forEach(note => {
+            map[note.appointmentId] = note;
+        });
+        return map;
+    }, [patientNotes]);
+
+    const toggleNoteExpanded = (appointmentId: string) => {
+        setExpandedNotes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(appointmentId)) {
+                newSet.delete(appointmentId);
+            } else {
+                newSet.add(appointmentId);
+            }
+            return newSet;
+        });
+    };
 
     if (!patient) {
         return (
@@ -267,48 +292,128 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView }:
             {/* Content */}
             {activeTab === 'history' && (
                 <div className="space-y-4">
-                    {completedAppointments.length === 0 ? (
+                    {loadingNotes ? (
+                        <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+                            <div className="text-slate-500 mt-4">Cargando historia clínica...</div>
+                        </div>
+                    ) : completedAppointments.length === 0 ? (
                         <div className="bg-white rounded-xl shadow-sm border p-12 text-center text-slate-500">
                             <Calendar size={48} className="mx-auto mb-4 text-slate-200" />
                             No hay sesiones registradas para este paciente.
                         </div>
                     ) : (
-                        completedAppointments.map(appointment => (
-                            <div
-                                key={appointment.id}
-                                className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:border-teal-200 transition-colors"
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="text-sm font-medium text-slate-800">
-                                            {formatDate(appointment.date)}
+                        completedAppointments.map(appointment => {
+                            const note = notesByAppointment[appointment.id];
+                            const isExpanded = expandedNotes.has(appointment.id);
+                            const hasNoteContent = note && (note.content || (note.tasks && note.tasks.length > 0) || (note.attachments && note.attachments.length > 0));
+
+                            return (
+                                <div
+                                    key={appointment.id}
+                                    className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:border-teal-200 transition-colors"
+                                >
+                                    {/* Appointment Header - Always visible */}
+                                    <div
+                                        className={`p-4 ${hasNoteContent ? 'cursor-pointer hover:bg-slate-50' : ''}`}
+                                        onClick={() => hasNoteContent && toggleNoteExpanded(appointment.id)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-sm font-medium text-slate-800">
+                                                    {formatDate(appointment.date)}
+                                                </div>
+                                                <span className="text-slate-400">·</span>
+                                                <div className="text-sm text-slate-500">{appointment.time}hs</div>
+                                                {hasNoteContent && (
+                                                    <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded text-xs font-medium flex items-center gap-1">
+                                                        <FileText size={12} />
+                                                        Con notas
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {appointment.isPaid ? (
+                                                    <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-xs font-medium">
+                                                        Pagado
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-xs font-medium">
+                                                        Pendiente
+                                                    </span>
+                                                )}
+                                                {hasNoteContent && (
+                                                    isExpanded ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="text-slate-400">·</span>
-                                        <div className="text-sm text-slate-500">{appointment.time}hs</div>
-                                        {appointment.hasNotes && (
-                                            <span className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded text-xs font-medium">
-                                                Con notas
-                                            </span>
-                                        )}
+                                        <div className="text-sm text-slate-600 mt-1">
+                                            {appointment.consultationType || 'Consulta'} · {appointment.type === 'online' ? 'Online' : 'Presencial'}
+                                            {appointment.professional && ` · ${appointment.professional}`}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {appointment.isPaid ? (
-                                            <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-xs font-medium">
-                                                Pagado
-                                            </span>
-                                        ) : (
-                                            <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-xs font-medium">
-                                                Pendiente
-                                            </span>
-                                        )}
-                                    </div>
+
+                                    {/* Note Content - Expandable */}
+                                    {hasNoteContent && isExpanded && (
+                                        <div className="border-t border-slate-100 bg-slate-50/50 p-4 space-y-4">
+                                            {/* Evolution Text */}
+                                            {note.content && (
+                                                <div>
+                                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                                        <FileText size={12} />
+                                                        Evolución
+                                                    </div>
+                                                    <div className="text-sm text-slate-700 whitespace-pre-wrap bg-white p-3 rounded-lg border border-slate-100">
+                                                        {note.content}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Tasks from this note */}
+                                            {note.tasks && note.tasks.length > 0 && (
+                                                <div>
+                                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                                        <ListTodo size={12} />
+                                                        Tareas ({note.tasks.filter(t => !t.completed).length} pendientes)
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        {note.tasks.map((task, idx) => (
+                                                            <div key={idx} className={`flex items-center gap-2 text-sm p-2 rounded ${task.completed ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                                                                {task.completed ? <CheckSquare size={14} /> : <Square size={14} />}
+                                                                <span className={task.completed ? 'line-through' : ''}>{task.text}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Attachments */}
+                                            {note.attachments && note.attachments.length > 0 && (
+                                                <div>
+                                                    <div className="text-xs font-semibold text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                                        <Paperclip size={12} />
+                                                        Adjuntos ({note.attachments.length})
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {note.attachments.map((url, idx) => (
+                                                            <a
+                                                                key={idx}
+                                                                href={url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-sm text-blue-600 hover:underline bg-white px-2 py-1 rounded border border-slate-200"
+                                                            >
+                                                                Archivo {idx + 1}
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-sm text-slate-600">
-                                    {appointment.consultationType || 'Consulta'} · {appointment.type === 'online' ? 'Online' : 'Presencial'}
-                                    {appointment.professional && ` · ${appointment.professional}`}
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             )}
