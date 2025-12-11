@@ -1,4 +1,4 @@
-import { Menu, X, ChevronRight, LogOut, Home, Calendar, Users, DollarSign, FileText } from 'lucide-react';
+import { Menu, X, ChevronRight, LogOut, Home, Calendar, Users, DollarSign, FileText, ListTodo } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { View } from '../../types';
@@ -29,6 +29,9 @@ export const MobileHeader = ({ mobileMenuOpen, setMobileMenuOpen, setCurrentView
                     </button>
                     <button onClick={() => { setCurrentView('patients'); setMobileMenuOpen(false) }} className="block w-full text-left text-lg py-3 border-b text-slate-700 font-medium flex justify-between items-center">
                         <span className="flex items-center"><Users size={20} className="mr-3" /> Pacientes</span> <ChevronRight size={16} className="text-slate-400" />
+                    </button>
+                    <button onClick={() => { setCurrentView('tasks'); setMobileMenuOpen(false) }} className="block w-full text-left text-lg py-3 border-b text-slate-700 font-medium flex justify-between items-center">
+                        <span className="flex items-center"><ListTodo size={20} className="mr-3" /> Tareas</span> <ChevronRight size={16} className="text-slate-400" />
                     </button>
                     <button onClick={() => { setCurrentView('payments'); setMobileMenuOpen(false) }} className="block w-full text-left text-lg py-3 border-b text-slate-700 font-medium flex justify-between items-center">
                         <span className="flex items-center"><DollarSign size={20} className="mr-3" /> Pagos</span> <ChevronRight size={16} className="text-slate-400" />

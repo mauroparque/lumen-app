@@ -194,51 +194,53 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
                         </p>
                     </div>
                 ) : (
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                            <tr>
-                                <th className="p-4 pl-6">Fecha</th>
-                                <th className="p-4">Paciente</th>
-                                <th className="p-4">Detalle</th>
-                                <th className="p-4 text-right">Monto</th>
-                                <th className="p-4 pr-6 text-center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredData.map(item => {
-                                return (
-                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="p-4 pl-6 font-medium text-slate-700">
-                                            {new Date(item.date + 'T00:00:00').toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4 font-bold text-slate-800">
-                                            {item.patientName}
-                                        </td>
-                                        <td className="p-4 text-slate-500">
-                                            {item.consultationType || 'Consulta'}
-                                        </td>
-                                        <td className="p-4 text-right font-bold text-slate-700">
-                                            ${item.price}
-                                        </td>
-                                        <td className="p-4 pr-6 text-center">
-                                            {item.isPaid ? (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Cobrado
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleOpenPayment(item)}
-                                                    className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium transition-colors text-xs"
-                                                >
-                                                    Registrar Cobro
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left min-w-[600px]">
+                            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th className="p-4 pl-6">Fecha</th>
+                                    <th className="p-4">Paciente</th>
+                                    <th className="p-4 hidden sm:table-cell">Detalle</th>
+                                    <th className="p-4 text-right">Monto</th>
+                                    <th className="p-4 pr-6 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredData.map(item => {
+                                    return (
+                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="p-4 pl-6 font-medium text-slate-700 whitespace-nowrap">
+                                                {new Date(item.date + 'T00:00:00').toLocaleDateString()}
+                                            </td>
+                                            <td className="p-4 font-bold text-slate-800">
+                                                {item.patientName}
+                                            </td>
+                                            <td className="p-4 text-slate-500 hidden sm:table-cell">
+                                                {item.consultationType || 'Consulta'}
+                                            </td>
+                                            <td className="p-4 text-right font-bold text-slate-700 whitespace-nowrap">
+                                                ${item.price}
+                                            </td>
+                                            <td className="p-4 pr-6 text-center">
+                                                {item.isPaid ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Cobrado
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleOpenPayment(item)}
+                                                        className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium transition-colors text-xs whitespace-nowrap"
+                                                    >
+                                                        Cobrar
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 

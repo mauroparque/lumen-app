@@ -179,7 +179,7 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView }:
                                     className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
                                 >
                                     <Phone size={16} />
-                                    <span className="text-sm">{patient.phone}</span>
+                                    <span className="text-sm whitespace-nowrap">{patient.phone}</span>
                                 </a>
                                 <a
                                     href={`https://wa.me/${formatPhoneNumber(patient.phone)}`}
