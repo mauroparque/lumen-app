@@ -342,14 +342,48 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                     <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50">
                                                         {/* Appointments container with relative positioning */}
                                                         <div className="relative h-full">
-                                                            {appts.map(appt => {
+                                                            {appts.map((appt, apptIndex) => {
                                                                 const colors = getProfessionalColor(appt.professional);
                                                                 const isOnline = appt.type === 'online';
-                                                                const stripColor = colors.bg.replace('bg-', 'bg-').replace('-50', '-500');
+
+                                                                // Determine effective status (auto-mark as presente if past and still programado)
+                                                                const appointmentDateTime = new Date(`${appt.date}T${appt.time}`);
+                                                                const isPast = appointmentDateTime < new Date();
+                                                                const effectiveStatus = (appt.status === 'programado' && isPast) ? 'presente' : appt.status;
 
                                                                 // Calculate vertical offset based on minutes
                                                                 const [, minutes] = appt.time.split(':').map(Number);
                                                                 const minuteOffsetPercent = (minutes / 60) * 100;
+
+                                                                // Calculate horizontal offset for overlapping appointments
+                                                                const overlapCount = appts.length;
+                                                                const overlapWidth = overlapCount > 1 ? `${100 / overlapCount}%` : '100%';
+                                                                const overlapLeft = overlapCount > 1 ? `${(apptIndex / overlapCount) * 100}%` : '0';
+
+                                                                // Professional color as base (for multi-professional view)
+                                                                const baseStyles = {
+                                                                    bg: isOnline ? 'bg-white' : colors.bg,
+                                                                    text: colors.text,
+                                                                    border: isOnline ? colors.border : 'border-transparent'
+                                                                };
+
+                                                                // Status indicator (left strip color only - keeps professional color visible)
+                                                                const getStatusStripColor = () => {
+                                                                    switch (effectiveStatus) {
+                                                                        case 'cancelado':
+                                                                            return 'bg-slate-400';
+                                                                        case 'ausente':
+                                                                            return 'bg-orange-500';
+                                                                        case 'presente':
+                                                                        case 'completado':
+                                                                            return 'bg-green-500';
+                                                                        default: // programado - use professional color
+                                                                            return colors.bg.replace('-50', '-500');
+                                                                    }
+                                                                };
+
+                                                                const isCancelled = effectiveStatus === 'cancelado';
+                                                                const stripColor = getStatusStripColor();
 
                                                                 return (
                                                                     <div key={appt.id}
@@ -357,14 +391,13 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                                         style={{
                                                                             position: 'absolute',
                                                                             top: `${minuteOffsetPercent}%`,
-                                                                            left: 0,
-                                                                            right: 0
+                                                                            left: overlapLeft,
+                                                                            width: overlapWidth
                                                                         }}
-                                                                        className={`rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md hover:z-10 pl-2 md:pl-3
-                                                                    ${isOnline ? `bg-white border ${colors.border}` : `${colors.bg} border border-transparent`}
-                                                                    ${colors.text}`}
+                                                                        className={`rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md hover:z-10 pl-2 md:pl-3 border
+                                                                    ${isCancelled ? 'bg-slate-100 text-slate-400 border-slate-200 opacity-50' : `${baseStyles.bg} ${baseStyles.text} ${baseStyles.border}`}`}
                                                                     >
-                                                                        {/* Professional Color Indicator Strip */}
+                                                                        {/* Status Color Indicator Strip */}
                                                                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
 
                                                                         <div className="flex justify-between items-start">
@@ -380,15 +413,17 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                                                 {appt.hasNotes ? (
                                                                                     <FileText size={10} className="text-slate-600 ml-1" />
                                                                                 ) : (
-                                                                                    new Date(appt.date) < new Date() && (
+                                                                                    isPast && effectiveStatus !== 'cancelado' && (
                                                                                         <AlertCircle size={10} className="text-amber-500 ml-1" />
                                                                                     )
                                                                                 )}
                                                                             </div>
-                                                                            {appt.isPaid ? (
-                                                                                <CheckCircle size={10} className="text-green-600" />
-                                                                            ) : (
-                                                                                <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
+                                                                            {effectiveStatus !== 'cancelado' && (
+                                                                                appt.isPaid ? (
+                                                                                    <CheckCircle size={10} className="text-green-600" />
+                                                                                ) : (
+                                                                                    <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
+                                                                                )
                                                                             )}
                                                                         </div>
                                                                     </div>

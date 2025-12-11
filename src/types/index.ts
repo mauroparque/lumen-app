@@ -49,7 +49,7 @@ export interface Appointment {
     duration: number; // in minutes
     type: 'presencial' | 'online';
     meetLink?: string;
-    status: 'programado' | 'completado' | 'cancelado' | 'ausente';
+    status: 'programado' | 'completado' | 'cancelado' | 'ausente' | 'presente';
     isPaid?: boolean;
     price?: number;
     professional?: string;

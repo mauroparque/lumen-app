@@ -190,6 +190,8 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit, user }: 
                 return { label: 'Ausente', color: 'bg-orange-100 text-orange-700', icon: UserX };
             case 'cancelado':
                 return { label: 'Cancelado', color: 'bg-red-100 text-red-700', icon: XCircle };
+            case 'presente':
+                return { label: 'Presente', color: 'bg-green-100 text-green-700', icon: CheckCircle };
             case 'completado':
                 return { label: 'Completado', color: 'bg-green-100 text-green-700', icon: CheckCircle };
             default:
