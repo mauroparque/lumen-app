@@ -3,5 +3,6 @@ export const CONSULTATION_TYPES = [
     "Psicodiagnóstico",
     "Entrevista Familiar",
     "Aptitud Psicológica",
-    "Orientación a Padres"
+    "Orientación a Padres",
+    "Otro"
 ];

@@ -200,13 +200,28 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                         <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Consulta</label>
                         <select
                             className="w-full p-2 border rounded-lg bg-white"
-                            value={form.consultationType}
-                            onChange={e => setForm({ ...form, consultationType: e.target.value })}
+                            value={CONSULTATION_TYPES.includes(form.consultationType) ? form.consultationType : 'Otro'}
+                            onChange={e => {
+                                if (e.target.value === 'Otro') {
+                                    setForm({ ...form, consultationType: '' });
+                                } else {
+                                    setForm({ ...form, consultationType: e.target.value });
+                                }
+                            }}
                         >
                             {CONSULTATION_TYPES.map(type => (
                                 <option key={type} value={type}>{type}</option>
                             ))}
                         </select>
+                        {(!CONSULTATION_TYPES.includes(form.consultationType) || form.consultationType === 'Otro' || form.consultationType === '') && (
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg mt-2"
+                                placeholder="Especificar tipo de consulta..."
+                                value={form.consultationType === 'Otro' ? '' : form.consultationType}
+                                onChange={e => setForm({ ...form, consultationType: e.target.value })}
+                            />
+                        )}
                     </div>
 
                     {form.type === 'presencial' && (
