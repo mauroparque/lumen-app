@@ -38,31 +38,33 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
             );
         }
 
+
         const now = new Date();
-        now.setHours(0, 0, 0, 0);
+
+        // Helper to check if an appointment is overdue (1 hour after start time)
+        const isOverdue = (appointment: any) => {
+            const apptDateTime = new Date(appointment.date + 'T' + (appointment.time || '00:00') + ':00');
+            // Add 1 hour to appointment time
+            apptDateTime.setHours(apptDateTime.getHours() + 1);
+            return now > apptDateTime;
+        };
 
         const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
         const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
         endOfMonth.setHours(23, 59, 59, 999);
 
         if (viewMode === 'overdue') {
-            // ALL overdue appointments (past unpaid), regardless of selected month
-            // "Vencidos" = Unpaid AND date < today
+            // ALL overdue appointments (1 hour past start time, unpaid), regardless of selected month
             return data.filter(a => {
-                const apptDate = new Date(a.date + 'T00:00:00');
-                // Ensure strictly before today
-                const isPast = apptDate < now;
-                return !a.isPaid && a.status !== 'cancelado' && isPast;
+                return !a.isPaid && a.status !== 'cancelado' && isOverdue(a);
             }).sort((a, b) => a.date.localeCompare(b.date));
         } else if (viewMode === 'upcoming') {
-            // Pending/Future appointments in selected month
+            // Future/Pending appointments in selected month (NOT overdue)
             return data.filter(a => {
                 const apptDate = new Date(a.date + 'T00:00:00');
                 const inMonth = apptDate >= startOfMonth && apptDate <= endOfMonth;
-                // Pending means not paid. "Próximos" usually implies future, but in this context "Pendientes del mes" 
-                // matches "Próximos" tab color/concept in previous version.
-                // If it's in the month and not paid.
-                return !a.isPaid && a.status !== 'cancelado' && inMonth;
+                // Must be unpaid, not cancelled, in month, and NOT overdue
+                return !a.isPaid && a.status !== 'cancelado' && inMonth && !isOverdue(a);
             }).sort((a, b) => a.date.localeCompare(b.date));
         } else {
             // History: Paid appointments in selected month

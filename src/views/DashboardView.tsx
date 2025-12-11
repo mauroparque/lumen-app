@@ -220,10 +220,16 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                                 <div className="flex items-center">
                                     <ListTodo size={18} className="text-amber-600 mr-2" />
                                     <span className="font-bold text-slate-900 text-sm">Tareas Pendientes</span>
+                                    <span className="ml-2 text-xs text-amber-600 font-medium bg-amber-100 px-2 py-0.5 rounded-full">
+                                        {pendingTasks.length}
+                                    </span>
                                 </div>
-                                <span className="text-xs text-amber-600 font-medium bg-amber-100 px-2 py-0.5 rounded-full">
-                                    {pendingTasks.length}
-                                </span>
+                                <button
+                                    onClick={() => onNavigate('tasks')}
+                                    className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                                >
+                                    Ver todas
+                                </button>
                             </div>
                             <div className="divide-y divide-slate-50">
                                 {pendingTasks.slice(0, 5).map((task) => {

@@ -37,9 +37,18 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     }, []);
 
     // Constants for time calculations
-    const HOUR_HEIGHT = 100; // px - matches min-h-[100px] on desktop
+    const HOUR_HEIGHT_DESKTOP = 100; // px - matches min-h-[100px] on desktop (md:)
+    const HOUR_HEIGHT_MOBILE = 80; // px - matches min-h-[80px] on mobile
     const START_HOUR = 8;
     const END_HOUR = 20;
+
+    // Get the correct hour height based on screen size
+    const getHourHeight = () => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            return HOUR_HEIGHT_MOBILE;
+        }
+        return HOUR_HEIGHT_DESKTOP;
+    };
 
     // Calculate start and end of the visible range based on view mode
     const startOfRange = new Date(selectedDate);
@@ -98,7 +107,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                 // Calculate scroll position: center the current time in the view
                 const hourOffset = currentHour - START_HOUR;
                 const minuteOffset = currentMinutes / 60;
-                const scrollPosition = (hourOffset + minuteOffset) * HOUR_HEIGHT - 150; // -150 to show some context above
+                const scrollPosition = (hourOffset + minuteOffset) * getHourHeight() - 150; // -150 to show some context above
 
                 scrollContainerRef.current.scrollTo({
                     top: Math.max(0, scrollPosition),
@@ -308,7 +317,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                     // Calculate position: (hours from start + fraction of current hour) * row height
                                     const hourOffset = currentHour - START_HOUR;
                                     const minuteOffset = currentMinutes / 60;
-                                    const topPosition = (hourOffset + minuteOffset) * HOUR_HEIGHT;
+                                    const topPosition = (hourOffset + minuteOffset) * getHourHeight();
 
                                     // Find which day column is today
                                     const todayIndex = weekDays.findIndex(d => d.toDateString() === new Date().toDateString());
@@ -337,7 +346,8 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                             {weekDays.map((day, i) => {
                                                 const appts = getAppts(day, hour);
                                                 return (
-                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50">
+                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50 cursor-pointer"
+                                                        onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)}>
                                                         {/* Appointments container with relative positioning */}
                                                         <div className="relative h-full">
                                                             {appts.map((appt, apptIndex) => {
@@ -385,7 +395,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
                                                                 return (
                                                                     <div key={appt.id}
-                                                                        onClick={() => setSelectedAppointment(appt)}
+                                                                        onClick={(e) => { e.stopPropagation(); setSelectedAppointment(appt); }}
                                                                         style={{
                                                                             position: 'absolute',
                                                                             top: `${minuteOffsetPercent}%`,
@@ -428,9 +438,10 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                                 );
                                                             })}
                                                         </div>
-                                                        <button onClick={(e) => { e.stopPropagation(); handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`); }} className="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-teal-300 hover:text-teal-600 transition-opacity -z-10">
-                                                            <Plus size={12} />
-                                                        </button>
+                                                        {/* Hover indicator for empty space */}
+                                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                            <Plus size={16} className="text-teal-400" />
+                                                        </div>
                                                     </div>
                                                 )
                                             })}
