@@ -112,7 +112,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                    {greeting}, {profile.name?.split(' ')[0] || 'Profesional'} ✨
+                    {greeting}, {profile.name?.split(' ')[0] || 'Profesional'}
                 </h1>
                 <p className="text-slate-500 mt-1">
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
