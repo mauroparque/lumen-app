@@ -156,7 +156,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <p className="text-slate-300 text-sm font-medium uppercase tracking-wider mb-1">
-                            Resumen del Mes Prueba
+                            Resumen del Mes
                         </p>
                         <div className="flex items-center gap-6 text-sm">
                             <div>
