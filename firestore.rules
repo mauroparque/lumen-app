@@ -22,6 +22,7 @@ service cloud.firestore {
       match /integrations/billing/queue/{requestId} { allow read: if isAuthenticated(); allow create: if isAuthenticated(); allow update, delete: if false; }
       match /staff/{userId} { allow read, write: if isAuthenticated(); }
       match /notes/{noteId} { allow read, write: if isAuthenticated(); }
+      match /psiquePayments/{monthId} { allow read, write: if isAuthenticated(); }
     }
     match /{document=**} { allow read, write: if false; }
   }
