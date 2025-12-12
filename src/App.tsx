@@ -49,18 +49,24 @@ export default function LumenApp() {
         return onAuthStateChanged(auth, setUser);
     }, []);
 
-    if (!user) return <AuthScreen />;
+    // PWA Update prompt - always render regardless of auth state
+    const pwaPrompt = <PWAUpdatePrompt />;
+
+    if (!user) return <><AuthScreen />{pwaPrompt}</>;
 
     if (loadingProfile) {
         return (
-            <div className="h-screen flex items-center justify-center bg-slate-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-            </div>
+            <>
+                <div className="h-screen flex items-center justify-center bg-slate-50">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+                </div>
+                {pwaPrompt}
+            </>
         );
     }
 
     if (!profile) {
-        return <ProfileModal onSubmit={createProfile} />;
+        return <><ProfileModal onSubmit={createProfile} />{pwaPrompt}</>;
     }
 
     return (
@@ -68,7 +74,7 @@ export default function LumenApp() {
             <DataProvider>
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
                     <Toaster position="top-center" richColors />
-                    <PWAUpdatePrompt />
+                    {pwaPrompt}
                     <Sidebar
                         user={user}
                         currentView={currentView}
