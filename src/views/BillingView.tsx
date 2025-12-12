@@ -66,7 +66,7 @@ export const BillingView = () => {
             return acc;
         }, {} as Record<string, PatientBillingSummary>);
 
-        return Object.values(grouped);
+        return Object.values(grouped).sort((a, b) => a.patientName.localeCompare(b.patientName));
     }, [appointments, loading, selectedDate]);
 
     const toggleExpand = (patientId: string) => {
