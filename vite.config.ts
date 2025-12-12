@@ -10,7 +10,7 @@ export default defineConfig({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
             manifest: {
-                name: 'Lumen - Salud Mental',
+                name: 'Lumen Salud Mental',
                 short_name: 'Lumen',
                 description: 'Sistema de gestión de consultas de salud mental',
                 theme_color: '#2d8b8b',
@@ -38,10 +38,11 @@ export default defineConfig({
                 ]
             },
             workbox: {
+                // Dynamic cacheId forces SW update on each build (bypasses Cloudflare cache)
+                cacheId: `lumen-app-v2-${new Date().getTime()}`,
                 skipWaiting: true,
                 clientsClaim: true,
                 cleanupOutdatedCaches: true,
-                // Force cache refresh for all app files
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
                 runtimeCaching: [
                     {
