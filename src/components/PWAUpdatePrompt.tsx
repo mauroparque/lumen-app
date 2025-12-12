@@ -1,5 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 
 // Check for updates every 10 minutes
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 1000;
@@ -37,26 +37,22 @@ export const PWAUpdatePrompt = () => {
 
     return (
         <div className="fixed bottom-4 right-4 z-50">
-            <div className="bg-teal-600 text-white rounded-xl shadow-2xl p-4 max-w-sm flex items-center gap-4 animate-pulse">
-                <RefreshCw className="w-6 h-6 flex-shrink-0" />
-                <div className="flex-1">
-                    <p className="font-semibold text-sm">Nueva versión disponible</p>
-                    <p className="text-xs text-teal-100">Actualizá para obtener las últimas mejoras</p>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <button
-                        onClick={handleUpdate}
-                        className="px-4 py-1.5 bg-white text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-50 transition-colors"
-                    >
-                        Actualizar
-                    </button>
-                    <button
-                        onClick={handleDismiss}
-                        className="px-4 py-1 text-teal-200 text-xs hover:text-white transition-colors"
-                    >
-                        Más tarde
-                    </button>
-                </div>
+            <div className="bg-slate-800 text-white rounded-lg shadow-lg px-3 py-2 flex items-center gap-3 text-sm">
+                <RefreshCw className="w-4 h-4 text-teal-400" />
+                <span className="text-slate-200">Nueva versión</span>
+                <button
+                    onClick={handleUpdate}
+                    className="px-3 py-1 bg-teal-500 text-white rounded text-xs font-medium hover:bg-teal-600 transition-colors"
+                >
+                    Actualizar
+                </button>
+                <button
+                    onClick={handleDismiss}
+                    className="p-1 text-slate-400 hover:text-white transition-colors"
+                    aria-label="Cerrar"
+                >
+                    <X className="w-4 h-4" />
+                </button>
             </div>
         </div>
     );
