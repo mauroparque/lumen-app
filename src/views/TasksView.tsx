@@ -481,9 +481,12 @@ export const TasksView = ({ user, profile }: TasksViewProps) => {
                                     onChange={(e) => setNewTask({ ...newTask, patientId: e.target.value })}
                                 >
                                     <option value="">Seleccionar paciente...</option>
-                                    {patients.filter(p => p.isActive !== false).map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                    ))}
+                                    {patients
+                                        .filter(p => p.isActive !== false)
+                                        .sort((a, b) => a.name.localeCompare(b.name))
+                                        .map(p => (
+                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                        ))}
                                 </select>
                             </div>
 
