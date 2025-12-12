@@ -4,6 +4,7 @@ import { StaffProfile } from '../types';
 import { useData } from '../context/DataContext';
 import { usePatients } from '../hooks/usePatients';
 import { usePendingTasks } from '../hooks/usePendingTasks';
+import { usePsiquePayments } from '../hooks/usePsiquePayments';
 import {
     Calendar, Users, DollarSign, Clock, AlertCircle,
     TrendingUp, ChevronRight, CheckCircle, Video, MapPin, ListTodo, Square, CheckSquare
@@ -20,6 +21,10 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
     const { appointments, loading } = useData();
     const { patients } = usePatients(user);
     const { pendingTasks, completeTask } = usePendingTasks(appointments);
+
+    // Psique payments for current month
+    const currentMonth = useMemo(() => new Date(), []);
+    const { monthData: psiqueData } = usePsiquePayments(appointments, patients, currentMonth);
 
     // Fecha de hoy en formato YYYY-MM-DD
     const today = useMemo(() => {
@@ -81,9 +86,10 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
             totalDebt,
             completedThisMonth,
             paidThisMonth,
-            pendingCount: pendingDebts.length
+            pendingCount: pendingDebts.length,
+            netIncome: paidThisMonth - psiqueData.totalAmount
         };
-    }, [appointments, patients, today, todayAppointments, pendingDebts]);
+    }, [appointments, patients, today, todayAppointments, pendingDebts, psiqueData.totalAmount]);
 
     // Saludo según hora del día
     const greeting = useMemo(() => {
@@ -143,6 +149,33 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                     color={stats.totalDebt > 0 ? "red" : "green"}
                     onClick={() => onNavigate('payments')}
                 />
+            </div>
+
+            {/* Net Income Summary */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-5 mb-8 text-white shadow-lg">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <p className="text-slate-300 text-sm font-medium uppercase tracking-wider mb-1">
+                            Resumen del Mes
+                        </p>
+                        <div className="flex items-center gap-6 text-sm">
+                            <div>
+                                <span className="text-slate-400">Bruto:</span>
+                                <span className="ml-2 font-bold">${stats.paidThisMonth.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="text-purple-300">Psique:</span>
+                                <span className="ml-2 font-bold text-purple-300">-${psiqueData.totalAmount.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-slate-400 text-xs uppercase tracking-wider">Ingreso Neto</p>
+                        <p className="text-3xl font-bold text-green-400">
+                            ${stats.netIncome.toLocaleString()}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Main Grid */}

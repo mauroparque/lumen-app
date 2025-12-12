@@ -84,6 +84,24 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
 
     const totalAmount = filteredData.reduce((acc, curr) => acc + (curr.price || 0), 0);
 
+    // Calculate monthly gross income (all paid appointments in selected month)
+    const monthlyGrossIncome = useMemo(() => {
+        if (loading) return 0;
+        const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
+
+        return appointments
+            .filter(a => {
+                const apptDate = new Date(a.date + 'T00:00:00');
+                return a.isPaid && apptDate >= startOfMonth && apptDate <= endOfMonth;
+            })
+            .reduce((sum, a) => sum + (a.price || 0), 0);
+    }, [appointments, loading, selectedDate]);
+
+    // Net income = gross - psique expense
+    const monthlyNetIncome = monthlyGrossIncome - psiqueData.totalAmount;
+
     const handleOpenPayment = (appt: any) => {
         setSelectedAppointment(appt);
         setPaymentModalOpen(true);
@@ -108,6 +126,33 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                    </div>
+                </div>
+            </div>
+
+            {/* Monthly Net Income Summary - Fixed card */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-5 mb-6 text-white shadow-lg">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <p className="text-slate-300 text-sm font-medium uppercase tracking-wider mb-1">
+                            Resumen {currentMonthLabel}
+                        </p>
+                        <div className="flex items-center gap-6 text-sm">
+                            <div>
+                                <span className="text-slate-400">Bruto:</span>
+                                <span className="ml-2 font-bold">${monthlyGrossIncome.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="text-purple-300">Psique (25%):</span>
+                                <span className="ml-2 font-bold text-purple-300">-${psiqueData.totalAmount.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-slate-400 text-xs uppercase tracking-wider">Ingreso Neto</p>
+                        <p className="text-3xl font-bold text-green-400">
+                            ${monthlyNetIncome.toLocaleString()}
+                        </p>
                     </div>
                 </div>
             </div>
