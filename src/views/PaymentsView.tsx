@@ -1,8 +1,11 @@
 import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
 import { useData } from '../context/DataContext';
-import { Search, CheckCircle, AlertCircle, Clock, DollarSign, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { usePatients } from '../hooks/usePatients';
+import { usePsiquePayments } from '../hooks/usePsiquePayments';
+import { Search, CheckCircle, AlertCircle, Clock, DollarSign, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Building2, Loader2 } from 'lucide-react';
 import { PaymentModal } from '../components/modals/PaymentModal';
+import { toast } from 'sonner';
 
 interface PaymentsViewProps {
     user: User;
@@ -10,11 +13,15 @@ interface PaymentsViewProps {
 
 export const PaymentsView = ({ user }: PaymentsViewProps) => {
     const { appointments, loading } = useData();
+    const { patients } = usePatients(user);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'overdue' | 'upcoming' | 'history'>('overdue');
+    const [viewMode, setViewMode] = useState<'overdue' | 'upcoming' | 'history' | 'psique'>('overdue');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+
+    // Psique payments hook
+    const { monthData: psiqueData, loading: psiqueLoading, markAsPaid } = usePsiquePayments(appointments, patients, selectedDate);
 
     // Month Selector helpers
     const currentMonthLabel = selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
@@ -127,10 +134,16 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
                     >
                         <CheckCircle size={16} className="mr-2" /> Historial
                     </button>
+                    <button
+                        onClick={() => setViewMode('psique')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center whitespace-nowrap ${viewMode === 'psique' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <Building2 size={16} className="mr-2" /> Psique
+                    </button>
                 </div>
 
                 {/* Date Selector (Only relevant for Upcoming & History usually, but kept always visible for simplicity or specific behavior) */}
-                {viewMode !== 'overdue' && (
+                {(viewMode !== 'overdue') && (
                     <div className="flex items-center bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
                         <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
                             <ChevronLeft size={20} />
@@ -146,38 +159,144 @@ export const PaymentsView = ({ user }: PaymentsViewProps) => {
             </div>
 
             {/* Summary Card */}
-            <div className={`border p-6 rounded-2xl shadow-sm mb-6 flex items-center justify-between
-                ${viewMode === 'overdue' ? 'bg-red-50 border-red-100' :
-                    viewMode === 'upcoming' ? 'bg-amber-50 border-amber-100' :
-                        'bg-green-50 border-green-100'}`}>
-                <div>
-                    <p className={`font-bold text-sm mb-1 uppercase tracking-wider opacity-80
-                        ${viewMode === 'overdue' ? 'text-red-600' :
+            {viewMode === 'psique' ? (
+                <div className={`border p-6 rounded-2xl shadow-sm mb-6 ${psiqueData.isPaid ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200'}`}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className={`font-bold text-sm mb-1 uppercase tracking-wider ${psiqueData.isPaid ? 'text-green-600' : 'text-purple-600'}`}>
+                                Pago a Psique Salud Mental (25%)
+                            </p>
+                            <h2 className={`text-3xl font-bold flex items-center ${psiqueData.isPaid ? 'text-green-700' : 'text-purple-700'}`}>
+                                <DollarSign size={24} className="mr-1" />
+                                {psiqueData.totalAmount.toLocaleString()}
+                            </h2>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                            {psiqueData.isPaid ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-bold bg-green-100 text-green-700">
+                                        <CheckCircle size={16} className="mr-1.5" /> Pagado
+                                    </span>
+                                    <button
+                                        onClick={() => markAsPaid(psiqueData.month, false)}
+                                        className="text-xs text-slate-500 hover:text-red-600 underline"
+                                    >
+                                        Desmarcar
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        markAsPaid(psiqueData.month, true);
+                                        toast.success('Pago a Psique registrado');
+                                    }}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors flex items-center"
+                                    disabled={psiqueData.totalAmount === 0}
+                                >
+                                    <CheckCircle size={16} className="mr-2" /> Marcar como Pagado
+                                </button>
+                            )}
+                            {psiqueData.paidDate && (
+                                <span className="text-xs text-slate-500">
+                                    Pagado el {new Date(psiqueData.paidDate + 'T00:00:00').toLocaleDateString()}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className={`border p-6 rounded-2xl shadow-sm mb-6 flex items-center justify-between
+                    ${viewMode === 'overdue' ? 'bg-red-50 border-red-100' :
+                        viewMode === 'upcoming' ? 'bg-amber-50 border-amber-100' :
+                            'bg-green-50 border-green-100'}`}>
+                    <div>
+                        <p className={`font-bold text-sm mb-1 uppercase tracking-wider opacity-80
+                            ${viewMode === 'overdue' ? 'text-red-600' :
+                                viewMode === 'upcoming' ? 'text-amber-600' :
+                                    'text-green-600'}`}>
+                            {viewMode === 'overdue' ? 'Total Vencido' :
+                                viewMode === 'upcoming' ? 'Total a Cobrar (Mes)' :
+                                    'Total Cobrado (Mes)'}
+                        </p>
+                        <h2 className={`text-3xl font-bold flex items-center 
+                            ${viewMode === 'overdue' ? 'text-red-700' :
+                                viewMode === 'upcoming' ? 'text-amber-700' :
+                                    'text-green-700'}`}>
+                            <DollarSign size={24} className="mr-1" />
+                            {totalAmount.toLocaleString()}
+                        </h2>
+                    </div>
+                    <div className={`text-right text-sm font-medium opacity-80
+                         ${viewMode === 'overdue' ? 'text-red-600' :
                             viewMode === 'upcoming' ? 'text-amber-600' :
                                 'text-green-600'}`}>
-                        {viewMode === 'overdue' ? 'Total Vencido' :
-                            viewMode === 'upcoming' ? 'Total a Cobrar (Mes)' :
-                                'Total Cobrado (Mes)'}
-                    </p>
-                    <h2 className={`text-3xl font-bold flex items-center 
-                        ${viewMode === 'overdue' ? 'text-red-700' :
-                            viewMode === 'upcoming' ? 'text-amber-700' :
-                                'text-green-700'}`}>
-                        <DollarSign size={24} className="mr-1" />
-                        {totalAmount.toLocaleString()}
-                    </h2>
+                        {filteredData.length} registros
+                    </div>
                 </div>
-                <div className={`text-right text-sm font-medium opacity-80
-                     ${viewMode === 'overdue' ? 'text-red-600' :
-                        viewMode === 'upcoming' ? 'text-amber-600' :
-                            'text-green-600'}`}>
-                    {filteredData.length} registros
-                </div>
-            </div>
+            )}
 
             {/* List */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {loading ? (
+                {viewMode === 'psique' ? (
+                    // Psique patient breakdown
+                    psiqueLoading ? (
+                        <div className="p-12 flex justify-center items-center text-slate-500">
+                            <Loader2 size={24} className="animate-spin mr-3" />
+                            Cargando...
+                        </div>
+                    ) : psiqueData.patientBreakdown.length === 0 ? (
+                        <div className="p-12 text-center text-slate-500 flex flex-col items-center">
+                            <div className="bg-purple-50 p-4 rounded-full mb-4">
+                                <Building2 size={32} className="text-purple-300" />
+                            </div>
+                            <p>No hay pacientes de Psique con pagos en este mes.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                    <tr>
+                                        <th className="p-4 pl-6">Paciente</th>
+                                        <th className="p-4 text-center">Sesiones</th>
+                                        <th className="p-4 text-right">Honorarios</th>
+                                        <th className="p-4 text-right pr-6">25% Psique</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {psiqueData.patientBreakdown.map(patient => (
+                                        <tr key={patient.patientId} className="hover:bg-slate-50 transition-colors">
+                                            <td className="p-4 pl-6 font-bold text-slate-800">
+                                                {patient.patientName}
+                                            </td>
+                                            <td className="p-4 text-center text-slate-600">
+                                                {patient.sessionCount}
+                                            </td>
+                                            <td className="p-4 text-right text-slate-600">
+                                                ${patient.totalFee.toLocaleString()}
+                                            </td>
+                                            <td className="p-4 text-right pr-6 font-bold text-purple-700">
+                                                ${patient.psiqueAmount.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot className="bg-purple-50 border-t-2 border-purple-200">
+                                    <tr>
+                                        <td className="p-4 pl-6 font-bold text-purple-800" colSpan={2}>
+                                            Total a Pagar
+                                        </td>
+                                        <td className="p-4 text-right text-slate-600">
+                                            ${psiqueData.patientBreakdown.reduce((sum, p) => sum + p.totalFee, 0).toLocaleString()}
+                                        </td>
+                                        <td className="p-4 text-right pr-6 font-bold text-purple-800 text-lg">
+                                            ${psiqueData.totalAmount.toLocaleString()}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    )
+                ) : loading ? (
                     <div className="p-12 flex justify-center items-center text-slate-500">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mr-3"></div>
                         Cargando...

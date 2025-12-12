@@ -40,7 +40,12 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
         professional: professionalName,
         office: existingAppointment?.office || '',
         consultationType: existingAppointment?.consultationType || CONSULTATION_TYPES[0],
+        excludeFromPsique: existingAppointment?.excludeFromPsique || false,
     });
+
+    // Check if selected patient is from Psique
+    const selectedPatient = patients.find(p => p.id === form.patientId);
+    const isPsiquePatient = selectedPatient?.patientSource === 'psique';
 
     const [isRecurrent, setIsRecurrent] = useState(false);
     const [recurrenceCount, setRecurrenceCount] = useState(4);
@@ -247,6 +252,24 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                             placeholder="Ej: Lic. Martínez"
                         />
                     </div>
+
+                    {/* Psique exclusion checkbox - only for Psique patients */}
+                    {isPsiquePatient && (
+                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="excludeFromPsique"
+                                    className="rounded text-purple-600 focus:ring-purple-500"
+                                    checked={form.excludeFromPsique}
+                                    onChange={e => setForm({ ...form, excludeFromPsique: e.target.checked })}
+                                />
+                                <label htmlFor="excludeFromPsique" className="text-sm text-purple-700">
+                                    No descontar porcentaje para Psique
+                                </label>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex justify-end space-x-3 pt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Cancelar</button>

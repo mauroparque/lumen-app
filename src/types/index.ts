@@ -63,6 +63,7 @@ export interface Appointment {
     consultationType?: string;
     billingStatus?: 'pending' | 'requested' | 'invoiced';
     invoiceRequestId?: string;
+    excludeFromPsique?: boolean; // Exclude from Psique 25% calculation
 }
 
 export interface Payment {
@@ -127,3 +128,11 @@ export interface BillingLineItem {
     amount: number;
 }
 
+// Psique Salud Mental Payment Tracking
+export interface PsiquePayment {
+    id: string;
+    month: string; // YYYY-MM format
+    totalAmount: number;
+    isPaid: boolean;
+    paidDate?: string; // YYYY-MM-DD format
+}
