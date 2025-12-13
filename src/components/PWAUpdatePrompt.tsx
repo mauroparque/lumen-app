@@ -25,8 +25,18 @@ export const PWAUpdatePrompt = () => {
         },
     });
 
-    const handleUpdate = () => {
-        updateServiceWorker(true);
+    const handleUpdate = async () => {
+        console.log('Update button clicked, calling updateServiceWorker...');
+        try {
+            await updateServiceWorker(true);
+            // If updateServiceWorker doesn't reload automatically, force reload
+            console.log('updateServiceWorker completed, forcing reload...');
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating service worker:', error);
+            // Force reload anyway
+            window.location.reload();
+        }
     };
 
     const handleDismiss = () => {
@@ -42,7 +52,7 @@ export const PWAUpdatePrompt = () => {
                 <span className="text-slate-200">Nueva versión</span>
                 <button
                     onClick={handleUpdate}
-                    className="px-3 py-1 bg-teal-500 text-white rounded text-xs font-medium hover:bg-teal-600 transition-colors"
+                    className="px-3 py-1 bg-teal-500 text-white rounded text-xs font-medium hover:bg-teal-600 transition-colors active:bg-teal-700"
                 >
                     Actualizar
                 </button>
