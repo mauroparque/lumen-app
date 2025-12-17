@@ -55,21 +55,37 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
             .slice(0, 5);
     }, [appointments]);
 
-    // Deudas pendientes (turnos pasados no pagados)
+    // Helper para verificar si un turno está vencido (1 hora después de la hora de inicio)
+    const isOverdue = (appointment: any) => {
+        const now = new Date();
+        const apptDateTime = new Date(appointment.date + 'T' + (appointment.time || '00:00') + ':00');
+        // Agregar 1 hora al turno
+        apptDateTime.setHours(apptDateTime.getHours() + 1);
+        return now > apptDateTime;
+    };
+
+    // Deudas pendientes (turnos vencidos no pagados - 1 hora después del inicio)
     const pendingDebts = useMemo(() => {
         return appointments
             .filter(a => {
-                if (a.isPaid || a.status === 'cancelado') return false;
-                return a.date < today;
+                if (a.isPaid) return false;
+                // Cancelados sin cobro no generan deuda
+                if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
+                return isOverdue(a);
             })
             .sort((a, b) => b.date.localeCompare(a.date))
             .slice(0, 5);
-    }, [appointments, today]);
+    }, [appointments]);
 
     // Estadísticas
     const stats = useMemo(() => {
         const totalDebt = appointments
-            .filter(a => !a.isPaid && a.date < today && a.status !== 'cancelado')
+            .filter(a => {
+                if (a.isPaid) return false;
+                // Cancelados sin cobro no generan deuda
+                if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
+                return isOverdue(a);
+            })
             .reduce((sum, a) => sum + (a.price || 0), 0);
 
         const thisMonthAppointments = appointments.filter(a => {
