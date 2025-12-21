@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "lumen-app-5426c"
-  }
+    "default": "lumen-app-5426c",
+    "production": "lumen-app-5426c",
+    "staging": "lumen-salud-mental-staging"
+  },
+  "targets": {},
+  "etags": {}
 }
