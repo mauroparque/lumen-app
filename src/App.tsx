@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { onAuthStateChanged, User, signInWithCustomToken } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { View } from './types';
@@ -11,23 +11,29 @@ import { DataProvider } from './context/DataContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { ProfileModal } from './components/modals/ProfileModal';
-
-// Views
-import { AuthScreen } from './views/AuthScreen';
-import { CalendarView } from './views/CalendarView';
-import { PatientsView } from './views/PatientsView';
-import { PaymentsView } from './views/PaymentsView';
-import { BillingView } from './views/BillingView';
-import { DashboardView } from './views/DashboardView';
-import { PatientHistoryView } from './views/PatientHistoryView';
-import { TasksView } from './views/TasksView';
-import { StatisticsView } from './views/StatisticsView';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
+
+// Views - Lazy Loaded
+const AuthScreen = lazy(() => import('./views/AuthScreen').then(module => ({ default: module.AuthScreen })));
+const CalendarView = lazy(() => import('./views/CalendarView').then(module => ({ default: module.CalendarView })));
+const PatientsView = lazy(() => import('./views/PatientsView').then(module => ({ default: module.PatientsView })));
+const PaymentsView = lazy(() => import('./views/PaymentsView').then(module => ({ default: module.PaymentsView })));
+const BillingView = lazy(() => import('./views/BillingView').then(module => ({ default: module.BillingView })));
+const DashboardView = lazy(() => import('./views/DashboardView').then(module => ({ default: module.DashboardView })));
+const PatientHistoryView = lazy(() => import('./views/PatientHistoryView').then(module => ({ default: module.PatientHistoryView })));
+const TasksView = lazy(() => import('./views/TasksView').then(module => ({ default: module.TasksView })));
+const StatisticsView = lazy(() => import('./views/StatisticsView').then(module => ({ default: module.StatisticsView })));
 
 // Global declaration for initial auth token
 declare global {
     var __initial_auth_token: string;
 }
+
+const LoadingFallback = () => (
+    <div className="h-full w-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+    </div>
+);
 
 export default function LumenApp() {
     const [user, setUser] = useState<User | null>(null);
@@ -53,7 +59,14 @@ export default function LumenApp() {
     // PWA Update prompt - always render regardless of auth state
     const pwaPrompt = <PWAUpdatePrompt />;
 
-    if (!user) return <><AuthScreen />{pwaPrompt}</>;
+    if (!user) {
+        return (
+            <Suspense fallback={<div className="h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div></div>}>
+                <AuthScreen />
+                {pwaPrompt}
+            </Suspense>
+        );
+    }
 
     if (loadingProfile) {
         return (
@@ -90,42 +103,44 @@ export default function LumenApp() {
 
                     {/* Content */}
                     <main className="flex-1 overflow-auto pt-16 md:pt-0 relative">
-                        {(currentView === 'home' || currentView === 'dashboard') && (
-                            <DashboardView user={user} profile={profile} onNavigate={(view) => setCurrentView(view as View)} />
-                        )}
-                        {currentView === 'calendar' && (
-                            <CalendarView user={user} profile={profile} />
-                        )}
-                        {currentView === 'patients' && (
-                            <PatientsView
-                                user={user}
-                                profile={profile}
-                                setCurrentView={setCurrentView}
-                                setSelectedPatientId={setSelectedPatientId}
-                                setPatientHistoryInitialTab={setPatientHistoryInitialTab}
-                            />
-                        )}
-                        {currentView === 'patient-history' && (
-                            <PatientHistoryView
-                                user={user}
-                                profile={profile}
-                                patientId={selectedPatientId}
-                                setCurrentView={setCurrentView}
-                                initialTab={patientHistoryInitialTab}
-                            />
-                        )}
-                        {currentView === 'payments' && (
-                            <PaymentsView user={user} profile={profile} />
-                        )}
-                        {currentView === 'billing' && (
-                            <BillingView />
-                        )}
-                        {currentView === 'tasks' && (
-                            <TasksView user={user} profile={profile} />
-                        )}
-                        {currentView === 'statistics' && (
-                            <StatisticsView user={user} />
-                        )}
+                        <Suspense fallback={<LoadingFallback />}>
+                            {(currentView === 'home' || currentView === 'dashboard') && (
+                                <DashboardView user={user} profile={profile} onNavigate={(view) => setCurrentView(view as View)} />
+                            )}
+                            {currentView === 'calendar' && (
+                                <CalendarView user={user} profile={profile} />
+                            )}
+                            {currentView === 'patients' && (
+                                <PatientsView
+                                    user={user}
+                                    profile={profile}
+                                    setCurrentView={setCurrentView}
+                                    setSelectedPatientId={setSelectedPatientId}
+                                    setPatientHistoryInitialTab={setPatientHistoryInitialTab}
+                                />
+                            )}
+                            {currentView === 'patient-history' && (
+                                <PatientHistoryView
+                                    user={user}
+                                    profile={profile}
+                                    patientId={selectedPatientId}
+                                    setCurrentView={setCurrentView}
+                                    initialTab={patientHistoryInitialTab}
+                                />
+                            )}
+                            {currentView === 'payments' && (
+                                <PaymentsView user={user} profile={profile} />
+                            )}
+                            {currentView === 'billing' && (
+                                <BillingView />
+                            )}
+                            {currentView === 'tasks' && (
+                                <TasksView user={user} profile={profile} />
+                            )}
+                            {currentView === 'statistics' && (
+                                <StatisticsView user={user} />
+                            )}
+                        </Suspense>
                     </main>
                 </div>
             </DataProvider>
