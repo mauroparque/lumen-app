@@ -6,13 +6,18 @@ import { Patient, Appointment, Payment, PatientInput, AppointmentInput, PaymentI
 
 export class FirebaseService implements IDataService {
     private uid: string;
+    private professionalName: string | null;
 
-    constructor(uid: string) {
+    constructor(uid: string, professionalName?: string) {
         this.uid = uid;
+        this.professionalName = professionalName || null;
     }
 
     subscribeToPatients(onData: (data: Patient[]) => void): () => void {
-        const q = query(collection(db, PATIENTS_COLLECTION));
+        // Filter by professional if set
+        const q = this.professionalName
+            ? query(collection(db, PATIENTS_COLLECTION), where('professional', '==', this.professionalName))
+            : query(collection(db, PATIENTS_COLLECTION));
 
         return onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Patient));
@@ -22,6 +27,7 @@ export class FirebaseService implements IDataService {
         });
     }
 
+    // For agenda: all appointments (unfiltered by professional)
     subscribeToAppointments(start: string, end: string, onData: (data: Appointment[]) => void): () => void {
         const q = query(
             collection(db, APPOINTMENTS_COLLECTION),
@@ -37,13 +43,40 @@ export class FirebaseService implements IDataService {
         });
     }
 
-    subscribeToFinance(onUnpaid: (data: Appointment[]) => void, onPayments: (data: Payment[]) => void): () => void {
-        // Query all unpaid appointments, filter cancelled ones in client
-        // (Firestore doesn't support complex OR queries with multiple fields)
-        const unpaidQuery = query(
+    // For other views: only my appointments (filtered by professional)
+    subscribeToMyAppointments(start: string, end: string, onData: (data: Appointment[]) => void): () => void {
+        // If no professional set, return all (shouldn't happen in practice)
+        if (!this.professionalName) {
+            return this.subscribeToAppointments(start, end, onData);
+        }
+
+        const q = query(
             collection(db, APPOINTMENTS_COLLECTION),
-            where('isPaid', '==', false)
+            where('date', '>=', start),
+            where('date', '<=', end),
+            where('professional', '==', this.professionalName)
         );
+
+        return onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
+            onData(data);
+        }, (error) => {
+            console.error("Error fetching my appointments:", error);
+        });
+    }
+
+    subscribeToFinance(onUnpaid: (data: Appointment[]) => void, onPayments: (data: Payment[]) => void): () => void {
+        // Query unpaid appointments, filtered by professional if set
+        const unpaidQuery = this.professionalName
+            ? query(
+                collection(db, APPOINTMENTS_COLLECTION),
+                where('isPaid', '==', false),
+                where('professional', '==', this.professionalName)
+            )
+            : query(
+                collection(db, APPOINTMENTS_COLLECTION),
+                where('isPaid', '==', false)
+            );
 
         const paymentsQuery = query(
             collection(db, PAYMENTS_COLLECTION),

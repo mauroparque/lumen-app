@@ -4,6 +4,7 @@ export interface IDataService {
     // Lectura (Suscripciones en tiempo real)
     subscribeToPatients(onData: (data: Patient[]) => void): () => void;
     subscribeToAppointments(start: string, end: string, onData: (data: Appointment[]) => void): () => void;
+    subscribeToMyAppointments(start: string, end: string, onData: (data: Appointment[]) => void): () => void;
     subscribeToFinance(onUnpaid: (data: Appointment[]) => void, onPayments: (data: Payment[]) => void): () => void;
 
     // Escritura (Promesas)

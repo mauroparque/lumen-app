@@ -4,7 +4,8 @@ import { useService } from './ServiceContext';
 
 interface DataContextType {
     patients: Patient[];
-    appointments: Appointment[];
+    appointments: Appointment[];       // Filtered by professional (for most views)
+    allAppointments: Appointment[];    // All appointments (for agenda "Todos")
     payments: Payment[];
     loading: boolean;
 }
@@ -12,6 +13,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType>({
     patients: [],
     appointments: [],
+    allAppointments: [],
     payments: [],
     loading: true,
 });
@@ -21,14 +23,15 @@ export const useData = () => useContext(DataContext);
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     const service = useService();
     const [patients, setPatients] = useState<Patient[]>([]);
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [myAppointments, setMyAppointments] = useState<Appointment[]>([]);
+    const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!service) return;
 
-        // 1. Subscribe to Patients (Initial Load)
+        // 1. Subscribe to Patients (filtered by professional)
         const unsubPatients = service.subscribeToPatients((data) => {
             setPatients(data);
         });
@@ -42,12 +45,18 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         const startStr = start.toISOString().split('T')[0];
         const endStr = end.toISOString().split('T')[0];
 
-        const unsubAppointments = service.subscribeToAppointments(startStr, endStr, (data) => {
-            setAppointments(data);
-            setLoading(false); // Assume initial load implies mostly both are ready or close enough
+        // All appointments (for agenda with "Todos los profesionales")
+        const unsubAllAppointments = service.subscribeToAppointments(startStr, endStr, (data) => {
+            setAllAppointments(data);
         });
 
-        // 3. Subscribe to Finance (includes payments)
+        // My appointments only (filtered by professional)
+        const unsubMyAppointments = service.subscribeToMyAppointments(startStr, endStr, (data) => {
+            setMyAppointments(data);
+            setLoading(false);
+        });
+
+        // 3. Subscribe to Finance (filtered by professional)
         const unsubFinance = service.subscribeToFinance(
             () => { }, // We don't need unpaid appointments here
             (paymentData) => {
@@ -57,7 +66,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 
         return () => {
             unsubPatients();
-            unsubAppointments();
+            unsubAllAppointments();
+            unsubMyAppointments();
             unsubFinance();
         };
     }, [service]);
@@ -65,10 +75,11 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     // Memoize the context value to prevent unnecessary re-renders
     const value = useMemo(() => ({
         patients,
-        appointments,
+        appointments: myAppointments,  // Default = filtered for backward compatibility
+        allAppointments,               // All appointments for agenda
         payments,
         loading
-    }), [patients, appointments, payments, loading]);
+    }), [patients, myAppointments, allAppointments, payments, loading]);
 
     return (
         <DataContext.Provider value={value}>

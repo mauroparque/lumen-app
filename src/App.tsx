@@ -71,7 +71,7 @@ export default function LumenApp() {
     }
 
     return (
-        <ServiceProvider user={user}>
+        <ServiceProvider user={user} profile={profile}>
             <DataProvider>
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
                     <Toaster position="top-center" richColors />
