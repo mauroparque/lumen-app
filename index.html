@@ -8,25 +8,21 @@
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#2d8b8b" />
   <meta name="description" content="Sistema de gestión de consultas de salud mental" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" href="/favicon.ico" />
+  
+  <!-- Preconnect hints -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
 
-  <title>Lumen App</title>
-  <script>
-    // Mock global variables for dev environment
-    window.__firebase_config = JSON.stringify({
-      apiKey: "demo-key",
-      authDomain: "demo.firebaseapp.com",
-      projectId: "demo-project",
-      storageBucket: "demo.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
-    });
-    window.__app_id = "dev-app-id";
-  </script>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+  <title>Lumen Salud Mental</title>
 </head>
 
 <body>
+  <noscript>
+    <p style="text-align:center;margin-top:2rem;">Lumen Salud Mental requiere JavaScript para funcionar.</p>
+  </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
