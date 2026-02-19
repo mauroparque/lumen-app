@@ -137,3 +137,10 @@ export interface PsiquePayment {
     isPaid: boolean;
     paidDate?: string; // YYYY-MM-DD format
 }
+
+// Allowlist for onboarding
+export interface AllowedEmail {
+    email: string;
+    role: 'admin' | 'professional';
+    professionalName: string;
+}
