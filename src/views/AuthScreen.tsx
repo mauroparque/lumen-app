@@ -9,6 +9,10 @@ import type { AllowedEmail } from '../types';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 
+// Initialize Firebase Functions once at module level (singleton)
+const firebaseFunctions = getFunctions();
+const validateTurnstileCallable = httpsCallable(firebaseFunctions, 'validateTurnstile');
+
 export const AuthScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -40,9 +44,7 @@ export const AuthScreen = () => {
         try {
             // Validate Turnstile token server-side
             try {
-                const functions = getFunctions();
-                const validateTurnstile = httpsCallable(functions, 'validateTurnstile');
-                await validateTurnstile({ token: turnstileToken });
+                await validateTurnstileCallable({ token: turnstileToken });
             } catch (turnstileErr: any) {
                 setError('La verificación de seguridad falló. Intentá de nuevo.');
                 setIsLoading(false);
