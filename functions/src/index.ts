@@ -6,7 +6,10 @@ import axios from "axios";
 admin.initializeApp();
 
 export const validateTurnstile = onCall(
-    { enforceAppCheck: false },
+    {
+        enforceAppCheck: false,
+        secrets: ["TURNSTILE_SECRET"],
+    },
     async (request) => {
         const token = request.data?.token;
 
