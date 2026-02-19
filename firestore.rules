@@ -16,12 +16,11 @@ service cloud.firestore {
         allow read, write: if isAuthenticated() && isAdmin();
       }
 
-      // Staff — admin CRUD, profesional solo lee su propio doc
+      // Staff — admin CRUD, profesional crea su propio doc (onboarding) y lee el propio
       match /staff/{userId} {
         allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == userId);
-        allow write: if isAuthenticated() && isAdmin();
-        // Excepción: un profesional puede crear su propio doc (onboarding)
-        allow create: if isAuthenticated() && request.auth.uid == userId;
+        allow create: if isAuthenticated() && (isAdmin() || request.auth.uid == userId);
+        allow update, delete: if isAuthenticated() && isAdmin();
       }
 
       // Pacientes — admin CRUD, profesional CRUD propios + lectura de otros
