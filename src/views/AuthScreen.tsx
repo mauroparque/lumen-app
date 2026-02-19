@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
-import { auth, db, appId } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { ALLOWED_EMAILS_COLLECTION, STAFF_COLLECTION } from '../lib/routes';
+import type { AllowedEmail } from '../types';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 
@@ -45,19 +47,32 @@ export const AuthScreen = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Lazy Creation Logic
-            const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
+            // Check if user already has a staff profile
+            const staffRef = doc(db, STAFF_COLLECTION, user.uid);
+            const staffSnap = await getDoc(staffRef);
 
-            if (!userSnap.exists()) {
-                await setDoc(userRef, {
+            if (!staffSnap.exists()) {
+                // Verify allowlist
+                const allowedRef = doc(db, ALLOWED_EMAILS_COLLECTION, user.email!);
+                const allowedSnap = await getDoc(allowedRef);
+
+                if (!allowedSnap.exists()) {
+                    // Unauthorized email — sign out and show error
+                    await auth.signOut();
+                    setError('Tu email no está autorizado. Contactá al administrador de la clínica.');
+                    return;
+                }
+
+                const allowed = allowedSnap.data() as AllowedEmail;
+
+                // Create staff profile with data from allowlist
+                await setDoc(staffRef, {
+                    uid: user.uid,
                     email: user.email,
-                    displayName: user.displayName || 'Profesional Lumen',
+                    name: allowed.professionalName,
+                    role: allowed.role,
                     createdAt: Timestamp.now(),
-                    role: 'admin',
-                    settings: { notifications: true }
                 });
-                console.log('Perfil creado en Firestore:', user.uid);
             }
         } catch (err: any) {
             setError(err.message);
