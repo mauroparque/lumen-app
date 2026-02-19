@@ -1,10 +1,15 @@
-// Prerequisito: firebase-admin disponible en node_modules o en functions/node_modules
-// Ejecutar desde root: NODE_PATH=./functions/node_modules npx tsx scripts/seed-allowlist.ts
-// Requiere: GOOGLE_APPLICATION_CREDENTIALS=path/to/serviceAccount.json
-import { initializeApp, cert } from 'firebase-admin/app';
+// Prerequisito: firebase-admin disponible en functions/node_modules
+// Ejecutar desde el worktree:
+//   $env:NODE_PATH = "$PWD\functions\node_modules"
+//   $env:GOOGLE_APPLICATION_CREDENTIALS = "C:\ruta\a\serviceAccount.json"
+//   npx tsx scripts/seed-allowlist.ts
+//
+// Para obtener el serviceAccount.json:
+//   Firebase Console → Project Settings → Service accounts → Generate new private key
+import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-initializeApp();
+initializeApp({ projectId: 'lumen-production' });
 const db = getFirestore();
 
 const APP_ID = 'lumen-production';
