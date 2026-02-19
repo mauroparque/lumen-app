@@ -2,28 +2,80 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAuthenticated() { return request.auth != null; }
-    function isNotInvoiced() { 
-       return resource.data.get('billingStatus', 'pending') != 'invoiced'; 
-    }
+
     match /artifacts/{appId}/clinics/{clinicId} {
-      match /patients/{patientId} { allow read, write: if isAuthenticated(); }
-      
-      // REGLA CRÍTICA CORREGIDA:
+
+      function getStaffData() {
+        return get(/databases/$(database)/documents/artifacts/$(appId)/clinics/$(clinicId)/staff/$(request.auth.uid)).data;
+      }
+      function isAdmin() { return getStaffData().role == 'admin'; }
+      function getProfessionalName() { return getStaffData().name; }
+
+      // Allowlist — solo admins pueden gestionar
+      match /allowedEmails/{emailId} {
+        allow read, write: if isAuthenticated() && isAdmin();
+      }
+
+      // Staff — admin CRUD, profesional solo lee su propio doc
+      match /staff/{userId} {
+        allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == userId);
+        allow write: if isAuthenticated() && isAdmin();
+        // Excepción: un profesional puede crear su propio doc (onboarding)
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+      }
+
+      // Pacientes — admin CRUD, profesional CRUD propios + lectura de otros
+      match /patients/{patientId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && (isAdmin() || request.resource.data.professional == getProfessionalName());
+        allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.professional == getProfessionalName());
+      }
+
+      // Turnos — admin CRUD, profesional CRUD propios + lectura de otros
+      function isNotInvoiced() {
+        return resource.data.get('billingStatus', 'pending') != 'invoiced';
+      }
       match /appointments/{appointmentId} {
-        allow read, create: if isAuthenticated();
-        allow delete: if isAuthenticated() && isNotInvoiced(); // Solo borrar si NO está facturado
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && (isAdmin() || request.resource.data.professional == getProfessionalName());
+        allow delete: if isAuthenticated() && isNotInvoiced() && (isAdmin() || resource.data.professional == getProfessionalName());
         allow update: if isAuthenticated() && (
-          isNotInvoiced() || // Si no está facturado, edita lo que quieras
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isPaid']) // Si ESTÁ facturado, solo deja cambiar isPaid
+          isAdmin() || resource.data.professional == getProfessionalName()
+        ) && (
+          isNotInvoiced() ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isPaid'])
         );
       }
-      
-      match /payments/{paymentId} { allow read, create, update: if isAuthenticated(); allow delete: if false; }
-      match /integrations/billing/queue/{requestId} { allow read: if isAuthenticated(); allow create: if isAuthenticated(); allow update, delete: if false; }
-      match /staff/{userId} { allow read, write: if isAuthenticated(); }
-      match /notes/{noteId} { allow read, write: if isAuthenticated(); }
-      match /psiquePayments/{monthId} { allow read, write: if isAuthenticated(); }
+
+      // Pagos — admin CRU, profesional CRU propios + lectura de otros; delete bloqueado
+      match /payments/{paymentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated() && (isAdmin() || resource.data.get('professional', '') == getProfessionalName());
+        allow delete: if false;
+      }
+
+      // Billing queue — admin y owner pueden crear; no update/delete
+      match /integrations/billing/queue/{requestId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if false;
+      }
+
+      // Notas clínicas — admin CRUD todas, profesional CRUD solo propias, invisible entre profesionales
+      match /notes/{noteId} {
+        allow read: if isAuthenticated() && (isAdmin() || resource.data.createdBy == request.auth.uid);
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.createdBy == request.auth.uid);
+      }
+
+      // Psique payments — admin CRUD, profesional CRUD (billing propio)
+      match /psiquePayments/{monthId} {
+        allow read, write: if isAuthenticated();
+      }
     }
+
+    // Deny everything else
     match /{document=**} { allow read, write: if false; }
   }
 }
