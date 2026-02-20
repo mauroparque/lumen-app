@@ -16,6 +16,7 @@ This project uses a **skills** system located in `.agents/skills/`. The master i
 | Before claiming work is complete | `verification-before-completion` |
 | After completing a feature or before merging | `requesting-code-review` |
 | Building or reviewing UI components | `frontend-design` + `vercel-react-best-practices` |
+| Generating changelogs or release notes | `changelog-automation` |
 
 ### Standard flow for new features
 

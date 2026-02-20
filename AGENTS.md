@@ -4,6 +4,27 @@ This file contains guidelines and commands for agentic coding tools working in t
 
 ---
 
+## Agent Skills — Mandatory Usage
+
+This project uses a **skills** system located in `.agents/skills/`. The master index with descriptions, when to use each skill, and how they relate to each other is at [.agents/skills/SKILLS_INDEX.md](.agents/skills/SKILLS_INDEX.md). **Read it before any non-trivial action.**
+
+| Situation | Required skills |
+| --- | --- |
+| Start of any conversation | `using-superpowers` |
+| Creating features, components, or modifying behavior | `brainstorming` → `writing-plans` |
+| Executing a multi-step plan in the current session | `subagent-driven-development` |
+| Implementing any feature or bugfix | `test-driven-development` |
+| Any technical problem (bug, test failure, build error) | `systematic-debugging` |
+| Before claiming work is complete | `verification-before-completion` |
+| After completing a feature or before merging | `requesting-code-review` |
+| Building or reviewing UI components | `frontend-design` + `vercel-react-best-practices` |
+| Generating changelogs or release notes | `changelog-automation` |
+
+> **Rigid skills** (TDD, debugging, verification): follow strictly, no shortcuts.
+> **Flexible skills** (frontend patterns, design): adapt to the project context.
+
+---
+
 ## Project Overview
 
 - **Stack**: React 18 + TypeScript + Vite + Firebase (Firestore, Auth, Storage) + TailwindCSS
@@ -61,7 +82,8 @@ firebase deploy --only hosting
 ## Architecture
 
 ### Data Flow
-```
+
+```text
 ServiceContext → FirebaseService → DataContext → views/hooks
 ```
 
@@ -70,13 +92,16 @@ ServiceContext → FirebaseService → DataContext → views/hooks
 - **`DataContext`** — exposes `appointments` (current professional) and `allAppointments` (all professionals)
 
 ### Firestore Path Convention
-```
+
+```text
 artifacts/{appId}/clinics/{CLINIC_ID}/{collection}
 ```
+
 - `appId` = `lumen-production` (constant, defined in `src/lib/firebase.ts`)
 - `CLINIC_ID` = `lumen-general`
 
 ### View Routing
+
 No router library. `App.tsx` uses `currentView` state (`View` type) with conditional rendering + `React.lazy()` for code splitting.
 
 ---
@@ -165,21 +190,25 @@ import { cn } from '../../lib/utils';
 ## Domain-Specific Rules
 
 ### Appointment Statuses (Spanish)
+
 ```typescript
 type AppointmentStatus = 'programado' | 'completado' | 'cancelado' | 'ausente' | 'presente';
 ```
 
 ### Patient Sources
+
 ```typescript
 type PatientSource = 'psique' | 'particular';
 ```
 
 ### Psique Billing
+
 - Patients with `patientSource: 'psique'` incur 25% fee
 - Individual appointments can opt out via `excludeFromPsique: true`
 - Cancelled appointments with `chargeOnCancellation: true` still generate charges
 
 ### Firestore Security
+
 - Invoiced appointments (`billingStatus: 'invoiced'`) — only `isPaid` field is mutable
 - Payments cannot be deleted
 - Billing queue items are write-once (no update/delete)
@@ -189,6 +218,7 @@ type PatientSource = 'psique' | 'particular';
 ## Testing
 
 ### Unit Tests (Vitest)
+
 - Location: `src/lib/__tests__/*.test.ts`
 - Framework: Vitest + jsdom + `@testing-library/react`
 - Setup: `src/test/setup.ts`
@@ -204,6 +234,7 @@ describe('formatPhoneNumber', () => {
 ```
 
 ### E2E Tests (Playwright)
+
 - Location: `tests/*.spec.ts`
 - Config: `playwright.config.ts`
 - Browser: Chromium only
@@ -214,7 +245,8 @@ describe('formatPhoneNumber', () => {
 ## Environment Variables
 
 Required Firebase config (via `VITE_*` prefix):
-```
+
+```text
 VITE_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN
 VITE_FIREBASE_PROJECT_ID
@@ -227,7 +259,7 @@ VITE_FIREBASE_APP_ID
 
 ## File Structure
 
-```
+```bash
 src/
 ├── components/          # React components
 │   ├── layout/         # Layout components (Sidebar, Header)
