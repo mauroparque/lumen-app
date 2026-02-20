@@ -33,7 +33,7 @@
 
 ## Task 1: Tipo `AllowedEmail` y colección Firestore
 
-### Files
+### Archivos: `src/types/index.ts` y `src/lib/routes.ts`
 
 - Modify: `src/types/index.ts`
 - Modify: `src/lib/routes.ts`
@@ -64,7 +64,7 @@ export const PSIQUE_PAYMENTS_COLLECTION = `artifacts/${appId}/clinics/${CLINIC_I
 
 > Nota: `STAFF_COLLECTION`, `NOTES_COLLECTION` y `PSIQUE_PAYMENTS_COLLECTION` se agregan porque actualmente están hardcodeados en hooks. Centralizar ahora facilita las tasks siguientes.
 
-### Step 3: Commit
+### Step 3: Commit — types y routes
 
 ```bash
 git add src/types/index.ts src/lib/routes.ts
@@ -75,7 +75,7 @@ git commit -m "feat: add AllowedEmail type and centralize collection routes"
 
 ## Task 2: Seed de allowlist y migración de staff existente
 
-### Files
+### Archivo: `scripts/seed-allowlist.ts`
 
 - Create: `scripts/seed-allowlist.ts`
 
@@ -131,12 +131,12 @@ seed().catch(console.error);
 
 Agregar un comentario inline al script explicando:
 
-```
+```text
 // Ejecutar: npx tsx scripts/seed-allowlist.ts
 // Prerequisito: GOOGLE_APPLICATION_CREDENTIALS apuntando al service account key
 ```
 
-### Step 3: Commit
+### Step 3: Commit — seed script
 
 ```bash
 git add scripts/seed-allowlist.ts
@@ -147,7 +147,7 @@ git commit -m "feat: add allowlist seed script for existing staff"
 
 ## Task 3: Refactorizar AuthScreen para usar allowlist
 
-### Files
+### Archivo: `src/views/AuthScreen.tsx`
 
 - Modify: `src/views/AuthScreen.tsx`
 - Test: `src/views/__tests__/AuthScreen.test.tsx` (si hay tiempo — E2E cubre el flujo)
@@ -221,7 +221,7 @@ import { AllowedEmail } from '../types';
 
 Verificar que `appId` no se use en otro lugar del archivo. Si AuthScreen ya no lo usa directamente (porque las rutas vienen de routes.ts), quitar el import.
 
-### Step 5: Commit
+### Step 5: Commit — AuthScreen allowlist
 
 ```bash
 git add src/views/AuthScreen.tsx
@@ -232,13 +232,13 @@ git commit -m "feat: replace auto-admin with allowlist-based onboarding (SEC-02)
 
 ## Task 4: Firestore Rules con RBAC
 
-### Files
+### Archivo: `firestore.rules`
 
 - Modify: `firestore.rules`
 
 ### Step 1: Agregar función helper para leer rol del usuario
 
-```
+```text
 function getStaffData() {
     return get(/databases/$(database)/documents/artifacts/$(request.auth.token.appId)/clinics/$(clinicId)/staff/$(request.auth.uid)).data;
 }
@@ -264,7 +264,7 @@ function isOwnerOfNew() {
 
 ### Step 2: Reescribir las reglas por colección
 
-```
+```text
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -357,7 +357,7 @@ firebase emulators:start --only firestore
 firebase deploy --only firestore:rules --dry-run
 ```
 
-### Step 4: Commit
+### Step 4: Commit — firestore.rules
 
 ```bash
 git add firestore.rules
@@ -368,7 +368,7 @@ git commit -m "feat: implement RBAC Firestore rules with role-based access (SEC-
 
 ## Task 5: Cloud Function para validar Turnstile server-side
 
-### Files
+### Archivos: `functions/src/index.ts`
 
 - Modify: `functions/src/index.ts`
 - Modify: `functions/package.json` (si necesita dependencias)
@@ -426,7 +426,7 @@ firebase functions:secrets:set TURNSTILE_SECRET
 # Ingresar el secret key de Cloudflare Turnstile
 ```
 
-### Step 3: Verificar que functions/package.json no necesite `node-fetch`**
+### Step 3: Verificar que `functions/package.json` no necesite `node-fetch`
 
 Firebase Functions v2 con Node 20 tiene `fetch` nativo. No necesita dependencias extra.
 
@@ -439,7 +439,7 @@ npm run build
 
 Expected: compila sin errores.
 
-### Step 5: Commit
+### Step 5: Commit — Cloud Function
 
 ```bash
 git add functions/src/index.ts
@@ -450,7 +450,7 @@ git commit -m "feat: add validateTurnstile Cloud Function for server-side verifi
 
 ## Task 6: Integrar validación Turnstile en AuthScreen
 
-### Files
+### Archivo: `AuthScreen.tsx` (integración Turnstile)
 
 - Modify: `src/views/AuthScreen.tsx`
 
@@ -477,7 +477,7 @@ try {
 }
 ```
 
-### Step 3: Commit
+### Step 3: Commit — integración Turnstile
 
 ```bash
 git add src/views/AuthScreen.tsx
@@ -488,7 +488,7 @@ git commit -m "feat: validate Turnstile server-side before login (SEC-03)"
 
 ## Task 7: CSP estricta en firebase.json
 
-### Files
+### Archivo: `firebase.json`
 
 - Modify: `firebase.json`
 
@@ -496,7 +496,7 @@ git commit -m "feat: validate Turnstile server-side before login (SEC-03)"
 
 Vite en build mode genera archivos CSS y JS separados (no inline). La CSP estricta puede ser:
 
-```
+```text
 default-src 'self';
 script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
 style-src 'self' 'unsafe-inline';
@@ -518,6 +518,7 @@ Reemplazar el header actual por:
     "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; frame-src https://challenges.cloudflare.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net wss://*.firebaseio.com https://challenges.cloudflare.com; img-src 'self' data: https:; font-src 'self';"
 }
 ```
+
 ### Step 3: Agregar caching headers separados
 
 ```json
@@ -541,7 +542,7 @@ Reemplazar el header actual por:
 }
 ```
 
-### Step 4: Commit
+### Step 4: Commit — firebase.json
 
 ```bash
 git add firebase.json
@@ -552,7 +553,7 @@ git commit -m "feat: strict CSP, remove unsafe-eval, add caching headers (SEC-04
 
 ## Task 8: Limpiar index.html
 
-### Files
+### Archivo: `index.html`
 
 - Modify: `index.html`
 
@@ -612,7 +613,7 @@ git commit -m "fix: clean index.html - remove mock globals, add preconnect, fix 
 
 ## Task 9: Crear `.env.example`
 
-### Files
+### Archivo: `.env.example`
 
 - Create: `.env.example`
 
@@ -642,7 +643,7 @@ git commit -m "docs: add .env.example with required environment variables"
 
 ## Task 10: Verificación end-to-end
 
-### Files 
+### Sin archivos nuevos
 
 Ninguno nuevo — solo validación.
 
@@ -697,7 +698,7 @@ git commit -m "feat: Phase 1 Security complete — RBAC, allowlist, Turnstile se
 
 ## Orden de ejecución y dependencias
 
-```
+```bash
 Task 1 (tipos + rutas) ──┐
                           ├─→ Task 3 (AuthScreen allowlist) ──→ Task 6 (Turnstile client)
 Task 2 (seed script) ────┘
