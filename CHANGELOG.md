@@ -7,13 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Relax `notes` Firestore read rule to `isAuthenticated()` — previous rule checked `createdBy == request.auth.uid` but queries use `appointmentId`/`patientId` filters, causing `permission-denied` on app load and Notes view ([a088f08](https://github.com/mauroparque/lumen-app-v2/commit/a088f08))
-- Add `createdByUid: user.uid` to note creation payload — previous field stored `displayName` (string) instead of UID, so write-rule ownership check never matched ([a088f08](https://github.com/mauroparque/lumen-app-v2/commit/a088f08))
-- Guarantee non-null `createdBy` using `user.email ?? user.uid` — `displayName` and `email` are nullable in Firebase, risking empty author strings violating `ClinicalNote.createdBy: string` ([705152a](https://github.com/mauroparque/lumen-app-v2/commit/705152a))
-- Preserve `createdBy`/`createdByUid` on note update — ownership fields now set only on creation to prevent admin edits from silently overwriting note authorship ([705152a](https://github.com/mauroparque/lumen-app-v2/commit/705152a))
-
 ---
 
 ## [1.0.0] - 2026-02-20
@@ -37,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `firebase-admin` from frontend `devDependencies` — belongs only in `functions/` and seed scripts
 - Cleaned `index.html` — removed mock globals, added `preconnect` hints, corrected meta tags
 - Seed script auto-detects `projectId` from service account credentials
+- Relax `notes` Firestore read rule to `isAuthenticated()` — previous rule caused `permission-denied` on app load and Notes view ([a088f08](https://github.com/mauroparque/lumen-app-v2/commit/a088f08))
+- Add `createdByUid: user.uid` to note creation payload — previous field stored `displayName` instead of UID, so ownership check never matched ([a088f08](https://github.com/mauroparque/lumen-app-v2/commit/a088f08))
+- Guarantee non-null `createdBy` using `user.email ?? user.uid` — `displayName` and `email` are nullable in Firebase ([705152a](https://github.com/mauroparque/lumen-app-v2/commit/705152a))
+- Preserve `createdBy`/`createdByUid` on note update — ownership fields set only on creation to prevent edits from overwriting authorship ([705152a](https://github.com/mauroparque/lumen-app-v2/commit/705152a))
 
 ### Security
 
