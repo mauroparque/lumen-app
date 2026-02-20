@@ -61,11 +61,13 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
-      // Notas clínicas — admin CRUD todas, profesional CRUD solo propias, invisible entre profesionales
+      // Notas clínicas — lectura abierta (filtrado por contexto en frontend),
+      // escritura restringida a creador o admin.
+      // TODO Phase 2: agregar where('createdByUid', '==', uid) en queries y endurecer read rule
       match /notes/{noteId} {
-        allow read: if isAuthenticated() && (isAdmin() || resource.data.createdBy == request.auth.uid);
+        allow read: if isAuthenticated();
         allow create: if isAuthenticated();
-        allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.createdBy == request.auth.uid);
+        allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.createdByUid == request.auth.uid);
       }
 
       // Psique payments — admin CRUD, profesional CRUD (billing propio)

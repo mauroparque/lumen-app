@@ -102,6 +102,7 @@ export interface ClinicalNote {
     createdAt: Timestamp;
     updatedAt?: Timestamp;
     createdBy: string;
+    createdByUid?: string; // UID del autor — para futuras reglas de acceso estrictas
 }
 
 export interface StaffProfile {

@@ -57,7 +57,8 @@ export const useClinicalNotes = (user: User | null) => {
                 ...noteData,
                 appointmentId,
                 updatedAt: Timestamp.now(),
-                createdBy: user.displayName || user.email
+                createdBy: user.displayName || user.email,
+                createdByUid: user.uid
             };
 
             if (existingNoteId) {
