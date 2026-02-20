@@ -65,7 +65,7 @@ service cloud.firestore {
       // escritura restringida a creador o admin.
       // TODO Phase 2: agregar where('createdByUid', '==', uid) en queries y endurecer read rule
       match /notes/{noteId} {
-        allow read: if isAuthenticated();
+        allow read: if isAuthenticated() && (isAdmin() || resource.data.createdByUid == request.auth.uid);
         allow create: if isAuthenticated();
         allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.createdByUid == request.auth.uid);
       }
