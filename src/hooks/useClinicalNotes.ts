@@ -53,20 +53,25 @@ export const useClinicalNotes = (user: User | null) => {
         setLoading(true);
         try {
             const notesCollection = collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'notes');
-            const notePayload = {
+
+            // Base payload without ownership fields — those are set only on creation
+            const basePayload = {
                 ...noteData,
                 appointmentId,
                 updatedAt: Timestamp.now(),
-                createdBy: user.displayName || user.email,
-                createdByUid: user.uid
             };
 
             if (existingNoteId) {
-                await updateDoc(doc(notesCollection, existingNoteId), notePayload);
+                // On update: preserve existing createdBy/createdByUid to avoid
+                // admin edits accidentally changing note ownership
+                await updateDoc(doc(notesCollection, existingNoteId), basePayload);
             } else {
+                // On create: set ownership with a guaranteed non-null author string
                 await addDoc(notesCollection, {
-                    ...notePayload,
-                    createdAt: Timestamp.now()
+                    ...basePayload,
+                    createdAt: Timestamp.now(),
+                    createdBy: user.email ?? user.uid,
+                    createdByUid: user.uid,
                 });
             }
 
