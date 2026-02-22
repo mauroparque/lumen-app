@@ -16,7 +16,14 @@ interface AppointmentModalProps {
     initialTime?: string;
 }
 
-export const AppointmentModal = ({ onClose, patients, profile, existingAppointment, initialDate, initialTime }: AppointmentModalProps) => {
+export const AppointmentModal = ({
+    onClose,
+    patients,
+    profile,
+    existingAppointment,
+    initialDate,
+    initialTime,
+}: AppointmentModalProps) => {
     const { addAppointment, updateAppointment, addRecurringAppointments } = useDataActions();
 
     const getTodayString = () => {
@@ -44,7 +51,7 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
     });
 
     // Check if selected patient is from Psique
-    const selectedPatient = patients.find(p => p.id === form.patientId);
+    const selectedPatient = patients.find((p) => p.id === form.patientId);
     const isPsiquePatient = selectedPatient?.patientSource === 'psique';
 
     const [isRecurrent, setIsRecurrent] = useState(false);
@@ -54,16 +61,16 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
     // Restaurar autocompletado de datos del paciente
     useEffect(() => {
         if (!existingAppointment && form.patientId) {
-            const selectedPatient = patients.find(p => p.id === form.patientId);
+            const selectedPatient = patients.find((p) => p.id === form.patientId);
             if (selectedPatient) {
-                setForm(prev => ({
+                setForm((prev) => ({
                     ...prev,
                     // Si el paciente tiene honorarios, usarlos. Si no, mantener el default.
                     price: selectedPatient.fee || prev.price,
                     // Si el paciente tiene preferencia, usarla.
                     type: selectedPatient.preference || prev.type,
                     // Si es presencial y tiene oficina, usarla.
-                    office: selectedPatient.office || prev.office
+                    office: selectedPatient.office || prev.office,
                 }));
             }
         }
@@ -72,12 +79,12 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const patient = patients.find(p => p.id === form.patientId);
+            const patient = patients.find((p) => p.id === form.patientId);
             const appointmentData = {
                 ...form,
                 patientName: patient?.name || 'Unknown',
                 patientEmail: patient?.email,
-                status: existingAppointment?.status || 'programado' as const,
+                status: existingAppointment?.status || ('programado' as const),
             };
 
             if (existingAppointment) {
@@ -92,7 +99,7 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
 
                     for (let i = 0; i < recurrenceCount; i++) {
                         const d = new Date(baseDate);
-                        d.setDate(d.getDate() + (i * daysToAdd));
+                        d.setDate(d.getDate() + i * daysToAdd);
                         const year = d.getFullYear();
                         const month = String(d.getMonth() + 1).padStart(2, '0');
                         const day = String(d.getDate()).padStart(2, '0');
@@ -115,30 +122,56 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
     return (
         <ModalOverlay onClose={onClose}>
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-xl font-bold mb-3 text-slate-800">{existingAppointment ? 'Editar Turno' : 'Nuevo Turno'}</h2>
+                <h2 className="text-xl font-bold mb-3 text-slate-800">
+                    {existingAppointment ? 'Editar Turno' : 'Nuevo Turno'}
+                </h2>
                 <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Paciente</label>
-                        <select className="w-full p-2 border rounded-lg bg-white" value={form.patientId} onChange={e => setForm({ ...form, patientId: e.target.value })} required>
+                        <select
+                            className="w-full p-2 border rounded-lg bg-white"
+                            value={form.patientId}
+                            onChange={(e) => setForm({ ...form, patientId: e.target.value })}
+                            required
+                        >
                             <option value="">Seleccionar paciente...</option>
-                            {[...patients].filter(p => p.isActive !== false).sort((a, b) => a.name.localeCompare(b.name)).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {[...patients]
+                                .filter((p) => p.isActive !== false)
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.name}
+                                    </option>
+                                ))}
                         </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                            <input type="date" className="w-full p-2 border rounded-lg" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
+                            <input
+                                type="date"
+                                className="w-full p-2 border rounded-lg"
+                                value={form.date}
+                                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                                required
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Hora y Duración</label>
                             <div className="flex space-x-2">
-                                <input type="time" className="w-full p-2 border rounded-lg" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} required />
+                                <input
+                                    type="time"
+                                    className="w-full p-2 border rounded-lg"
+                                    value={form.time}
+                                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                                    required
+                                />
                                 <input
                                     type="number"
                                     className="w-24 p-2 border rounded-lg"
                                     value={form.duration}
-                                    onChange={e => setForm({ ...form, duration: Number(e.target.value) })}
+                                    onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
                                     placeholder="Min"
                                     title="Duración en minutos"
                                 />
@@ -154,9 +187,11 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                                     id="isRecurrent"
                                     className="rounded text-teal-600 focus:ring-teal-500"
                                     checked={isRecurrent}
-                                    onChange={e => setIsRecurrent(e.target.checked)}
+                                    onChange={(e) => setIsRecurrent(e.target.checked)}
                                 />
-                                <label htmlFor="isRecurrent" className="text-sm text-slate-700">Repetir turno</label>
+                                <label htmlFor="isRecurrent" className="text-sm text-slate-700">
+                                    Repetir turno
+                                </label>
                             </div>
                             {isRecurrent && (
                                 <div className="grid grid-cols-2 gap-4 mb-2">
@@ -165,19 +200,23 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                                         <select
                                             className="w-full p-2 border rounded-lg bg-white"
                                             value={recurrenceFrequency}
-                                            onChange={e => setRecurrenceFrequency(e.target.value as 'WEEKLY' | 'BIWEEKLY')}
+                                            onChange={(e) =>
+                                                setRecurrenceFrequency(e.target.value as 'WEEKLY' | 'BIWEEKLY')
+                                            }
                                         >
                                             <option value="WEEKLY">Semanal</option>
                                             <option value="BIWEEKLY">Quincenal</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-slate-600 mb-1">Cantidad de sesiones</label>
+                                        <label className="block text-sm text-slate-600 mb-1">
+                                            Cantidad de sesiones
+                                        </label>
                                         <input
                                             type="number"
                                             className="w-full p-2 border rounded-lg"
                                             value={recurrenceCount}
-                                            onChange={e => setRecurrenceCount(Number(e.target.value))}
+                                            onChange={(e) => setRecurrenceCount(Number(e.target.value))}
                                             min="2"
                                             max="52"
                                         />
@@ -190,14 +229,23 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
-                            <select className="w-full p-2 border rounded-lg bg-white" value={form.type} onChange={e => setForm({ ...form, type: e.target.value as any })}>
+                            <select
+                                className="w-full p-2 border rounded-lg bg-white"
+                                value={form.type}
+                                onChange={(e) => setForm({ ...form, type: e.target.value as any })}
+                            >
                                 <option value="presencial">Presencial</option>
                                 <option value="online">Online</option>
                             </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Valor Sesión</label>
-                            <input type="number" className="w-full p-2 border rounded-lg" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} />
+                            <input
+                                type="number"
+                                className="w-full p-2 border rounded-lg"
+                                value={form.price}
+                                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                            />
                         </div>
                     </div>
 
@@ -206,7 +254,7 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                         <select
                             className="w-full p-2 border rounded-lg bg-white"
                             value={CONSULTATION_TYPES.includes(form.consultationType) ? form.consultationType : 'Otro'}
-                            onChange={e => {
+                            onChange={(e) => {
                                 if (e.target.value === 'Otro') {
                                     setForm({ ...form, consultationType: '' });
                                 } else {
@@ -214,29 +262,35 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                                 }
                             }}
                         >
-                            {CONSULTATION_TYPES.map(type => (
-                                <option key={type} value={type}>{type}</option>
+                            {CONSULTATION_TYPES.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
                             ))}
                         </select>
-                        {(!CONSULTATION_TYPES.includes(form.consultationType) || form.consultationType === 'Otro' || form.consultationType === '') && (
+                        {(!CONSULTATION_TYPES.includes(form.consultationType) ||
+                            form.consultationType === 'Otro' ||
+                            form.consultationType === '') && (
                             <input
                                 type="text"
                                 className="w-full p-2 border rounded-lg mt-2"
                                 placeholder="Especificar tipo de consulta..."
                                 value={form.consultationType === 'Otro' ? '' : form.consultationType}
-                                onChange={e => setForm({ ...form, consultationType: e.target.value })}
+                                onChange={(e) => setForm({ ...form, consultationType: e.target.value })}
                             />
                         )}
                     </div>
 
                     {form.type === 'presencial' && (
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Consultorio / Ubicación</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Consultorio / Ubicación
+                            </label>
                             <input
                                 type="text"
                                 className="w-full p-2 border rounded-lg"
                                 value={form.office}
-                                onChange={e => setForm({ ...form, office: e.target.value })}
+                                onChange={(e) => setForm({ ...form, office: e.target.value })}
                                 placeholder="Ej: Consultorio 1, Piso 2"
                             />
                         </div>
@@ -248,7 +302,7 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                             type="text"
                             className="w-full p-2 border rounded-lg"
                             value={form.professional}
-                            onChange={e => setForm({ ...form, professional: e.target.value })}
+                            onChange={(e) => setForm({ ...form, professional: e.target.value })}
                             placeholder="Ej: Lic. Martínez"
                         />
                     </div>
@@ -262,7 +316,7 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                                     id="excludeFromPsique"
                                     className="rounded text-purple-600 focus:ring-purple-500"
                                     checked={form.excludeFromPsique}
-                                    onChange={e => setForm({ ...form, excludeFromPsique: e.target.checked })}
+                                    onChange={(e) => setForm({ ...form, excludeFromPsique: e.target.checked })}
                                 />
                                 <label htmlFor="excludeFromPsique" className="text-sm text-purple-700">
                                     No descontar porcentaje para Psique
@@ -272,8 +326,19 @@ export const AppointmentModal = ({ onClose, patients, profile, existingAppointme
                     )}
 
                     <div className="flex justify-end space-x-3 pt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Cancelar</button>
-                        <button type="submit" className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-sm font-medium">Guardar Turno</button>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-sm font-medium"
+                        >
+                            Guardar Turno
+                        </button>
                     </div>
                 </form>
             </div>

@@ -38,7 +38,7 @@ const SortHeader = ({
     field,
     currentSort,
     direction,
-    onSort
+    onSort,
 }: {
     label: string;
     field: SortField;
@@ -53,7 +53,11 @@ const SortHeader = ({
         <div className="flex items-center gap-1">
             {label}
             {currentSort === field ? (
-                direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
+                direction === 'asc' ? (
+                    <ArrowUp size={14} />
+                ) : (
+                    <ArrowDown size={14} />
+                )
             ) : (
                 <ArrowUpDown size={14} className="text-slate-300" />
             )}
@@ -69,7 +73,7 @@ export const PatientTable = ({
     onViewHistory,
     onViewTasks,
     onEdit,
-    onDelete
+    onDelete,
 }: PatientTableProps) => {
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -77,18 +81,48 @@ export const PatientTable = ({
                 <table className="w-full text-sm">
                     <thead className="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <SortHeader label="Nombre" field="name" currentSort={sortBy} direction={sortDirection} onSort={onSort} />
-                            <SortHeader label="Edad" field="age" currentSort={sortBy} direction={sortDirection} onSort={onSort} />
-                            <SortHeader label="Profesional" field="professional" currentSort={sortBy} direction={sortDirection} onSort={onSort} />
-                            <SortHeader label="Honorarios" field="fee" currentSort={sortBy} direction={sortDirection} onSort={onSort} />
+                            <SortHeader
+                                label="Nombre"
+                                field="name"
+                                currentSort={sortBy}
+                                direction={sortDirection}
+                                onSort={onSort}
+                            />
+                            <SortHeader
+                                label="Edad"
+                                field="age"
+                                currentSort={sortBy}
+                                direction={sortDirection}
+                                onSort={onSort}
+                            />
+                            <SortHeader
+                                label="Profesional"
+                                field="professional"
+                                currentSort={sortBy}
+                                direction={sortDirection}
+                                onSort={onSort}
+                            />
+                            <SortHeader
+                                label="Honorarios"
+                                field="fee"
+                                currentSort={sortBy}
+                                direction={sortDirection}
+                                onSort={onSort}
+                            />
                             <th className="p-3 text-left font-semibold text-slate-600">Origen</th>
-                            <SortHeader label="Admisión" field="admissionDate" currentSort={sortBy} direction={sortDirection} onSort={onSort} />
+                            <SortHeader
+                                label="Admisión"
+                                field="admissionDate"
+                                currentSort={sortBy}
+                                direction={sortDirection}
+                                onSort={onSort}
+                            />
                             <th className="p-3 text-left font-semibold text-slate-600">Estado</th>
                             <th className="p-3 text-center font-semibold text-slate-600">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {patients.map(patient => {
+                        {patients.map((patient) => {
                             const age = calculateAge(patient.birthDate);
                             const isChild = age !== null && age < 18;
 
@@ -109,7 +143,9 @@ export const PatientTable = ({
                                                 >
                                                     {patient.name}
                                                 </button>
-                                                <div className="text-xs text-slate-500">{patient.email || patient.phone || '-'}</div>
+                                                <div className="text-xs text-slate-500">
+                                                    {patient.email || patient.phone || '-'}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -120,13 +156,13 @@ export const PatientTable = ({
                                             <span className={isChild ? 'text-amber-600 font-medium' : ''}>
                                                 {age} años
                                             </span>
-                                        ) : '-'}
+                                        ) : (
+                                            '-'
+                                        )}
                                     </td>
 
                                     {/* Professional */}
-                                    <td className="p-3 text-slate-600">
-                                        {patient.professional || '-'}
-                                    </td>
+                                    <td className="p-3 text-slate-600">{patient.professional || '-'}</td>
 
                                     {/* Fee */}
                                     <td className="p-3">
@@ -153,9 +189,7 @@ export const PatientTable = ({
                                     </td>
 
                                     {/* Admission Date */}
-                                    <td className="p-3 text-slate-600">
-                                        {formatDate(patient.admissionDate)}
-                                    </td>
+                                    <td className="p-3 text-slate-600">{formatDate(patient.admissionDate)}</td>
 
                                     {/* Status */}
                                     <td className="p-3">
@@ -165,8 +199,11 @@ export const PatientTable = ({
                                             </span>
                                         ) : (
                                             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-medium">
-                                                {patient.dischargeType === 'clinical' ? 'Alta Clínica' :
-                                                    patient.dischargeType === 'dropout' ? 'Abandono' : 'Inactivo'}
+                                                {patient.dischargeType === 'clinical'
+                                                    ? 'Alta Clínica'
+                                                    : patient.dischargeType === 'dropout'
+                                                      ? 'Abandono'
+                                                      : 'Inactivo'}
                                             </span>
                                         )}
                                     </td>
@@ -212,9 +249,7 @@ export const PatientTable = ({
             </div>
 
             {patients.length === 0 && (
-                <div className="p-12 text-center text-slate-500">
-                    No hay pacientes que mostrar.
-                </div>
+                <div className="p-12 text-center text-slate-500">No hay pacientes que mostrar.</div>
             )}
         </div>
     );

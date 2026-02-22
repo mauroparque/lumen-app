@@ -34,7 +34,13 @@ const calculateAge = (birthDate?: string): number | null => {
     return age;
 };
 
-export const PatientsView = ({ user, profile, setCurrentView, setSelectedPatientId, setPatientHistoryInitialTab }: PatientsViewProps) => {
+export const PatientsView = ({
+    user,
+    profile,
+    setCurrentView,
+    setSelectedPatientId,
+    setPatientHistoryInitialTab,
+}: PatientsViewProps) => {
     const [showAdd, setShowAdd] = useState(false);
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,19 +57,20 @@ export const PatientsView = ({ user, profile, setCurrentView, setSelectedPatient
 
         // Filter by status
         if (filterStatus === 'active') {
-            result = result.filter(p => p.isActive !== false);
+            result = result.filter((p) => p.isActive !== false);
         } else if (filterStatus === 'inactive') {
-            result = result.filter(p => p.isActive === false);
+            result = result.filter((p) => p.isActive === false);
         }
 
         // Filter by search term
         if (searchTerm) {
             const lower = searchTerm.toLowerCase();
-            result = result.filter(p =>
-                p.name.toLowerCase().includes(lower) ||
-                (p.email && p.email.toLowerCase().includes(lower)) ||
-                (p.dni && p.dni.includes(searchTerm)) ||
-                (p.professional && p.professional.toLowerCase().includes(lower))
+            result = result.filter(
+                (p) =>
+                    p.name.toLowerCase().includes(lower) ||
+                    (p.email && p.email.toLowerCase().includes(lower)) ||
+                    (p.dni && p.dni.includes(searchTerm)) ||
+                    (p.professional && p.professional.toLowerCase().includes(lower)),
             );
         }
 
@@ -99,7 +106,7 @@ export const PatientsView = ({ user, profile, setCurrentView, setSelectedPatient
 
     const handleSort = (field: SortField) => {
         if (sortBy === field) {
-            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
         } else {
             setSortBy(field);
             setSortDirection('asc');
@@ -132,8 +139,8 @@ export const PatientsView = ({ user, profile, setCurrentView, setSelectedPatient
     };
 
     // Count stats
-    const activeCount = patients.filter(p => p.isActive !== false).length;
-    const inactiveCount = patients.filter(p => p.isActive === false).length;
+    const activeCount = patients.filter((p) => p.isActive !== false).length;
+    const inactiveCount = patients.filter((p) => p.isActive === false).length;
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
@@ -160,28 +167,31 @@ export const PatientsView = ({ user, profile, setCurrentView, setSelectedPatient
                 <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl">
                     <button
                         onClick={() => setFilterStatus('active')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === 'active'
-                            ? 'bg-white text-teal-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            filterStatus === 'active'
+                                ? 'bg-white text-teal-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                        }`}
                     >
                         Activos ({activeCount})
                     </button>
                     <button
                         onClick={() => setFilterStatus('inactive')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === 'inactive'
-                            ? 'bg-white text-slate-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            filterStatus === 'inactive'
+                                ? 'bg-white text-slate-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                        }`}
                     >
                         Inactivos ({inactiveCount})
                     </button>
                     <button
                         onClick={() => setFilterStatus('all')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === 'all'
-                            ? 'bg-white text-slate-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            filterStatus === 'all'
+                                ? 'bg-white text-slate-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                        }`}
                     >
                         Todos ({patients.length})
                     </button>

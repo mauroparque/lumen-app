@@ -4,8 +4,8 @@ import { useService } from './ServiceContext';
 
 interface DataContextType {
     patients: Patient[];
-    appointments: Appointment[];       // Filtered by professional (for most views)
-    allAppointments: Appointment[];    // All appointments (for agenda "Todos")
+    appointments: Appointment[]; // Filtered by professional (for most views)
+    allAppointments: Appointment[]; // All appointments (for agenda "Todos")
     payments: Payment[];
     loading: boolean;
 }
@@ -58,10 +58,10 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
 
         // 3. Subscribe to Finance (filtered by professional)
         const unsubFinance = service.subscribeToFinance(
-            () => { }, // We don't need unpaid appointments here
+            () => {}, // We don't need unpaid appointments here
             (paymentData) => {
                 setPayments(paymentData);
-            }
+            },
         );
 
         return () => {
@@ -73,17 +73,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }, [service]);
 
     // Memoize the context value to prevent unnecessary re-renders
-    const value = useMemo(() => ({
-        patients,
-        appointments: myAppointments,  // Default = filtered for backward compatibility
-        allAppointments,               // All appointments for agenda
-        payments,
-        loading
-    }), [patients, myAppointments, allAppointments, payments, loading]);
-
-    return (
-        <DataContext.Provider value={value}>
-            {children}
-        </DataContext.Provider>
+    const value = useMemo(
+        () => ({
+            patients,
+            appointments: myAppointments, // Default = filtered for backward compatibility
+            allAppointments, // All appointments for agenda
+            payments,
+            loading,
+        }),
+        [patients, myAppointments, allAppointments, payments, loading],
     );
+
+    return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

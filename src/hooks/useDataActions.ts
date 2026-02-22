@@ -1,14 +1,22 @@
 import { useService } from '../context/ServiceContext';
-import { PatientInput, AppointmentInput, PaymentInput, Patient, Appointment, Payment, PatientBillingData } from '../types';
+import {
+    PatientInput,
+    AppointmentInput,
+    PaymentInput,
+    Patient,
+    Appointment,
+    Payment,
+    PatientBillingData,
+} from '../types';
 
 export const useDataActions = () => {
     const service = useService();
 
     // Helper to ensure service is available
     const ensureService = () => {
-        if (!service) throw new Error("Service not available. Is user logged in?");
+        if (!service) throw new Error('Service not available. Is user logged in?');
         return service;
-    }
+    };
 
     const addPatient = async (patient: PatientInput) => {
         return ensureService().addPatient(patient);
@@ -18,7 +26,11 @@ export const useDataActions = () => {
         return ensureService().addAppointment(appointment);
     };
 
-    const addRecurringAppointments = async (baseAppointment: AppointmentInput, dates: string[], recurrenceRule: string = 'WEEKLY') => {
+    const addRecurringAppointments = async (
+        baseAppointment: AppointmentInput,
+        dates: string[],
+        recurrenceRule: string = 'WEEKLY',
+    ) => {
         return ensureService().addRecurringAppointments(baseAppointment, dates, recurrenceRule);
     };
 
@@ -73,6 +85,6 @@ export const useDataActions = () => {
         deleteItem,
         requestBatchInvoice,
         deleteRecurringSeries,
-        deleteRecurringFromDate
+        deleteRecurringFromDate,
     };
 };

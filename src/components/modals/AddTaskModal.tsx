@@ -33,7 +33,7 @@ export const AddTaskModal = ({ onClose, patientId, patientName, userName }: AddT
                 tasks: [{ text: taskText.trim(), completed: false }],
                 createdAt: Timestamp.now(),
                 updatedAt: Timestamp.now(),
-                createdBy: userName
+                createdBy: userName,
             });
 
             toast.success('Tarea creada');
@@ -62,9 +62,7 @@ export const AddTaskModal = ({ onClose, patientId, patientName, userName }: AddT
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Descripción de la tarea
-                        </label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Descripción de la tarea</label>
                         <textarea
                             className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
                             rows={3}

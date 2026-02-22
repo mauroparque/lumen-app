@@ -20,17 +20,15 @@ export const PaymentModal = ({
     existingPayment,
     isPsiquePatient = false,
     mode = 'create',
-    onClose
+    onClose,
 }: PaymentModalProps) => {
     const [amount, setAmount] = useState(
-        mode === 'edit' && existingPayment
-            ? existingPayment.amount.toString()
-            : appointment?.price?.toString() || ''
+        mode === 'edit' && existingPayment ? existingPayment.amount.toString() : appointment?.price?.toString() || '',
     );
     const [concept, setConcept] = useState(
         mode === 'edit' && existingPayment
             ? existingPayment.concept
-            : `Sesión del ${appointment ? new Date(appointment.date).toLocaleDateString() : ''}`
+            : `Sesión del ${appointment ? new Date(appointment.date).toLocaleDateString() : ''}`,
     );
     const { addPayment, updatePayment, updateAppointment } = useDataActions();
 
@@ -45,13 +43,13 @@ export const PaymentModal = ({
                 // Update existing payment
                 await updatePayment(existingPayment.id, {
                     amount: parsedAmount,
-                    concept: concept
+                    concept: concept,
                 });
 
                 // Also update the appointment's price to keep them in sync
                 if (appointment) {
                     await updateAppointment(appointment.id, {
-                        price: parsedAmount
+                        price: parsedAmount,
                     });
                 }
 
@@ -64,7 +62,7 @@ export const PaymentModal = ({
                     patientName: appointment.patientName,
                     amount: parsedAmount,
                     concept: concept,
-                    date: null // Will be set by service as Timestamp.now()
+                    date: null, // Will be set by service as Timestamp.now()
                 };
 
                 await addPayment(paymentData, appointment.id);
@@ -83,9 +81,12 @@ export const PaymentModal = ({
     };
 
     const patientName = mode === 'edit' ? existingPayment?.patientName : appointment?.patientName;
-    const originalDate = mode === 'edit' && existingPayment?.date
-        ? new Date(existingPayment.date.seconds * 1000).toLocaleDateString()
-        : appointment ? new Date(appointment.date).toLocaleDateString() : '';
+    const originalDate =
+        mode === 'edit' && existingPayment?.date
+            ? new Date(existingPayment.date.seconds * 1000).toLocaleDateString()
+            : appointment
+              ? new Date(appointment.date).toLocaleDateString()
+              : '';
 
     return (
         <ModalOverlay onClose={onClose}>
@@ -122,7 +123,13 @@ export const PaymentModal = ({
                         <label className="block text-sm text-slate-700 mb-1">Monto a cobrar</label>
                         <div className="relative">
                             <DollarSign size={16} className="absolute left-3 top-3 text-slate-400" />
-                            <input autoFocus type="number" className="w-full pl-9 p-2 border rounded-lg" value={amount} onChange={e => setAmount(e.target.value)} />
+                            <input
+                                autoFocus
+                                type="number"
+                                className="w-full pl-9 p-2 border rounded-lg"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                            />
                         </div>
                     </div>
 
@@ -146,16 +153,29 @@ export const PaymentModal = ({
 
                     <div>
                         <label className="block text-sm text-slate-700 mb-1">Concepto</label>
-                        <input className="w-full p-2 border rounded-lg" value={concept} onChange={e => setConcept(e.target.value)} />
+                        <input
+                            className="w-full p-2 border rounded-lg"
+                            value={concept}
+                            onChange={(e) => setConcept(e.target.value)}
+                        />
                     </div>
 
                     <div className="flex justify-end space-x-3 mt-6">
-                        <button type="button" onClick={onClose} className="text-slate-500 px-4 py-2">Cancelar</button>
-                        <button type="submit" className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 shadow-sm flex items-center">
+                        <button type="button" onClick={onClose} className="text-slate-500 px-4 py-2">
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 shadow-sm flex items-center"
+                        >
                             {mode === 'edit' ? (
-                                <><Save size={16} className="mr-2" /> Guardar Cambios</>
+                                <>
+                                    <Save size={16} className="mr-2" /> Guardar Cambios
+                                </>
                             ) : (
-                                <><CheckCircle size={16} className="mr-2" /> Confirmar Pago</>
+                                <>
+                                    <CheckCircle size={16} className="mr-2" /> Confirmar Pago
+                                </>
                             )}
                         </button>
                     </div>

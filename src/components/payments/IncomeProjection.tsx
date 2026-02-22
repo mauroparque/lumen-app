@@ -22,30 +22,25 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
     // Build projection rows with editable sessions
     const projectionRows: ProjectionRow[] = useMemo(() => {
         return stats.patientStats
-            .filter(ps => {
+            .filter((ps) => {
                 // Only include patients with a fee set
-                const patient = patients.find(p => p.id === ps.patientId);
+                const patient = patients.find((p) => p.id === ps.patientId);
                 return patient && (patient.fee || 0) > 0;
             })
-            .map(ps => {
+            .map((ps) => {
                 // Use override if set, otherwise use patient's average or global average
-                const defaultSessions = ps.avgSessions > 0
-                    ? Math.round(ps.avgSessions)
-                    : Math.round(stats.avgSessionsPerPatient);
+                const defaultSessions =
+                    ps.avgSessions > 0 ? Math.round(ps.avgSessions) : Math.round(stats.avgSessionsPerPatient);
                 const estimatedSessions = sessionOverrides[ps.patientId] ?? defaultSessions;
 
-                const { gross, net, psiqueDiscount } = calculateProjectedIncome(
-                    ps.fee,
-                    estimatedSessions,
-                    ps.isPsique
-                );
+                const { gross, net, psiqueDiscount } = calculateProjectedIncome(ps.fee, estimatedSessions, ps.isPsique);
 
                 return {
                     ...ps,
                     estimatedSessions,
                     projectedGross: gross,
                     projectedNet: net,
-                    psiqueDiscount
+                    psiqueDiscount,
                 };
             });
     }, [stats, patients, sessionOverrides]);
@@ -57,16 +52,16 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                 sessions: acc.sessions + row.estimatedSessions,
                 gross: acc.gross + row.projectedGross,
                 net: acc.net + row.projectedNet,
-                psiqueDiscount: acc.psiqueDiscount + row.psiqueDiscount
+                psiqueDiscount: acc.psiqueDiscount + row.psiqueDiscount,
             }),
-            { sessions: 0, gross: 0, net: 0, psiqueDiscount: 0 }
+            { sessions: 0, gross: 0, net: 0, psiqueDiscount: 0 },
         );
     }, [projectionRows]);
 
     const handleSessionChange = (patientId: string, value: number) => {
-        setSessionOverrides(prev => ({
+        setSessionOverrides((prev) => ({
             ...prev,
-            [patientId]: Math.max(0, value)
+            [patientId]: Math.max(0, value),
         }));
     };
 
@@ -95,16 +90,16 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                             {totals.psiqueDiscount > 0 && (
                                 <div>
                                     <span className="text-purple-300">Psique:</span>
-                                    <span className="ml-2 font-bold text-purple-300">-${totals.psiqueDiscount.toLocaleString()}</span>
+                                    <span className="ml-2 font-bold text-purple-300">
+                                        -${totals.psiqueDiscount.toLocaleString()}
+                                    </span>
                                 </div>
                             )}
                         </div>
                     </div>
                     <div className="text-right">
                         <p className="text-emerald-200 text-xs uppercase tracking-wider">Ingreso Neto Estimado</p>
-                        <p className="text-3xl font-bold">
-                            ${totals.net.toLocaleString()}
-                        </p>
+                        <p className="text-3xl font-bold">${totals.net.toLocaleString()}</p>
                     </div>
                 </div>
             </div>
@@ -131,7 +126,7 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {projectionRows.map(row => (
+                                {projectionRows.map((row) => (
                                     <tr key={row.patientId} className="hover:bg-slate-50 transition-colors">
                                         <td className="p-4 pl-6">
                                             <div className="flex items-center gap-2">
@@ -146,9 +141,7 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-right text-slate-600">
-                                            ${row.fee.toLocaleString()}
-                                        </td>
+                                        <td className="p-4 text-right text-slate-600">${row.fee.toLocaleString()}</td>
                                         <td className="p-4 text-center text-slate-500">
                                             {row.avgSessions > 0 ? row.avgSessions : '-'}
                                         </td>
@@ -158,20 +151,26 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                                                 min="0"
                                                 max="20"
                                                 value={row.estimatedSessions}
-                                                onChange={(e) => handleSessionChange(row.patientId, parseInt(e.target.value) || 0)}
+                                                onChange={(e) =>
+                                                    handleSessionChange(row.patientId, parseInt(e.target.value) || 0)
+                                                }
                                                 className="w-16 text-center p-1 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                                             />
                                         </td>
                                         <td className="p-4 text-right pr-6">
                                             {row.isPsique ? (
                                                 <div className="flex flex-col items-end">
-                                                    <span className="font-bold text-slate-700">${row.projectedNet.toLocaleString()}</span>
+                                                    <span className="font-bold text-slate-700">
+                                                        ${row.projectedNet.toLocaleString()}
+                                                    </span>
                                                     <span className="text-xs text-purple-500">
                                                         (bruto ${row.projectedGross.toLocaleString()})
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="font-bold text-slate-700">${row.projectedGross.toLocaleString()}</span>
+                                                <span className="font-bold text-slate-700">
+                                                    ${row.projectedGross.toLocaleString()}
+                                                </span>
                                             )}
                                         </td>
                                     </tr>
@@ -182,12 +181,12 @@ export const IncomeProjection = ({ stats, patients }: IncomeProjectionProps) => 
                                     <td className="p-4 pl-6 font-bold text-emerald-800" colSpan={3}>
                                         Total Proyectado
                                     </td>
-                                    <td className="p-4 text-center font-bold text-emerald-800">
-                                        {totals.sessions}
-                                    </td>
+                                    <td className="p-4 text-center font-bold text-emerald-800">{totals.sessions}</td>
                                     <td className="p-4 text-right pr-6">
                                         <div className="flex flex-col items-end">
-                                            <span className="font-bold text-emerald-800 text-lg">${totals.net.toLocaleString()}</span>
+                                            <span className="font-bold text-emerald-800 text-lg">
+                                                ${totals.net.toLocaleString()}
+                                            </span>
                                             {totals.psiqueDiscount > 0 && (
                                                 <span className="text-xs text-slate-500">
                                                     (bruto ${totals.gross.toLocaleString()})

@@ -20,7 +20,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     const [selectedProfessional, setSelectedProfessional] = useState<string>('all');
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [modalData, setModalData] = useState<{ date?: string, time?: string } | null>(null);
+    const [modalData, setModalData] = useState<{ date?: string; time?: string } | null>(null);
 
     const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
 
@@ -74,10 +74,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     };
 
     // Fetch appointments for the visible range
-    const { appointments } = useCalendarAppointments(
-        toLocalDateString(startOfRange),
-        toLocalDateString(endOfRange)
-    );
+    const { appointments } = useCalendarAppointments(toLocalDateString(startOfRange), toLocalDateString(endOfRange));
 
     const { patients } = usePatients(user);
 
@@ -92,7 +89,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     // Check if we're viewing the current week
     const isCurrentWeek = useMemo(() => {
         const today = new Date();
-        return weekDays.some(d => d.toDateString() === today.toDateString());
+        return weekDays.some((d) => d.toDateString() === today.toDateString());
     }, [weekDays]);
 
     // Auto-scroll to current time on mount (only for week view on current week)
@@ -114,7 +111,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
                     scrollContainerRef.current.scrollTo({
                         top: Math.max(0, scrollPosition),
-                        behavior: 'smooth'
+                        behavior: 'smooth',
                     });
                 }
             }, 100); // 100ms delay to ensure rendering is complete
@@ -157,7 +154,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     // Extract unique professionals
     const professionals = useMemo(() => {
         const pros = new Set<string>();
-        appointments.forEach(app => {
+        appointments.forEach((app) => {
             if (app.professional) pros.add(app.professional);
         });
         // Eliminar al usuario actual de la lista genérica (ya tiene su opción "Mis Turnos")
@@ -168,14 +165,14 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
     const filteredAppointments = useMemo(() => {
         if (selectedProfessional === 'all') return appointments;
-        if (selectedProfessional === 'me') return appointments.filter(app => app.professional === profile?.name);
-        return appointments.filter(app => app.professional === selectedProfessional);
+        if (selectedProfessional === 'me') return appointments.filter((app) => app.professional === profile?.name);
+        return appointments.filter((app) => app.professional === selectedProfessional);
     }, [appointments, selectedProfessional, profile?.name]);
 
     // Index appointments by date-hour for O(1) access
     const appointmentsMap = useMemo(() => {
         const map = new Map<string, Appointment[]>();
-        filteredAppointments.forEach(app => {
+        filteredAppointments.forEach((app) => {
             // Key: YYYY-MM-DD-HH
             const hour = app.time.split(':')[0];
             const key = `${app.date}-${hour}`;
@@ -183,7 +180,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
             map.get(key)!.push(app);
         });
         // Sort by time within the hour
-        map.forEach(list => list.sort((a, b) => a.time.localeCompare(b.time)));
+        map.forEach((list) => list.sort((a, b) => a.time.localeCompare(b.time)));
         return map;
     }, [filteredAppointments]);
 
@@ -195,7 +192,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
     const getDayAppts = (day: Date) => {
         const dStr = toLocalDateString(day);
-        return filteredAppointments.filter(a => a.date === dStr);
+        return filteredAppointments.filter((a) => a.date === dStr);
     };
 
     const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8 to 20
@@ -209,7 +206,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
     const handleNewAppointment = (date?: Date, time?: string) => {
         setModalData({
             date: date ? toLocalDateString(date) : undefined,
-            time: time
+            time: time,
         });
         setShowModal(true);
     };
@@ -252,8 +249,18 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
                 <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
                     <div className="flex bg-slate-100 p-1 rounded-lg self-start md:self-auto">
-                        <button onClick={() => setViewMode('week')} className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'week' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}>Semana</button>
-                        <button onClick={() => setViewMode('month')} className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'month' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}>Mes</button>
+                        <button
+                            onClick={() => setViewMode('week')}
+                            className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'week' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Semana
+                        </button>
+                        <button
+                            onClick={() => setViewMode('month')}
+                            className={`px-3 py-1 text-sm rounded-md transition-all ${viewMode === 'month' ? 'bg-white shadow text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Mes
+                        </button>
                     </div>
 
                     <select
@@ -263,35 +270,57 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                     >
                         <option value="all">Todos los profesionales</option>
                         <option value="me">Solo mis turnos</option>
-                        {professionals.filter(p => p !== user.displayName).map(p => <option key={p} value={p}>{p}</option>)}
+                        {professionals
+                            .filter((p) => p !== user.displayName)
+                            .map((p) => (
+                                <option key={p} value={p}>
+                                    {p}
+                                </option>
+                            ))}
                     </select>
 
                     <div className="flex items-center border rounded-lg bg-white justify-between md:justify-start">
-                        <button onClick={() => {
-                            const d = new Date(selectedDate);
-                            if (viewMode === 'week') d.setDate(d.getDate() - 7);
-                            else d.setMonth(d.getMonth() - 1);
-                            setSelectedDate(d);
-                        }} className="p-2 hover:bg-slate-50"><ChevronLeft size={18} /></button>
+                        <button
+                            onClick={() => {
+                                const d = new Date(selectedDate);
+                                if (viewMode === 'week') d.setDate(d.getDate() - 7);
+                                else d.setMonth(d.getMonth() - 1);
+                                setSelectedDate(d);
+                            }}
+                            className="p-2 hover:bg-slate-50"
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
 
-                        <button onClick={handleToday} className="px-2 text-sm font-medium text-teal-600 hover:bg-teal-50 h-full border-x">Hoy</button>
+                        <button
+                            onClick={handleToday}
+                            className="px-2 text-sm font-medium text-teal-600 hover:bg-teal-50 h-full border-x"
+                        >
+                            Hoy
+                        </button>
 
                         <span className="px-4 text-sm font-medium min-w-[140px] text-center">
-                            {viewMode === 'week' ? (
-                                `${weekDays[0].getDate()} - ${weekDays[4].getDate()} ${weekDays[4].toLocaleDateString('es-ES', { month: 'short' })}`
-                            ) : (
-                                selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
-                            )}
+                            {viewMode === 'week'
+                                ? `${weekDays[0].getDate()} - ${weekDays[4].getDate()} ${weekDays[4].toLocaleDateString('es-ES', { month: 'short' })}`
+                                : selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
                         </span>
 
-                        <button onClick={() => {
-                            const d = new Date(selectedDate);
-                            if (viewMode === 'week') d.setDate(d.getDate() + 7);
-                            else d.setMonth(d.getMonth() + 1);
-                            setSelectedDate(d);
-                        }} className="p-2 hover:bg-slate-50"><ChevronRight size={18} /></button>
+                        <button
+                            onClick={() => {
+                                const d = new Date(selectedDate);
+                                if (viewMode === 'week') d.setDate(d.getDate() + 7);
+                                else d.setMonth(d.getMonth() + 1);
+                                setSelectedDate(d);
+                            }}
+                            className="p-2 hover:bg-slate-50"
+                        >
+                            <ChevronRight size={18} />
+                        </button>
                     </div>
-                    <button onClick={() => handleNewAppointment()} className="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 shadow-sm hover:bg-teal-700 w-full md:w-auto">
+                    <button
+                        onClick={() => handleNewAppointment()}
+                        className="bg-teal-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 shadow-sm hover:bg-teal-700 w-full md:w-auto"
+                    >
                         <Plus size={18} /> <span>Turno</span>
                     </button>
                 </div>
@@ -302,11 +331,18 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                     {viewMode === 'week' ? (
                         <>
                             <div className="flex border-b bg-slate-50 pr-1 md:pr-4">
-                                <div className="w-10 md:w-16 p-1 md:p-3 text-center text-[10px] md:text-xs text-slate-400 font-bold border-r flex-shrink-0 flex items-center justify-center">HORA</div>
+                                <div className="w-10 md:w-16 p-1 md:p-3 text-center text-[10px] md:text-xs text-slate-400 font-bold border-r flex-shrink-0 flex items-center justify-center">
+                                    HORA
+                                </div>
                                 <div className="flex-1 grid grid-cols-6">
                                     {weekDays.map((d, i) => (
-                                        <div key={i} className={`p-1 md:p-3 text-center border-r ${d.toDateString() === new Date().toDateString() ? 'bg-teal-50' : ''}`}>
-                                            <div className="text-[8px] md:text-xs text-slate-500 uppercase truncate">{d.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
+                                        <div
+                                            key={i}
+                                            className={`p-1 md:p-3 text-center border-r ${d.toDateString() === new Date().toDateString() ? 'bg-teal-50' : ''}`}
+                                        >
+                                            <div className="text-[8px] md:text-xs text-slate-500 uppercase truncate">
+                                                {d.toLocaleDateString('es-ES', { weekday: 'short' })}
+                                            </div>
                                             <div className="font-bold text-xs md:text-base">{d.getDate()}</div>
                                         </div>
                                     ))}
@@ -314,46 +350,62 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                             </div>
                             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
                                 {/* Current Time Indicator Line */}
-                                {isCurrentWeek && (() => {
-                                    const currentHour = currentTime.getHours();
-                                    const currentMinutes = currentTime.getMinutes();
+                                {isCurrentWeek &&
+                                    (() => {
+                                        const currentHour = currentTime.getHours();
+                                        const currentMinutes = currentTime.getMinutes();
 
-                                    if (currentHour < START_HOUR || currentHour > END_HOUR) return null;
+                                        if (currentHour < START_HOUR || currentHour > END_HOUR) return null;
 
-                                    // Calculate position: (hours from start + fraction of current hour) * row height
-                                    const hourOffset = currentHour - START_HOUR;
-                                    const minuteOffset = currentMinutes / 60;
-                                    const topPosition = (hourOffset + minuteOffset) * getHourHeight();
+                                        // Calculate position: (hours from start + fraction of current hour) * row height
+                                        const hourOffset = currentHour - START_HOUR;
+                                        const minuteOffset = currentMinutes / 60;
+                                        const topPosition = (hourOffset + minuteOffset) * getHourHeight();
 
-                                    // Find which day column is today
-                                    const todayIndex = weekDays.findIndex(d => d.toDateString() === new Date().toDateString());
+                                        // Find which day column is today
+                                        const todayIndex = weekDays.findIndex(
+                                            (d) => d.toDateString() === new Date().toDateString(),
+                                        );
 
-                                    return (
-                                        <div
-                                            className="absolute z-20 pointer-events-none flex items-center"
-                                            style={{
-                                                top: `${topPosition}px`,
-                                                left: `calc(${(todayIndex / 6) * 100}% + 2.5rem)`, // 2.5rem = w-10 (hour column on mobile)
-                                                width: `${100 / 6}%`
-                                            }}
-                                        >
-                                            {/* Circle indicator */}
-                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50 -ml-1" />
-                                            {/* Line only on today */}
-                                            <div className="flex-1 h-0.5 bg-red-500" />
+                                        return (
+                                            <div
+                                                className="absolute z-20 pointer-events-none flex items-center"
+                                                style={{
+                                                    top: `${topPosition}px`,
+                                                    left: `calc(${(todayIndex / 6) * 100}% + 2.5rem)`, // 2.5rem = w-10 (hour column on mobile)
+                                                    width: `${100 / 6}%`,
+                                                }}
+                                            >
+                                                {/* Circle indicator */}
+                                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50 -ml-1" />
+                                                {/* Line only on today */}
+                                                <div className="flex-1 h-0.5 bg-red-500" />
+                                            </div>
+                                        );
+                                    })()}
+
+                                {hours.map((hour) => (
+                                    <div
+                                        key={hour}
+                                        className="flex min-h-[80px] md:min-h-[100px] border-b last:border-0 relative"
+                                    >
+                                        <div className="w-10 md:w-16 p-1 md:p-2 text-[10px] md:text-xs text-slate-400 text-center border-r pt-3 font-bold flex-shrink-0">
+                                            {hour}:00
                                         </div>
-                                    );
-                                })()}
-
-                                {hours.map(hour => (
-                                    <div key={hour} className="flex min-h-[80px] md:min-h-[100px] border-b last:border-0 relative">
-                                        <div className="w-10 md:w-16 p-1 md:p-2 text-[10px] md:text-xs text-slate-400 text-center border-r pt-3 font-bold flex-shrink-0">{hour}:00</div>
                                         <div className="flex-1 grid grid-cols-6">
                                             {weekDays.map((day, i) => {
                                                 const appts = getAppts(day, hour);
                                                 return (
-                                                    <div key={i} className="border-r p-1 relative group hover:bg-slate-50/50 cursor-pointer"
-                                                        onClick={() => handleNewAppointment(day, `${hour < 10 ? '0' + hour : hour}:00`)}>
+                                                    <div
+                                                        key={i}
+                                                        className="border-r p-1 relative group hover:bg-slate-50/50 cursor-pointer"
+                                                        onClick={() =>
+                                                            handleNewAppointment(
+                                                                day,
+                                                                `${hour < 10 ? '0' + hour : hour}:00`,
+                                                            )
+                                                        }
+                                                    >
                                                         {/* Appointments container with relative positioning */}
                                                         <div className="relative h-full">
                                                             {appts.map((appt, apptIndex) => {
@@ -361,9 +413,14 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                                 const isOnline = appt.type === 'online';
 
                                                                 // Determine effective status (auto-mark as presente if past and still programado)
-                                                                const appointmentDateTime = new Date(`${appt.date}T${appt.time}`);
+                                                                const appointmentDateTime = new Date(
+                                                                    `${appt.date}T${appt.time}`,
+                                                                );
                                                                 const isPast = appointmentDateTime < new Date();
-                                                                const effectiveStatus = (appt.status === 'programado' && isPast) ? 'presente' : appt.status;
+                                                                const effectiveStatus =
+                                                                    appt.status === 'programado' && isPast
+                                                                        ? 'presente'
+                                                                        : appt.status;
 
                                                                 // Calculate vertical offset based on minutes
                                                                 const [, minutes] = appt.time.split(':').map(Number);
@@ -371,14 +428,22 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
 
                                                                 // Calculate horizontal offset for overlapping appointments
                                                                 const overlapCount = appts.length;
-                                                                const overlapWidth = overlapCount > 1 ? `${100 / overlapCount}%` : '100%';
-                                                                const overlapLeft = overlapCount > 1 ? `${(apptIndex / overlapCount) * 100}%` : '0';
+                                                                const overlapWidth =
+                                                                    overlapCount > 1
+                                                                        ? `${100 / overlapCount}%`
+                                                                        : '100%';
+                                                                const overlapLeft =
+                                                                    overlapCount > 1
+                                                                        ? `${(apptIndex / overlapCount) * 100}%`
+                                                                        : '0';
 
                                                                 // Professional color as base (for multi-professional view)
                                                                 const baseStyles = {
                                                                     bg: isOnline ? 'bg-white' : colors.bg,
                                                                     text: colors.text,
-                                                                    border: isOnline ? colors.border : 'border-transparent'
+                                                                    border: isOnline
+                                                                        ? colors.border
+                                                                        : 'border-transparent',
                                                                 };
 
                                                                 // Status indicator (left strip color only - keeps professional color visible)
@@ -400,45 +465,72 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                                 const stripColor = getStatusStripColor();
 
                                                                 return (
-                                                                    <div key={appt.id}
-                                                                        onClick={(e) => { e.stopPropagation(); setSelectedAppointment(appt); }}
+                                                                    <div
+                                                                        key={appt.id}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setSelectedAppointment(appt);
+                                                                        }}
                                                                         style={{
                                                                             position: 'absolute',
                                                                             top: `${minuteOffsetPercent}%`,
                                                                             left: overlapLeft,
-                                                                            width: overlapWidth
+                                                                            width: overlapWidth,
                                                                         }}
                                                                         className={`rounded p-1 md:p-2 text-[10px] md:text-xs shadow-sm cursor-pointer relative overflow-hidden transition-all hover:shadow-md hover:z-10 pl-2 md:pl-3 border
                                                                     ${isCancelled ? 'bg-slate-100 text-slate-400 border-slate-200 opacity-50' : `${baseStyles.bg} ${baseStyles.text} ${baseStyles.border}`}`}
                                                                     >
                                                                         {/* Status Color Indicator Strip */}
-                                                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}></div>
+                                                                        <div
+                                                                            className={`absolute left-0 top-0 bottom-0 w-1.5 ${stripColor}`}
+                                                                        ></div>
 
                                                                         <div className="flex justify-between items-start">
-                                                                            <div className="font-bold truncate leading-tight text-[9px] md:text-xs">{appt.patientName}</div>
-                                                                            <div className="text-[8px] md:text-[10px] font-mono opacity-80 hidden md:block">{appt.time}</div>
+                                                                            <div className="font-bold truncate leading-tight text-[9px] md:text-xs">
+                                                                                {appt.patientName}
+                                                                            </div>
+                                                                            <div className="text-[8px] md:text-[10px] font-mono opacity-80 hidden md:block">
+                                                                                {appt.time}
+                                                                            </div>
                                                                         </div>
                                                                         <div className="flex justify-between items-center mt-0.5 md:mt-1">
                                                                             <div className="flex items-center space-x-1 opacity-80 scale-75 md:scale-90 origin-left">
-                                                                                {isOnline ? <Video size={10} /> : <MapPin size={10} />}
-                                                                                <span className="truncate max-w-[40px] md:max-w-[60px] text-[8px] md:text-[10px]">{appt.professional || 'General'}</span>
+                                                                                {isOnline ? (
+                                                                                    <Video size={10} />
+                                                                                ) : (
+                                                                                    <MapPin size={10} />
+                                                                                )}
+                                                                                <span className="truncate max-w-[40px] md:max-w-[60px] text-[8px] md:text-[10px]">
+                                                                                    {appt.professional || 'General'}
+                                                                                </span>
 
                                                                                 {/* Clinical Note Indicator */}
                                                                                 {appt.hasNotes ? (
-                                                                                    <FileText size={10} className="text-slate-600 ml-1" />
+                                                                                    <FileText
+                                                                                        size={10}
+                                                                                        className="text-slate-600 ml-1"
+                                                                                    />
                                                                                 ) : (
-                                                                                    isPast && effectiveStatus !== 'cancelado' && (
-                                                                                        <AlertCircle size={10} className="text-amber-500 ml-1" />
+                                                                                    isPast &&
+                                                                                    effectiveStatus !== 'cancelado' && (
+                                                                                        <AlertCircle
+                                                                                            size={10}
+                                                                                            className="text-amber-500 ml-1"
+                                                                                        />
                                                                                     )
                                                                                 )}
                                                                             </div>
-                                                                            {effectiveStatus !== 'cancelado' && (
-                                                                                appt.isPaid ? (
-                                                                                    <CheckCircle size={10} className="text-green-600" />
+                                                                            {effectiveStatus !== 'cancelado' &&
+                                                                                (appt.isPaid ? (
+                                                                                    <CheckCircle
+                                                                                        size={10}
+                                                                                        className="text-green-600"
+                                                                                    />
                                                                                 ) : (
-                                                                                    <span className="text-[8px] font-bold text-red-500">IMPAGO</span>
-                                                                                )
-                                                                            )}
+                                                                                    <span className="text-[8px] font-bold text-red-500">
+                                                                                        IMPAGO
+                                                                                    </span>
+                                                                                ))}
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -449,7 +541,7 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                                             <Plus size={16} className="text-teal-400" />
                                                         </div>
                                                     </div>
-                                                )
+                                                );
                                             })}
                                         </div>
                                     </div>
@@ -459,8 +551,13 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                     ) : (
                         <div className="flex flex-col h-full overflow-hidden">
                             <div className="grid grid-cols-7 border-b bg-slate-50 min-h-[30px] md:min-h-[40px] shrink-0 pr-1 md:pr-4">
-                                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-                                    <div key={day} className="p-1 md:p-2 text-center text-[10px] md:text-xs font-bold text-slate-500 border-r last:border-r-0 flex items-center justify-center">{day}</div>
+                                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+                                    <div
+                                        key={day}
+                                        className="p-1 md:p-2 text-center text-[10px] md:text-xs font-bold text-slate-500 border-r last:border-r-0 flex items-center justify-center"
+                                    >
+                                        {day}
+                                    </div>
                                 ))}
                             </div>
                             <div className="flex-1 overflow-y-auto">
@@ -468,22 +565,36 @@ export const CalendarView = ({ user, profile }: CalendarViewProps) => {
                                     {monthDays.map((d, i) => {
                                         const dayAppts = getDayAppts(d.date);
                                         return (
-                                            <div key={i}
-                                                onClick={() => { setSelectedDate(d.date); setViewMode('week'); }}
+                                            <div
+                                                key={i}
+                                                onClick={() => {
+                                                    setSelectedDate(d.date);
+                                                    setViewMode('week');
+                                                }}
                                                 className={`p-1 md:p-2 border-b border-r cursor-pointer hover:bg-slate-50 transition-colors flex flex-col ${!d.isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : ''}`}
                                             >
-                                                <div className={`text-right text-xs md:text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}>{d.date.getDate()}</div>
+                                                <div
+                                                    className={`text-right text-xs md:text-sm mb-1 ${d.date.toDateString() === new Date().toDateString() ? 'text-teal-600 font-bold' : ''}`}
+                                                >
+                                                    {d.date.getDate()}
+                                                </div>
                                                 <div className="space-y-1 overflow-y-auto flex-1 custom-scrollbar">
-                                                    {dayAppts.slice(0, 3).map(appt => {
+                                                    {dayAppts.slice(0, 3).map((appt) => {
                                                         const colors = getProfessionalColor(appt.professional);
                                                         return (
-                                                            <div key={appt.id} className={`text-[8px] md:text-[10px] truncate px-0.5 md:px-1 rounded ${colors.bg} ${colors.text}`}>
-                                                                <span className="hidden md:inline">{appt.time} </span>{appt.patientName}
+                                                            <div
+                                                                key={appt.id}
+                                                                className={`text-[8px] md:text-[10px] truncate px-0.5 md:px-1 rounded ${colors.bg} ${colors.text}`}
+                                                            >
+                                                                <span className="hidden md:inline">{appt.time} </span>
+                                                                {appt.patientName}
                                                             </div>
-                                                        )
+                                                        );
                                                     })}
                                                     {dayAppts.length > 3 && (
-                                                        <div className="text-[8px] md:text-[10px] text-slate-400 text-center">+{dayAppts.length - 3}</div>
+                                                        <div className="text-[8px] md:text-[10px] text-slate-400 text-center">
+                                                            +{dayAppts.length - 3}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>

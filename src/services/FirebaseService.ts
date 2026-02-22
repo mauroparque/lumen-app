@@ -1,8 +1,36 @@
-import { collection, doc, query, where, orderBy, limit, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, Timestamp, getDocs } from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    query,
+    where,
+    orderBy,
+    limit,
+    onSnapshot,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    writeBatch,
+    serverTimestamp,
+    Timestamp,
+    getDocs,
+} from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { PATIENTS_COLLECTION, APPOINTMENTS_COLLECTION, PAYMENTS_COLLECTION, BILLING_QUEUE_COLLECTION } from '../lib/routes';
+import {
+    PATIENTS_COLLECTION,
+    APPOINTMENTS_COLLECTION,
+    PAYMENTS_COLLECTION,
+    BILLING_QUEUE_COLLECTION,
+} from '../lib/routes';
 import { IDataService } from './IDataService';
-import { Patient, Appointment, Payment, PatientInput, AppointmentInput, PaymentInput, PatientBillingData } from '../types';
+import {
+    Patient,
+    Appointment,
+    Payment,
+    PatientInput,
+    AppointmentInput,
+    PaymentInput,
+    PatientBillingData,
+} from '../types';
 
 export class FirebaseService implements IDataService {
     private uid: string;
@@ -19,28 +47,32 @@ export class FirebaseService implements IDataService {
             ? query(collection(db, PATIENTS_COLLECTION), where('professional', '==', this.professionalName))
             : query(collection(db, PATIENTS_COLLECTION));
 
-        return onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Patient));
-            onData(data);
-        }, (error) => {
-            console.error("Error fetching patients:", error);
-        });
+        return onSnapshot(
+            q,
+            (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Patient);
+                onData(data);
+            },
+            (error) => {
+                console.error('Error fetching patients:', error);
+            },
+        );
     }
 
     // For agenda: all appointments (unfiltered by professional)
     subscribeToAppointments(start: string, end: string, onData: (data: Appointment[]) => void): () => void {
-        const q = query(
-            collection(db, APPOINTMENTS_COLLECTION),
-            where('date', '>=', start),
-            where('date', '<=', end)
-        );
+        const q = query(collection(db, APPOINTMENTS_COLLECTION), where('date', '>=', start), where('date', '<=', end));
 
-        return onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
-            onData(data);
-        }, (error) => {
-            console.error("Error fetching appointments:", error);
-        });
+        return onSnapshot(
+            q,
+            (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Appointment);
+                onData(data);
+            },
+            (error) => {
+                console.error('Error fetching appointments:', error);
+            },
+        );
     }
 
     // For other views: only my appointments (filtered by professional)
@@ -54,49 +86,54 @@ export class FirebaseService implements IDataService {
             collection(db, APPOINTMENTS_COLLECTION),
             where('date', '>=', start),
             where('date', '<=', end),
-            where('professional', '==', this.professionalName)
+            where('professional', '==', this.professionalName),
         );
 
-        return onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
-            onData(data);
-        }, (error) => {
-            console.error("Error fetching my appointments:", error);
-        });
+        return onSnapshot(
+            q,
+            (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Appointment);
+                onData(data);
+            },
+            (error) => {
+                console.error('Error fetching my appointments:', error);
+            },
+        );
     }
 
     subscribeToFinance(onUnpaid: (data: Appointment[]) => void, onPayments: (data: Payment[]) => void): () => void {
         // Query unpaid appointments, filtered by professional if set
         const unpaidQuery = this.professionalName
             ? query(
-                collection(db, APPOINTMENTS_COLLECTION),
-                where('isPaid', '==', false),
-                where('professional', '==', this.professionalName)
-            )
-            : query(
-                collection(db, APPOINTMENTS_COLLECTION),
-                where('isPaid', '==', false)
-            );
+                  collection(db, APPOINTMENTS_COLLECTION),
+                  where('isPaid', '==', false),
+                  where('professional', '==', this.professionalName),
+              )
+            : query(collection(db, APPOINTMENTS_COLLECTION), where('isPaid', '==', false));
 
-        const paymentsQuery = query(
-            collection(db, PAYMENTS_COLLECTION),
-            orderBy('date', 'desc'),
-            limit(50)
+        const paymentsQuery = query(collection(db, PAYMENTS_COLLECTION), orderBy('date', 'desc'), limit(50));
+
+        const unsubUnpaid = onSnapshot(
+            unpaidQuery,
+            (snapshot) => {
+                const data = snapshot.docs
+                    .map((doc) => ({ id: doc.id, ...doc.data() }) as Appointment)
+                    // Filtrar cancelados sin cobro (solo mostrar si NO está cancelado O si tiene chargeOnCancellation)
+                    .filter((a) => a.status !== 'cancelado' || a.chargeOnCancellation);
+                data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                onUnpaid(data);
+            },
+            (error) => console.error('Error fetching unpaid:', error),
         );
 
-        const unsubUnpaid = onSnapshot(unpaidQuery, (snapshot) => {
-            const data = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() } as Appointment))
-                // Filtrar cancelados sin cobro (solo mostrar si NO está cancelado O si tiene chargeOnCancellation)
-                .filter(a => a.status !== 'cancelado' || a.chargeOnCancellation);
-            data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            onUnpaid(data);
-        }, (error) => console.error("Error fetching unpaid:", error));
-
-        const unsubPayments = onSnapshot(paymentsQuery, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
-            onPayments(data);
-        }, (error) => console.error("Error fetching payments:", error));
+        const unsubPayments = onSnapshot(
+            paymentsQuery,
+            (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Payment);
+                onPayments(data);
+            },
+            (error) => console.error('Error fetching payments:', error),
+        );
 
         return () => {
             unsubUnpaid();
@@ -107,7 +144,7 @@ export class FirebaseService implements IDataService {
     async addPatient(patient: PatientInput): Promise<string> {
         const data = {
             ...patient,
-            createdByUid: this.uid
+            createdByUid: this.uid,
         };
         const docRef = await addDoc(collection(db, PATIENTS_COLLECTION), data);
         return docRef.id;
@@ -127,13 +164,17 @@ export class FirebaseService implements IDataService {
         const data = {
             ...appointment,
             status: appointment.status || 'programado',
-            createdByUid: this.uid
+            createdByUid: this.uid,
         };
         const docRef = await addDoc(collection(db, APPOINTMENTS_COLLECTION), data);
         return docRef.id;
     }
 
-    async addRecurringAppointments(baseAppointment: AppointmentInput, dates: string[], recurrenceRule: string = 'WEEKLY'): Promise<void> {
+    async addRecurringAppointments(
+        baseAppointment: AppointmentInput,
+        dates: string[],
+        recurrenceRule: string = 'WEEKLY',
+    ): Promise<void> {
         const batch = writeBatch(db);
         const seriesId = crypto.randomUUID();
 
@@ -147,7 +188,7 @@ export class FirebaseService implements IDataService {
                 createdAt: serverTimestamp(),
                 recurrenceId: seriesId,
                 recurrenceIndex: index,
-                recurrenceRule
+                recurrenceRule,
             };
             batch.set(docRef, appointmentData);
         });
@@ -173,7 +214,7 @@ export class FirebaseService implements IDataService {
         if (snapshot.empty) return 0;
 
         const batch = writeBatch(db);
-        snapshot.docs.forEach(docSnap => {
+        snapshot.docs.forEach((docSnap) => {
             batch.delete(docSnap.ref);
         });
 
@@ -186,7 +227,7 @@ export class FirebaseService implements IDataService {
         const q = query(appointmentsRef, where('recurrenceId', '==', recurrenceId));
         const snapshot = await getDocs(q);
 
-        const toDelete = snapshot.docs.filter(docSnap => {
+        const toDelete = snapshot.docs.filter((docSnap) => {
             const data = docSnap.data();
             return data.date >= fromDate;
         });
@@ -194,7 +235,7 @@ export class FirebaseService implements IDataService {
         if (toDelete.length === 0) return 0;
 
         const batch = writeBatch(db);
-        toDelete.forEach(docSnap => {
+        toDelete.forEach((docSnap) => {
             batch.delete(docSnap.ref);
         });
 
@@ -209,7 +250,7 @@ export class FirebaseService implements IDataService {
         batch.set(paymentRef, {
             ...payment,
             date: Timestamp.now(),
-            createdByUid: this.uid
+            createdByUid: this.uid,
         });
 
         if (appointmentId) {
@@ -235,14 +276,14 @@ export class FirebaseService implements IDataService {
         const queueRef = collection(db, BILLING_QUEUE_COLLECTION);
 
         const totalPrice = appointments.reduce((sum, appt) => sum + (appt.price || 0), 0);
-        const lineItems = appointments.map(appt => ({
+        const lineItems = appointments.map((appt) => ({
             description: `${appt.consultationType || 'Consulta'} - ${appt.date}`,
-            amount: appt.price || 0
+            amount: appt.price || 0,
         }));
 
         const docRef = await addDoc(queueRef, {
             type: 'batch',
-            appointmentIds: appointments.map(a => a.id),
+            appointmentIds: appointments.map((a) => a.id),
             patientId: patientData.id,
             patientName: patientData.name,
             patientDni: patientData.dni || '',
@@ -252,7 +293,7 @@ export class FirebaseService implements IDataService {
             status: 'pending',
             createdAt: serverTimestamp(),
             retryCount: 0,
-            requestedBy: this.uid
+            requestedBy: this.uid,
         });
 
         return docRef.id;

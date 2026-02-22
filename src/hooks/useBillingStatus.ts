@@ -16,43 +16,47 @@ export const useBillingStatus = (requestId: string | null) => {
         invoiceUrl: null,
         invoiceNumber: null,
         loading: false,
-        error: undefined
+        error: undefined,
     });
 
     useEffect(() => {
         if (!requestId) {
-            setState(prev => ({ ...prev, loading: false }));
+            setState((prev) => ({ ...prev, loading: false }));
             return;
         }
 
-        setState(prev => ({ ...prev, loading: true }));
+        setState((prev) => ({ ...prev, loading: true }));
 
         const docRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'integrations', 'billing', 'queue', requestId);
 
-        const unsubscribe = onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+        const unsubscribe = onSnapshot(
+            docRef,
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setState({
+                        status: data.status,
+                        invoiceUrl: data.invoiceUrl || null,
+                        invoiceNumber: data.invoiceNumber || null,
+                        loading: data.status === 'pending' || data.status === 'processing',
+                        error: data.error,
+                    });
+                } else {
+                    // Handle case where doc doesn't exist yet or was deleted
+                    setState((prev) => ({ ...prev, loading: true }));
+                }
+            },
+            (error) => {
+                console.error('Error listening to billing status:', error);
                 setState({
-                    status: data.status,
-                    invoiceUrl: data.invoiceUrl || null,
-                    invoiceNumber: data.invoiceNumber || null,
-                    loading: data.status === 'pending' || data.status === 'processing',
-                    error: data.error
+                    status: 'error',
+                    invoiceUrl: null,
+                    invoiceNumber: null,
+                    loading: false,
+                    error: error.message,
                 });
-            } else {
-                // Handle case where doc doesn't exist yet or was deleted
-                setState(prev => ({ ...prev, loading: true }));
-            }
-        }, (error) => {
-            console.error("Error listening to billing status:", error);
-            setState({
-                status: 'error',
-                invoiceUrl: null,
-                invoiceNumber: null,
-                loading: false,
-                error: error.message
-            });
-        });
+            },
+        );
 
         return () => unsubscribe();
     }, [requestId]);

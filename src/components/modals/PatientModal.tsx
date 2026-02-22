@@ -19,7 +19,7 @@ const CONTACT_RELATIONSHIPS: { value: ContactRelationship; label: string }[] = [
     { value: 'madre', label: 'Madre' },
     { value: 'amigo', label: 'Amigo/a' },
     { value: 'pareja', label: 'Pareja' },
-    { value: 'otro', label: 'Otro' }
+    { value: 'otro', label: 'Otro' },
 ];
 
 const getTodayString = () => {
@@ -63,7 +63,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
         contactName: '',
         contactPhone: '',
         contactRelationship: '' as ContactRelationship | '',
-        contactRelationshipOther: ''
+        contactRelationshipOther: '',
     });
 
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -101,11 +101,15 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                 contactName: existingPatient.contactName || '',
                 contactPhone: existingPatient.contactPhone || '',
                 contactRelationship: existingPatient.contactRelationship || '',
-                contactRelationshipOther: existingPatient.contactRelationshipOther || ''
+                contactRelationshipOther: existingPatient.contactRelationshipOther || '',
             });
             // Show advanced if any advanced field has data
-            if (existingPatient.birthDate || existingPatient.admissionDate ||
-                existingPatient.contactName || !existingPatient.isActive) {
+            if (
+                existingPatient.birthDate ||
+                existingPatient.admissionDate ||
+                existingPatient.contactName ||
+                !existingPatient.isActive
+            ) {
                 setShowAdvanced(true);
             }
         }
@@ -115,7 +119,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
     const existingProfessionals = useMemo(() => {
         const pros = new Set<string>();
         if (user.displayName) pros.add(user.displayName);
-        patients.forEach(p => {
+        patients.forEach((p) => {
             if (p.professional) pros.add(p.professional);
         });
         return Array.from(pros);
@@ -148,14 +152,15 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                 contactName: form.contactName || undefined,
                 contactPhone: form.contactPhone || undefined,
                 contactRelationship: form.contactRelationship || undefined,
-                contactRelationshipOther: form.contactRelationship === 'otro' && form.contactRelationshipOther
-                    ? form.contactRelationshipOther
-                    : undefined,
+                contactRelationshipOther:
+                    form.contactRelationship === 'otro' && form.contactRelationshipOther
+                        ? form.contactRelationshipOther
+                        : undefined,
             };
 
             // Remove undefined fields - Firebase doesn't accept undefined values
             const patientData = Object.fromEntries(
-                Object.entries(rawPatientData).filter(([_, value]) => value !== undefined)
+                Object.entries(rawPatientData).filter(([_, value]) => value !== undefined),
             ) as unknown as PatientInput;
 
             if (existingPatient) {
@@ -187,7 +192,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 required
                                 className="w-full p-2 border rounded-lg"
                                 value={form.firstName}
-                                onChange={e => setForm({ ...form, firstName: e.target.value })}
+                                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                             />
                         </div>
                         <div>
@@ -196,7 +201,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 required
                                 className="w-full p-2 border rounded-lg"
                                 value={form.lastName}
-                                onChange={e => setForm({ ...form, lastName: e.target.value })}
+                                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                             />
                         </div>
                     </div>
@@ -207,7 +212,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             <input
                                 className="w-full p-2 border rounded-lg"
                                 value={form.dni}
-                                onChange={e => setForm({ ...form, dni: e.target.value })}
+                                onChange={(e) => setForm({ ...form, dni: e.target.value })}
                             />
                         </div>
                         <div>
@@ -223,7 +228,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 type="date"
                                 className="w-full p-2 border rounded-lg"
                                 value={form.birthDate}
-                                onChange={e => setForm({ ...form, birthDate: e.target.value })}
+                                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
                             />
                         </div>
                     </div>
@@ -235,7 +240,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 type="email"
                                 className="w-full p-2 border rounded-lg"
                                 value={form.email}
-                                onChange={e => setForm({ ...form, email: e.target.value })}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
                             />
                         </div>
                         <div>
@@ -244,7 +249,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 type="tel"
                                 className="w-full p-2 border rounded-lg"
                                 value={form.phone}
-                                onChange={e => setForm({ ...form, phone: e.target.value })}
+                                onChange={(e) => setForm({ ...form, phone: e.target.value })}
                             />
                         </div>
                     </div>
@@ -256,20 +261,22 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             <button
                                 type="button"
                                 onClick={() => setForm({ ...form, patientSource: 'psique' })}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${form.patientSource === 'psique'
-                                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                                    : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
-                                    }`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                    form.patientSource === 'psique'
+                                        ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
+                                        : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
+                                }`}
                             >
                                 Psique Salud Mental
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setForm({ ...form, patientSource: 'particular' })}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${form.patientSource === 'particular'
-                                    ? 'bg-teal-100 text-teal-700 border-2 border-teal-300'
-                                    : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
-                                    }`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                    form.patientSource === 'particular'
+                                        ? 'bg-teal-100 text-teal-700 border-2 border-teal-300'
+                                        : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
+                                }`}
                             >
                                 Particular
                             </button>
@@ -285,21 +292,25 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Contacto</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        Nombre del Contacto
+                                    </label>
                                     <input
                                         className="w-full p-2 border rounded-lg"
                                         value={form.contactName}
-                                        onChange={e => setForm({ ...form, contactName: e.target.value })}
+                                        onChange={(e) => setForm({ ...form, contactName: e.target.value })}
                                         placeholder="Nombre del responsable"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono Contacto</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        Teléfono Contacto
+                                    </label>
                                     <input
                                         type="tel"
                                         className="w-full p-2 border rounded-lg"
                                         value={form.contactPhone}
-                                        onChange={e => setForm({ ...form, contactPhone: e.target.value })}
+                                        onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -309,21 +320,32 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                     <select
                                         className="w-full p-2 border rounded-lg bg-white"
                                         value={form.contactRelationship}
-                                        onChange={e => setForm({ ...form, contactRelationship: e.target.value as ContactRelationship })}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                contactRelationship: e.target.value as ContactRelationship,
+                                            })
+                                        }
                                     >
                                         <option value="">Seleccionar...</option>
-                                        {CONTACT_RELATIONSHIPS.map(r => (
-                                            <option key={r.value} value={r.value}>{r.label}</option>
+                                        {CONTACT_RELATIONSHIPS.map((r) => (
+                                            <option key={r.value} value={r.value}>
+                                                {r.label}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
                                 {form.contactRelationship === 'otro' && (
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Especificar</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Especificar
+                                        </label>
                                         <input
                                             className="w-full p-2 border rounded-lg"
                                             value={form.contactRelationshipOther}
-                                            onChange={e => setForm({ ...form, contactRelationshipOther: e.target.value })}
+                                            onChange={(e) =>
+                                                setForm({ ...form, contactRelationshipOther: e.target.value })
+                                            }
                                             placeholder="Ej: Tutor, Abuelo..."
                                         />
                                     </div>
@@ -340,7 +362,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 type="number"
                                 className="w-full p-2 border rounded-lg"
                                 value={form.fee}
-                                onChange={e => setForm({ ...form, fee: e.target.value })}
+                                onChange={(e) => setForm({ ...form, fee: e.target.value })}
                             />
                         </div>
                         <div>
@@ -348,7 +370,9 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             <select
                                 className="w-full p-2 border rounded-lg bg-white"
                                 value={form.preference}
-                                onChange={e => setForm({ ...form, preference: e.target.value as 'presencial' | 'online' })}
+                                onChange={(e) =>
+                                    setForm({ ...form, preference: e.target.value as 'presencial' | 'online' })
+                                }
                             >
                                 <option value="presencial">Presencial</option>
                                 <option value="online">Online</option>
@@ -363,7 +387,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                 className="w-full p-2 border rounded-lg"
                                 placeholder="Dirección o Nombre"
                                 value={form.office}
-                                onChange={e => setForm({ ...form, office: e.target.value })}
+                                onChange={(e) => setForm({ ...form, office: e.target.value })}
                             />
                         </div>
                     )}
@@ -385,7 +409,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             <input
                                 className="w-full p-2 border rounded-lg"
                                 value={form.professional}
-                                onChange={e => setForm({ ...form, professional: e.target.value })}
+                                onChange={(e) => setForm({ ...form, professional: e.target.value })}
                                 placeholder="Escribir nombre del profesional..."
                                 autoFocus
                             />
@@ -393,7 +417,7 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             <select
                                 className="w-full p-2 border rounded-lg bg-white"
                                 value={form.professional}
-                                onChange={e => {
+                                onChange={(e) => {
                                     if (e.target.value === 'custom') {
                                         setIsCustomProfessional(true);
                                         setForm({ ...form, professional: '' });
@@ -402,8 +426,10 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                     }
                                 }}
                             >
-                                {existingProfessionals.map(p => (
-                                    <option key={p} value={p}>{p === user.displayName ? `${p} (Yo)` : p}</option>
+                                {existingProfessionals.map((p) => (
+                                    <option key={p} value={p}>
+                                        {p === user.displayName ? `${p} (Yo)` : p}
+                                    </option>
                                 ))}
                                 <option value="custom">+ Otro profesional...</option>
                             </select>
@@ -424,12 +450,14 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                         <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de Admisión</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        Fecha de Admisión
+                                    </label>
                                     <input
                                         type="date"
                                         className="w-full p-2 border rounded-lg"
                                         value={form.admissionDate}
-                                        onChange={e => setForm({ ...form, admissionDate: e.target.value })}
+                                        onChange={(e) => setForm({ ...form, admissionDate: e.target.value })}
                                     />
                                 </div>
                                 <div>
@@ -437,12 +465,14 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                     <select
                                         className="w-full p-2 border rounded-lg bg-white"
                                         value={form.isActive ? 'active' : 'inactive'}
-                                        onChange={e => setForm({
-                                            ...form,
-                                            isActive: e.target.value === 'active',
-                                            dischargeType: e.target.value === 'active' ? '' : form.dischargeType,
-                                            dischargeDate: e.target.value === 'active' ? '' : form.dischargeDate
-                                        })}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                isActive: e.target.value === 'active',
+                                                dischargeType: e.target.value === 'active' ? '' : form.dischargeType,
+                                                dischargeDate: e.target.value === 'active' ? '' : form.dischargeDate,
+                                            })
+                                        }
                                     >
                                         <option value="active">Activo</option>
                                         <option value="inactive">Inactivo (Alta)</option>
@@ -453,11 +483,18 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                             {!form.isActive && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Alta</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Tipo de Alta
+                                        </label>
                                         <select
                                             className="w-full p-2 border rounded-lg bg-white"
                                             value={form.dischargeType}
-                                            onChange={e => setForm({ ...form, dischargeType: e.target.value as 'clinical' | 'dropout' })}
+                                            onChange={(e) =>
+                                                setForm({
+                                                    ...form,
+                                                    dischargeType: e.target.value as 'clinical' | 'dropout',
+                                                })
+                                            }
                                         >
                                             <option value="">Seleccionar...</option>
                                             <option value="clinical">Alta Clínica</option>
@@ -465,12 +502,14 @@ export const PatientModal = ({ onClose, user, profile, existingPatient }: Patien
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de Alta</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Fecha de Alta
+                                        </label>
                                         <input
                                             type="date"
                                             className="w-full p-2 border rounded-lg"
                                             value={form.dischargeDate}
-                                            onChange={e => setForm({ ...form, dischargeDate: e.target.value })}
+                                            onChange={(e) => setForm({ ...form, dischargeDate: e.target.value })}
                                         />
                                     </div>
                                 </div>

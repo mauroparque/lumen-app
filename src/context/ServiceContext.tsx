@@ -28,9 +28,5 @@ export const ServiceProvider: React.FC<ServiceProviderProps> = ({ user, profile,
         return <>{children}</>;
     }
 
-    return (
-        <ServiceContext.Provider value={service}>
-            {children}
-        </ServiceContext.Provider>
-    );
+    return <ServiceContext.Provider value={service}>{children}</ServiceContext.Provider>;
 };

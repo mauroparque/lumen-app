@@ -100,11 +100,7 @@ export const AuthScreen = () => {
             <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-8">
                 <h1 className="text-2xl font-bold text-teal-600 text-center mb-6">Lumen Acceso</h1>
 
-                {error && (
-                    <div className="bg-red-50 text-red-500 p-3 rounded mb-4 text-sm">
-                        {error}
-                    </div>
-                )}
+                {error && <div className="bg-red-50 text-red-500 p-3 rounded mb-4 text-sm">{error}</div>}
 
                 <form onSubmit={handleAuth} className="space-y-4">
                     <input
@@ -112,7 +108,7 @@ export const AuthScreen = () => {
                         placeholder="Email"
                         className="w-full p-2 border rounded focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
                         value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                     />
 
@@ -121,7 +117,7 @@ export const AuthScreen = () => {
                         placeholder="Contraseña"
                         className="w-full p-2 border rounded focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
                         value={password}
-                        onChange={e => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                     />
 
@@ -130,7 +126,7 @@ export const AuthScreen = () => {
                         <input
                             type="checkbox"
                             checked={rememberMe}
-                            onChange={e => setRememberMe(e.target.checked)}
+                            onChange={(e) => setRememberMe(e.target.checked)}
                             className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
                         />
                         Recordar usuario
@@ -149,10 +145,11 @@ export const AuthScreen = () => {
                     <button
                         type="submit"
                         disabled={!turnstileToken || isLoading}
-                        className={`w-full py-2 rounded font-medium transition-colors ${turnstileToken && !isLoading
+                        className={`w-full py-2 rounded font-medium transition-colors ${
+                            turnstileToken && !isLoading
                                 ? 'bg-teal-600 text-white hover:bg-teal-700'
                                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                            }`}
+                        }`}
                     >
                         {isLoading ? 'Ingresando...' : 'Ingresar'}
                     </button>

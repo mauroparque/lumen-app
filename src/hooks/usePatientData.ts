@@ -29,11 +29,11 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
             collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments'),
             where('patientId', '==', patientId),
             orderBy('date', 'desc'),
-            orderBy('time', 'desc')
+            orderBy('time', 'desc'),
         );
 
         const unsubscribeAppointments = onSnapshot(appointmentsQuery, (snapshot) => {
-            const appts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
+            const appts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Appointment);
             setHistory(appts);
         });
 
@@ -41,11 +41,11 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
         const paymentsQuery = query(
             collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'payments'),
             where('patientId', '==', patientId),
-            orderBy('date', 'desc')
+            orderBy('date', 'desc'),
         );
 
         const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
-            const pays = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
+            const pays = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Payment);
             setPayments(pays);
         });
 
@@ -70,7 +70,7 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
 
-        history.forEach(appt => {
+        history.forEach((appt) => {
             const apptDate = new Date(appt.date + 'T' + appt.time);
 
             // Update last visit
@@ -92,17 +92,16 @@ export const usePatientData = (user: User | null, patientId: string | undefined)
         });
 
         // Calculate Total Paid
-        payments.forEach(pay => {
+        payments.forEach((pay) => {
             paid += pay.amount;
         });
 
         setStats({
             totalDebt: debt,
             totalPaid: paid,
-            lastVisit: lastVisitDate
+            lastVisit: lastVisitDate,
         });
         setLoading(false);
-
     }, [history, payments]);
 
     return { history, payments, loading, stats };

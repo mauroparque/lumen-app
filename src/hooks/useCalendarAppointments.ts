@@ -7,7 +7,7 @@ export const useCalendarAppointments = (startDate: string, endDate: string) => {
     const { allAppointments, loading } = useData();
 
     const filteredAppointments = useMemo(() => {
-        return allAppointments.filter(a => a.date >= startDate && a.date <= endDate);
+        return allAppointments.filter((a) => a.date >= startDate && a.date <= endDate);
     }, [allAppointments, startDate, endDate]);
 
     return { appointments: filteredAppointments, loading };

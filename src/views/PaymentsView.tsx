@@ -4,7 +4,20 @@ import { useData } from '../context/DataContext';
 import { usePatients } from '../hooks/usePatients';
 import { usePsiquePayments } from '../hooks/usePsiquePayments';
 import { useAgendaStats } from '../hooks/useAgendaStats';
-import { Search, CheckCircle, AlertCircle, Clock, DollarSign, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Building2, Loader2, Pencil, TrendingUp } from 'lucide-react';
+import {
+    Search,
+    CheckCircle,
+    AlertCircle,
+    Clock,
+    DollarSign,
+    Calendar as CalendarIcon,
+    ChevronLeft,
+    ChevronRight,
+    Building2,
+    Loader2,
+    Pencil,
+    TrendingUp,
+} from 'lucide-react';
 import { PaymentModal } from '../components/modals/PaymentModal';
 import { IncomeProjection } from '../components/payments/IncomeProjection';
 import { toast } from 'sonner';
@@ -30,18 +43,18 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
     const [selectedIsPsique, setSelectedIsPsique] = useState(false);
 
     // Psique payments hook
-    const { monthData: psiqueData, loading: psiqueLoading, markAsPaid } = usePsiquePayments(appointments, patients, selectedDate, profile.name);
+    const {
+        monthData: psiqueData,
+        loading: psiqueLoading,
+        markAsPaid,
+    } = usePsiquePayments(appointments, patients, selectedDate, profile.name);
 
     // Agenda stats for projection
     const agendaStats = useAgendaStats(appointments, patients);
 
     // Create a map of patientId -> isPsique for quick lookup
     const psiquePatientIds = useMemo(() => {
-        return new Set(
-            patients
-                .filter(p => p.patientSource === 'psique')
-                .map(p => p.id)
-        );
+        return new Set(patients.filter((p) => p.patientSource === 'psique').map((p) => p.id));
     }, [patients]);
 
     // Month Selector helpers
@@ -60,12 +73,12 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
         // Filter by search term
         if (searchTerm) {
             const lower = searchTerm.toLowerCase();
-            data = data.filter(a =>
-                a.patientName.toLowerCase().includes(lower) ||
-                (a.patientEmail && a.patientEmail.toLowerCase().includes(lower))
+            data = data.filter(
+                (a) =>
+                    a.patientName.toLowerCase().includes(lower) ||
+                    (a.patientEmail && a.patientEmail.toLowerCase().includes(lower)),
             );
         }
-
 
         const now = new Date();
 
@@ -83,26 +96,32 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
 
         if (viewMode === 'overdue') {
             // ALL overdue appointments (1 hour past start time, unpaid), regardless of selected month
-            return data.filter(a => {
-                // Cancelados sin cobro no se muestran
-                if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
-                return !a.isPaid && isOverdue(a);
-            }).sort((a, b) => a.date.localeCompare(b.date));
+            return data
+                .filter((a) => {
+                    // Cancelados sin cobro no se muestran
+                    if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
+                    return !a.isPaid && isOverdue(a);
+                })
+                .sort((a, b) => a.date.localeCompare(b.date));
         } else if (viewMode === 'upcoming') {
             // Future/Pending appointments in selected month (NOT overdue)
-            return data.filter(a => {
-                const apptDate = new Date(a.date + 'T00:00:00');
-                const inMonth = apptDate >= startOfMonth && apptDate <= endOfMonth;
-                // Must be unpaid, not cancelled (unless chargeOnCancellation), in month, and NOT overdue
-                if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
-                return !a.isPaid && inMonth && !isOverdue(a);
-            }).sort((a, b) => a.date.localeCompare(b.date));
+            return data
+                .filter((a) => {
+                    const apptDate = new Date(a.date + 'T00:00:00');
+                    const inMonth = apptDate >= startOfMonth && apptDate <= endOfMonth;
+                    // Must be unpaid, not cancelled (unless chargeOnCancellation), in month, and NOT overdue
+                    if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
+                    return !a.isPaid && inMonth && !isOverdue(a);
+                })
+                .sort((a, b) => a.date.localeCompare(b.date));
         } else {
             // History: Paid appointments in selected month
-            return data.filter(a => {
-                const apptDate = new Date(a.date + 'T00:00:00');
-                return a.isPaid && apptDate >= startOfMonth && apptDate <= endOfMonth;
-            }).sort((a, b) => b.date.localeCompare(a.date));
+            return data
+                .filter((a) => {
+                    const apptDate = new Date(a.date + 'T00:00:00');
+                    return a.isPaid && apptDate >= startOfMonth && apptDate <= endOfMonth;
+                })
+                .sort((a, b) => b.date.localeCompare(a.date));
         }
     }, [appointments, loading, searchTerm, viewMode, selectedDate]);
 
@@ -111,7 +130,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
         let gross = 0;
         let psiqueDiscount = 0;
 
-        filteredData.forEach(item => {
+        filteredData.forEach((item) => {
             const price = item.price || 0;
             gross += price;
             // Only apply discount if patient is from Psique AND appointment is not excluded
@@ -122,7 +141,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
 
         return {
             totalGross: gross,
-            totalNet: gross - psiqueDiscount
+            totalNet: gross - psiqueDiscount,
         };
     }, [filteredData, psiquePatientIds]);
 
@@ -134,7 +153,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
         endOfMonth.setHours(23, 59, 59, 999);
 
         return appointments
-            .filter(a => {
+            .filter((a) => {
                 const apptDate = new Date(a.date + 'T00:00:00');
                 return a.isPaid && apptDate >= startOfMonth && apptDate <= endOfMonth;
             })
@@ -155,7 +174,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
 
     const handleEditPayment = (appt: Appointment) => {
         // Find the payment associated with this appointment
-        const payment = payments?.find(p => p.appointmentId === appt.id);
+        const payment = payments?.find((p) => p.appointmentId === appt.id);
         if (payment) {
             setSelectedAppointment(appt);
             setSelectedPayment(payment);
@@ -177,7 +196,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
     const getNetAmount = (appt: Appointment) => {
         const price = appt.price || 0;
         if (hasPsiqueDiscount(appt)) {
-            return price - (price * PSIQUE_RATE);
+            return price - price * PSIQUE_RATE;
         }
         return price;
     };
@@ -193,7 +212,10 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
 
                 <div className="flex items-center space-x-4 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                        <Search
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+                            size={18}
+                        />
                         <input
                             type="text"
                             placeholder="Buscar..."
@@ -219,15 +241,15 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                             </div>
                             <div>
                                 <span className="text-purple-300">Psique (25%):</span>
-                                <span className="ml-2 font-bold text-purple-300">-${psiqueData.totalAmount.toLocaleString()}</span>
+                                <span className="ml-2 font-bold text-purple-300">
+                                    -${psiqueData.totalAmount.toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     </div>
                     <div className="text-right">
                         <p className="text-slate-400 text-xs uppercase tracking-wider">Ingreso Neto</p>
-                        <p className="text-3xl font-bold text-green-400">
-                            ${monthlyNetIncome.toLocaleString()}
-                        </p>
+                        <p className="text-3xl font-bold text-green-400">${monthlyNetIncome.toLocaleString()}</p>
                     </div>
                 </div>
             </div>
@@ -269,15 +291,21 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                 </div>
 
                 {/* Date Selector (Only relevant for Upcoming & History usually, but kept always visible for simplicity or specific behavior) */}
-                {(viewMode !== 'overdue' && viewMode !== 'projection') && (
+                {viewMode !== 'overdue' && viewMode !== 'projection' && (
                     <div className="flex items-center bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
-                        <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
+                        <button
+                            onClick={() => changeMonth(-1)}
+                            className="p-1 hover:bg-slate-100 rounded-lg text-slate-500"
+                        >
                             <ChevronLeft size={20} />
                         </button>
                         <span className="mx-4 font-bold text-slate-700 capitalize min-w-[140px] text-center block">
                             {currentMonthLabel}
                         </span>
-                        <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
+                        <button
+                            onClick={() => changeMonth(1)}
+                            className="p-1 hover:bg-slate-100 rounded-lg text-slate-500"
+                        >
                             <ChevronRight size={20} />
                         </button>
                     </div>
@@ -288,13 +316,19 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
             {viewMode === 'projection' ? (
                 <IncomeProjection stats={agendaStats} patients={patients} />
             ) : viewMode === 'psique' ? (
-                <div className={`border p-6 rounded-2xl shadow-sm mb-6 ${psiqueData.isPaid ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200'}`}>
+                <div
+                    className={`border p-6 rounded-2xl shadow-sm mb-6 ${psiqueData.isPaid ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200'}`}
+                >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className={`font-bold text-sm mb-1 uppercase tracking-wider ${psiqueData.isPaid ? 'text-green-600' : 'text-purple-600'}`}>
+                            <p
+                                className={`font-bold text-sm mb-1 uppercase tracking-wider ${psiqueData.isPaid ? 'text-green-600' : 'text-purple-600'}`}
+                            >
                                 Pago a Psique Salud Mental (25%)
                             </p>
-                            <h2 className={`text-3xl font-bold flex items-center ${psiqueData.isPaid ? 'text-green-700' : 'text-purple-700'}`}>
+                            <h2
+                                className={`text-3xl font-bold flex items-center ${psiqueData.isPaid ? 'text-green-700' : 'text-purple-700'}`}
+                            >
                                 <DollarSign size={24} className="mr-1" />
                                 {psiqueData.totalAmount.toLocaleString()}
                             </h2>
@@ -333,38 +367,62 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                     </div>
                 </div>
             ) : (
-                <div className={`border p-6 rounded-2xl shadow-sm mb-6 flex items-center justify-between
-                    ${viewMode === 'overdue' ? 'bg-red-50 border-red-100' :
-                        viewMode === 'upcoming' ? 'bg-amber-50 border-amber-100' :
-                            'bg-green-50 border-green-100'}`}>
+                <div
+                    className={`border p-6 rounded-2xl shadow-sm mb-6 flex items-center justify-between
+                    ${
+                        viewMode === 'overdue'
+                            ? 'bg-red-50 border-red-100'
+                            : viewMode === 'upcoming'
+                              ? 'bg-amber-50 border-amber-100'
+                              : 'bg-green-50 border-green-100'
+                    }`}
+                >
                     <div>
-                        <p className={`font-bold text-sm mb-1 uppercase tracking-wider opacity-80
-                            ${viewMode === 'overdue' ? 'text-red-600' :
-                                viewMode === 'upcoming' ? 'text-amber-600' :
-                                    'text-green-600'}`}>
-                            {viewMode === 'overdue' ? 'Total Vencido' :
-                                viewMode === 'upcoming' ? 'Total a Cobrar (Mes)' :
-                                    'Total Cobrado (Mes)'}
+                        <p
+                            className={`font-bold text-sm mb-1 uppercase tracking-wider opacity-80
+                            ${
+                                viewMode === 'overdue'
+                                    ? 'text-red-600'
+                                    : viewMode === 'upcoming'
+                                      ? 'text-amber-600'
+                                      : 'text-green-600'
+                            }`}
+                        >
+                            {viewMode === 'overdue'
+                                ? 'Total Vencido'
+                                : viewMode === 'upcoming'
+                                  ? 'Total a Cobrar (Mes)'
+                                  : 'Total Cobrado (Mes)'}
                         </p>
                         <div className="flex items-baseline gap-4">
-                            <h2 className={`text-3xl font-bold flex items-center 
-                                ${viewMode === 'overdue' ? 'text-red-700' :
-                                    viewMode === 'upcoming' ? 'text-amber-700' :
-                                        'text-green-700'}`}>
+                            <h2
+                                className={`text-3xl font-bold flex items-center 
+                                ${
+                                    viewMode === 'overdue'
+                                        ? 'text-red-700'
+                                        : viewMode === 'upcoming'
+                                          ? 'text-amber-700'
+                                          : 'text-green-700'
+                                }`}
+                            >
                                 <DollarSign size={24} className="mr-1" />
                                 {totalNet.toLocaleString()}
                             </h2>
                             {totalGross !== totalNet && (
-                                <span className="text-sm text-slate-500">
-                                    (Bruto: ${totalGross.toLocaleString()})
-                                </span>
+                                <span className="text-sm text-slate-500">(Bruto: ${totalGross.toLocaleString()})</span>
                             )}
                         </div>
                     </div>
-                    <div className={`text-right text-sm font-medium opacity-80
-                         ${viewMode === 'overdue' ? 'text-red-600' :
-                            viewMode === 'upcoming' ? 'text-amber-600' :
-                                'text-green-600'}`}>
+                    <div
+                        className={`text-right text-sm font-medium opacity-80
+                         ${
+                             viewMode === 'overdue'
+                                 ? 'text-red-600'
+                                 : viewMode === 'upcoming'
+                                   ? 'text-amber-600'
+                                   : 'text-green-600'
+                         }`}
+                    >
                         {filteredData.length} registros
                     </div>
                 </div>
@@ -398,14 +456,10 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {psiqueData.patientBreakdown.map(patient => (
+                                    {psiqueData.patientBreakdown.map((patient) => (
                                         <tr key={patient.patientId} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4 pl-6 font-bold text-slate-800">
-                                                {patient.patientName}
-                                            </td>
-                                            <td className="p-4 text-center text-slate-600">
-                                                {patient.sessionCount}
-                                            </td>
+                                            <td className="p-4 pl-6 font-bold text-slate-800">{patient.patientName}</td>
+                                            <td className="p-4 text-center text-slate-600">{patient.sessionCount}</td>
                                             <td className="p-4 text-right text-slate-600">
                                                 ${patient.totalFee.toLocaleString()}
                                             </td>
@@ -421,7 +475,10 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                             Total a Pagar
                                         </td>
                                         <td className="p-4 text-right text-slate-600">
-                                            ${psiqueData.patientBreakdown.reduce((sum, p) => sum + p.totalFee, 0).toLocaleString()}
+                                            $
+                                            {psiqueData.patientBreakdown
+                                                .reduce((sum, p) => sum + p.totalFee, 0)
+                                                .toLocaleString()}
                                         </td>
                                         <td className="p-4 text-right pr-6 font-bold text-purple-800 text-lg">
                                             ${psiqueData.totalAmount.toLocaleString()}
@@ -439,14 +496,20 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                 ) : filteredData.length === 0 ? (
                     <div className="p-12 text-center text-slate-500 flex flex-col items-center">
                         <div className="bg-slate-50 p-4 rounded-full mb-4">
-                            {viewMode === 'overdue' ? <CheckCircle size={32} className="text-green-500" /> :
-                                viewMode === 'upcoming' ? <CalendarIcon size={32} className="text-slate-300" /> :
-                                    <Clock size={32} className="text-slate-300" />}
+                            {viewMode === 'overdue' ? (
+                                <CheckCircle size={32} className="text-green-500" />
+                            ) : viewMode === 'upcoming' ? (
+                                <CalendarIcon size={32} className="text-slate-300" />
+                            ) : (
+                                <Clock size={32} className="text-slate-300" />
+                            )}
                         </div>
                         <p>
-                            {viewMode === 'overdue' ? '¡Excelente! No hay deudas vencidas.' :
-                                viewMode === 'upcoming' ? 'No hay cobros pendientes para este mes.' :
-                                    'No hay historial de cobros en este mes.'}
+                            {viewMode === 'overdue'
+                                ? '¡Excelente! No hay deudas vencidas.'
+                                : viewMode === 'upcoming'
+                                  ? 'No hay cobros pendientes para este mes.'
+                                  : 'No hay historial de cobros en este mes.'}
                         </p>
                     </div>
                 ) : (
@@ -462,7 +525,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredData.map(item => {
+                                {filteredData.map((item) => {
                                     const isPsiquePatient = psiquePatientIds.has(item.patientId);
                                     const hasDiscount = hasPsiqueDiscount(item);
                                     const price = item.price || 0;
@@ -479,7 +542,11 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                                     {isPsiquePatient && (
                                                         <span
                                                             className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${hasDiscount ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500 line-through'}`}
-                                                            title={hasDiscount ? "Paciente Psique - 25% descuento aplicado" : "Paciente Psique - Sin descuento (excluido)"}
+                                                            title={
+                                                                hasDiscount
+                                                                    ? 'Paciente Psique - 25% descuento aplicado'
+                                                                    : 'Paciente Psique - Sin descuento (excluido)'
+                                                            }
                                                         >
                                                             <Building2 size={10} className="mr-1" /> P
                                                         </span>
@@ -492,13 +559,20 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                             <td className="p-4 text-right whitespace-nowrap">
                                                 {hasDiscount ? (
                                                     <div className="flex flex-col items-end">
-                                                        <span className="font-bold text-slate-700">${netAmount.toLocaleString()}</span>
-                                                        <span className="text-xs text-purple-500" title={`Bruto: $${price.toLocaleString()} - Psique: $${(price * PSIQUE_RATE).toLocaleString()}`}>
+                                                        <span className="font-bold text-slate-700">
+                                                            ${netAmount.toLocaleString()}
+                                                        </span>
+                                                        <span
+                                                            className="text-xs text-purple-500"
+                                                            title={`Bruto: $${price.toLocaleString()} - Psique: $${(price * PSIQUE_RATE).toLocaleString()}`}
+                                                        >
                                                             (bruto ${price.toLocaleString()})
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="font-bold text-slate-700">${price.toLocaleString()}</span>
+                                                    <span className="font-bold text-slate-700">
+                                                        ${price.toLocaleString()}
+                                                    </span>
                                                 )}
                                             </td>
                                             <td className="p-4 pr-6 text-center">
@@ -525,7 +599,7 @@ export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
                                                 )}
                                             </td>
                                         </tr>
-                                    )
+                                    );
                                 })}
                             </tbody>
                         </table>

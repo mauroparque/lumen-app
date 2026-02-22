@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import {
-    collection,
-    query,
-    where,
-    onSnapshot,
-    addDoc,
-    updateDoc,
-    doc,
-    Timestamp
-} from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, appId, CLINIC_ID } from '../lib/firebase';
 import { ClinicalNote } from '../types';
@@ -29,7 +20,7 @@ export const useClinicalNotes = (user: User | null) => {
 
             const q = query(
                 collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'notes'),
-                where('appointmentId', '==', appointmentId)
+                where('appointmentId', '==', appointmentId),
             );
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -78,7 +69,6 @@ export const useClinicalNotes = (user: User | null) => {
             // Update appointment to indicate it has notes
             const appointmentRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'appointments', appointmentId);
             await updateDoc(appointmentRef, { hasNotes: true });
-
         } catch (error) {
             console.error('Error saving note:', error);
             throw error;
@@ -117,14 +107,17 @@ export const useClinicalNotes = (user: User | null) => {
 
             const q = query(
                 collection(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'notes'),
-                where('patientId', '==', patientId)
+                where('patientId', '==', patientId),
             );
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
-                const fetchedNotes = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as ClinicalNote));
+                const fetchedNotes = snapshot.docs.map(
+                    (doc) =>
+                        ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }) as ClinicalNote,
+                );
                 // Sort by createdAt descending
                 fetchedNotes.sort((a, b) => {
                     const dateA = a.createdAt?.toDate?.() || new Date(0);

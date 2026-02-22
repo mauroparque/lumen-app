@@ -3,8 +3,17 @@ import { useData } from '../context/DataContext';
 import { usePatients } from '../hooks/usePatients';
 import { useAgendaStats } from '../hooks/useAgendaStats';
 import {
-    BarChart3, Users, DollarSign, TrendingUp, UserX, XCircle,
-    Calendar, Activity, Building2, ArrowUpRight, ArrowDownRight
+    BarChart3,
+    Users,
+    DollarSign,
+    TrendingUp,
+    UserX,
+    XCircle,
+    Calendar,
+    Activity,
+    Building2,
+    ArrowUpRight,
+    ArrowDownRight,
 } from 'lucide-react';
 
 interface StatisticsViewProps {
@@ -17,17 +26,16 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
     const stats = useAgendaStats(appointments, patients);
 
     // Calculate some derived stats
-    const completionRate = stats.totalScheduledAppointments > 0
-        ? ((stats.totalCompletedSessions / stats.totalScheduledAppointments) * 100).toFixed(1)
-        : '0';
+    const completionRate =
+        stats.totalScheduledAppointments > 0
+            ? ((stats.totalCompletedSessions / stats.totalScheduledAppointments) * 100).toFixed(1)
+            : '0';
 
     // Get top patients by sessions
-    const topPatients = [...stats.patientStats]
-        .sort((a, b) => b.totalSessions - a.totalSessions)
-        .slice(0, 10);
+    const topPatients = [...stats.patientStats].sort((a, b) => b.totalSessions - a.totalSessions).slice(0, 10);
 
     // Count psique vs particular patients
-    const psiquePatients = stats.patientStats.filter(p => p.isPsique).length;
+    const psiquePatients = stats.patientStats.filter((p) => p.isPsique).length;
     const particularPatients = stats.patientStats.length - psiquePatients;
 
     return (
@@ -134,9 +142,12 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
                                 <XCircle size={16} />
                                 Cancelaciones
                             </div>
-                            <p className="text-2xl font-bold text-red-700">{(stats.cancellationRate * 100).toFixed(1)}%</p>
+                            <p className="text-2xl font-bold text-red-700">
+                                {(stats.cancellationRate * 100).toFixed(1)}%
+                            </p>
                             <p className="text-xs text-red-600 mt-1">
-                                {Math.round(stats.cancellationRate * stats.totalScheduledAppointments)} turnos cancelados
+                                {Math.round(stats.cancellationRate * stats.totalScheduledAppointments)} turnos
+                                cancelados
                             </p>
                         </div>
                     </div>
@@ -152,24 +163,40 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
                         <div>
                             <div className="flex justify-between text-sm mb-1">
                                 <span className="text-purple-700 font-medium">Psique</span>
-                                <span className="text-purple-700">{psiquePatients} ({stats.totalPatients > 0 ? ((psiquePatients / stats.totalPatients) * 100).toFixed(0) : 0}%)</span>
+                                <span className="text-purple-700">
+                                    {psiquePatients} (
+                                    {stats.totalPatients > 0
+                                        ? ((psiquePatients / stats.totalPatients) * 100).toFixed(0)
+                                        : 0}
+                                    %)
+                                </span>
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-3">
                                 <div
                                     className="bg-purple-500 h-3 rounded-full transition-all"
-                                    style={{ width: `${stats.totalPatients > 0 ? (psiquePatients / stats.totalPatients) * 100 : 0}%` }}
+                                    style={{
+                                        width: `${stats.totalPatients > 0 ? (psiquePatients / stats.totalPatients) * 100 : 0}%`,
+                                    }}
                                 />
                             </div>
                         </div>
                         <div>
                             <div className="flex justify-between text-sm mb-1">
                                 <span className="text-slate-700 font-medium">Particular</span>
-                                <span className="text-slate-700">{particularPatients} ({stats.totalPatients > 0 ? ((particularPatients / stats.totalPatients) * 100).toFixed(0) : 0}%)</span>
+                                <span className="text-slate-700">
+                                    {particularPatients} (
+                                    {stats.totalPatients > 0
+                                        ? ((particularPatients / stats.totalPatients) * 100).toFixed(0)
+                                        : 0}
+                                    %)
+                                </span>
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-3">
                                 <div
                                     className="bg-slate-500 h-3 rounded-full transition-all"
-                                    style={{ width: `${stats.totalPatients > 0 ? (particularPatients / stats.totalPatients) * 100 : 0}%` }}
+                                    style={{
+                                        width: `${stats.totalPatients > 0 ? (particularPatients / stats.totalPatients) * 100 : 0}%`,
+                                    }}
                                 />
                             </div>
                         </div>
@@ -187,9 +214,7 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
                     <p className="text-xs text-slate-500 mt-1">Últimos {stats.periodMonths} meses</p>
                 </div>
                 {topPatients.length === 0 ? (
-                    <div className="p-12 text-center text-slate-500">
-                        No hay datos de sesiones en este período.
-                    </div>
+                    <div className="p-12 text-center text-slate-500">No hay datos de sesiones en este período.</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
@@ -205,9 +230,7 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
                             <tbody className="divide-y divide-slate-100">
                                 {topPatients.map((patient, index) => (
                                     <tr key={patient.patientId} className="hover:bg-slate-50 transition-colors">
-                                        <td className="p-4 pl-6 text-slate-400 font-medium">
-                                            {index + 1}
-                                        </td>
+                                        <td className="p-4 pl-6 text-slate-400 font-medium">{index + 1}</td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-2">
                                                 <span className="font-bold text-slate-800">{patient.patientName}</span>
@@ -223,9 +246,7 @@ export const StatisticsView = ({ user }: StatisticsViewProps) => {
                                                 {patient.totalSessions}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-center text-slate-600">
-                                            {patient.avgSessions}
-                                        </td>
+                                        <td className="p-4 text-center text-slate-600">{patient.avgSessions}</td>
                                         <td className="p-4 text-right pr-6 font-medium text-slate-700">
                                             ${patient.fee.toLocaleString()}
                                         </td>

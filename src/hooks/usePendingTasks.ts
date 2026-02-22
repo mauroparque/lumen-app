@@ -22,7 +22,7 @@ export interface PendingTask {
 
 export const usePendingTasks = (
     appointments: Appointment[] = [],
-    myPatientIds?: Set<string>  // NEW: filter by patient IDs belonging to current professional
+    myPatientIds?: Set<string>, // NEW: filter by patient IDs belonging to current professional
 ) => {
     const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,7 +54,7 @@ export const usePendingTasks = (
         const unsubscribe = onSnapshot(notesRef, (snapshot) => {
             const allPendingTasks: PendingTask[] = [];
 
-            snapshot.docs.forEach(docSnap => {
+            snapshot.docs.forEach((docSnap) => {
                 const data = docSnap.data() as ClinicalNote;
 
                 // Skip notes for patients not belonging to current professional
@@ -65,7 +65,7 @@ export const usePendingTasks = (
                 // Check if note has tasks with incomplete items
                 if (data.tasks && Array.isArray(data.tasks)) {
                     // Find the appointment to get its date
-                    const appointment = appointments.find(a => a.id === data.appointmentId);
+                    const appointment = appointments.find((a) => a.id === data.appointmentId);
 
                     data.tasks.forEach((task, index) => {
                         if (!task.completed) {
@@ -77,7 +77,7 @@ export const usePendingTasks = (
                                 text: task.text,
                                 subtasks: task.subtasks || [],
                                 createdAt: data.createdAt,
-                                appointmentDate: appointment?.date
+                                appointmentDate: appointment?.date,
                             });
                         }
                     });

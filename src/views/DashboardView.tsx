@@ -6,8 +6,17 @@ import { usePatients } from '../hooks/usePatients';
 import { usePendingTasks } from '../hooks/usePendingTasks';
 import { usePsiquePayments } from '../hooks/usePsiquePayments';
 import {
-    Calendar, Users, Clock, AlertCircle,
-    TrendingUp, ChevronRight, CheckCircle, Video, MapPin, ListTodo, Square
+    Calendar,
+    Users,
+    Clock,
+    AlertCircle,
+    TrendingUp,
+    ChevronRight,
+    CheckCircle,
+    Video,
+    MapPin,
+    ListTodo,
+    Square,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,7 +31,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
     const { patients } = usePatients(user);
 
     // Create set of patient IDs for filtering tasks
-    const myPatientIds = useMemo(() => new Set(patients.map(p => p.id)), [patients]);
+    const myPatientIds = useMemo(() => new Set(patients.map((p) => p.id)), [patients]);
     const { pendingTasks, completeTask } = usePendingTasks(appointments, myPatientIds);
 
     // Psique payments for current month
@@ -38,7 +47,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
     // Turnos de hoy
     const todayAppointments = useMemo(() => {
         return appointments
-            .filter(a => a.date === today && a.status !== 'cancelado')
+            .filter((a) => a.date === today && a.status !== 'cancelado')
             .sort((a, b) => a.time.localeCompare(b.time));
     }, [appointments, today]);
 
@@ -53,7 +62,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
         const nextWeekStr = `${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`;
 
         return appointments
-            .filter(a => a.date >= tomorrowStr && a.date <= nextWeekStr && a.status !== 'cancelado')
+            .filter((a) => a.date >= tomorrowStr && a.date <= nextWeekStr && a.status !== 'cancelado')
             .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
             .slice(0, 5);
     }, [appointments]);
@@ -70,7 +79,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
     // Deudas pendientes (turnos vencidos no pagados - 1 hora después del inicio)
     const pendingDebts = useMemo(() => {
         return appointments
-            .filter(a => {
+            .filter((a) => {
                 if (a.isPaid) return false;
                 // Cancelados sin cobro no generan deuda
                 if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
@@ -83,7 +92,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
     // Estadísticas
     const stats = useMemo(() => {
         const totalDebt = appointments
-            .filter(a => {
+            .filter((a) => {
                 if (a.isPaid) return false;
                 // Cancelados sin cobro no generan deuda
                 if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
@@ -91,22 +100,24 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
             })
             .reduce((sum, a) => sum + (a.price || 0), 0);
 
-        const thisMonthAppointments = appointments.filter(a => {
+        const thisMonthAppointments = appointments.filter((a) => {
             const month = today.slice(0, 7); // YYYY-MM
             return a.date.startsWith(month);
         });
 
-        const completedThisMonth = thisMonthAppointments.filter(a => a.date < today && a.status !== 'cancelado').length;
-        const paidThisMonth = thisMonthAppointments.filter(a => a.isPaid).reduce((sum, a) => sum + (a.price || 0), 0);
+        const completedThisMonth = thisMonthAppointments.filter(
+            (a) => a.date < today && a.status !== 'cancelado',
+        ).length;
+        const paidThisMonth = thisMonthAppointments.filter((a) => a.isPaid).reduce((sum, a) => sum + (a.price || 0), 0);
 
         return {
-            totalPatients: patients.filter(p => p.isActive !== false).length,
+            totalPatients: patients.filter((p) => p.isActive !== false).length,
             todayCount: todayAppointments.length,
             totalDebt,
             completedThisMonth,
             paidThisMonth,
             pendingCount: pendingDebts.length,
-            netIncome: paidThisMonth - psiqueData.totalAmount
+            netIncome: paidThisMonth - psiqueData.totalAmount,
         };
     }, [appointments, patients, today, todayAppointments, pendingDebts, psiqueData.totalAmount]);
 
@@ -165,7 +176,7 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                     icon={AlertCircle}
                     label="Deuda Total"
                     value={`$${stats.totalDebt.toLocaleString()}`}
-                    color={stats.totalDebt > 0 ? "red" : "green"}
+                    color={stats.totalDebt > 0 ? 'red' : 'green'}
                     onClick={() => onNavigate('payments')}
                 />
             </div>
@@ -184,15 +195,15 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                             </div>
                             <div>
                                 <span className="text-purple-300">Psique:</span>
-                                <span className="ml-2 font-bold text-purple-300">-${psiqueData.totalAmount.toLocaleString()}</span>
+                                <span className="ml-2 font-bold text-purple-300">
+                                    -${psiqueData.totalAmount.toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     </div>
                     <div className="text-right">
                         <p className="text-slate-400 text-xs uppercase tracking-wider">Ingreso Neto</p>
-                        <p className="text-3xl font-bold text-green-400">
-                            ${stats.netIncome.toLocaleString()}
-                        </p>
+                        <p className="text-3xl font-bold text-green-400">${stats.netIncome.toLocaleString()}</p>
                     </div>
                 </div>
             </div>
@@ -208,7 +219,9 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                             </div>
                             <div>
                                 <h2 className="font-bold text-slate-900">Turnos de Hoy</h2>
-                                <p className="text-xs text-slate-500">{todayAppointments.length} turno(s) programado(s)</p>
+                                <p className="text-xs text-slate-500">
+                                    {todayAppointments.length} turno(s) programado(s)
+                                </p>
                             </div>
                         </div>
                         <button
@@ -226,23 +239,34 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                                 <p>No hay turnos programados para hoy</p>
                             </div>
                         ) : (
-                            todayAppointments.map(appt => (
-                                <div key={appt.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                            todayAppointments.map((appt) => (
+                                <div
+                                    key={appt.id}
+                                    className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between"
+                                >
                                     <div className="flex items-center">
                                         <div className="h-12 w-12 rounded-xl bg-slate-100 flex flex-col items-center justify-center mr-4 font-bold text-slate-600">
                                             <span className="text-lg leading-none">{appt.time.split(':')[0]}</span>
-                                            <span className="text-[10px] text-slate-400">{appt.time.split(':')[1]}</span>
+                                            <span className="text-[10px] text-slate-400">
+                                                {appt.time.split(':')[1]}
+                                            </span>
                                         </div>
                                         <div>
                                             <div className="font-semibold text-slate-900">{appt.patientName}</div>
                                             <div className="text-sm text-slate-500 flex items-center">
                                                 {appt.type === 'online' ? (
-                                                    <><Video size={12} className="mr-1" /> Online</>
+                                                    <>
+                                                        <Video size={12} className="mr-1" /> Online
+                                                    </>
                                                 ) : (
-                                                    <><MapPin size={12} className="mr-1" /> Presencial</>
+                                                    <>
+                                                        <MapPin size={12} className="mr-1" /> Presencial
+                                                    </>
                                                 )}
                                                 {appt.consultationType && (
-                                                    <span className="ml-2 text-slate-400">• {appt.consultationType}</span>
+                                                    <span className="ml-2 text-slate-400">
+                                                        • {appt.consultationType}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
@@ -285,9 +309,12 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                             </div>
                             <div className="divide-y divide-slate-50">
                                 {pendingTasks.slice(0, 5).map((task) => {
-                                    const patient = patients.find(p => p.id === task.patientId);
+                                    const patient = patients.find((p) => p.id === task.patientId);
                                     return (
-                                        <div key={`${task.noteId}-${task.taskIndex}`} className="p-3 hover:bg-slate-50 transition-colors flex items-start gap-2">
+                                        <div
+                                            key={`${task.noteId}-${task.taskIndex}`}
+                                            className="p-3 hover:bg-slate-50 transition-colors flex items-start gap-2"
+                                        >
                                             <button
                                                 onClick={async () => {
                                                     try {
@@ -308,7 +335,12 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                                                     <span>{patient?.name || 'Paciente'}</span>
                                                     {task.appointmentDate && (
                                                         <span className="text-slate-500">
-                                                            {new Date(task.appointmentDate + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                                            {new Date(
+                                                                task.appointmentDate + 'T00:00:00',
+                                                            ).toLocaleDateString('es-ES', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                            })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -336,12 +368,15 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                                 </button>
                             </div>
                             <div className="divide-y divide-slate-50">
-                                {pendingDebts.map(debt => (
+                                {pendingDebts.map((debt) => (
                                     <div key={debt.id} className="p-3 flex justify-between items-center">
                                         <div>
                                             <div className="font-medium text-slate-900 text-sm">{debt.patientName}</div>
                                             <div className="text-xs text-slate-400">
-                                                {new Date(debt.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                                {new Date(debt.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                })}
                                             </div>
                                         </div>
                                         <div className="font-bold text-red-600 text-sm">${debt.price}</div>
@@ -358,19 +393,24 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
                         </div>
                         <div className="divide-y divide-slate-50">
                             {upcomingAppointments.length === 0 ? (
-                                <div className="p-6 text-center text-slate-400 text-sm">
-                                    No hay turnos programados
-                                </div>
+                                <div className="p-6 text-center text-slate-400 text-sm">No hay turnos programados</div>
                             ) : (
-                                upcomingAppointments.map(appt => (
+                                upcomingAppointments.map((appt) => (
                                     <div key={appt.id} className="p-3 flex justify-between items-center">
                                         <div>
                                             <div className="font-medium text-slate-900 text-sm">{appt.patientName}</div>
                                             <div className="text-xs text-slate-400">
-                                                {new Date(appt.date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} - {appt.time}
+                                                {new Date(appt.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                                                    weekday: 'short',
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                })}{' '}
+                                                - {appt.time}
                                             </div>
                                         </div>
-                                        <div className={`text-xs font-medium px-2 py-1 rounded ${appt.type === 'online' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                                        <div
+                                            className={`text-xs font-medium px-2 py-1 rounded ${appt.type === 'online' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}
+                                        >
                                             {appt.type === 'online' ? 'Online' : 'Presencial'}
                                         </div>
                                     </div>
@@ -385,7 +425,13 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
 };
 
 // Componente StatCard
-const StatCard = ({ icon: Icon, label, value, color, onClick }: {
+const StatCard = ({
+    icon: Icon,
+    label,
+    value,
+    color,
+    onClick,
+}: {
     icon: any;
     label: string;
     value: string | number;
@@ -397,7 +443,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }: {
         blue: 'bg-blue-50 text-blue-600 border-blue-100',
         green: 'bg-green-50 text-green-600 border-green-100',
         red: 'bg-red-50 text-red-600 border-red-100',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100'
+        amber: 'bg-amber-50 text-amber-600 border-amber-100',
     };
 
     return (
@@ -413,4 +459,3 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }: {
         </button>
     );
 };
-

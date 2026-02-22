@@ -27,18 +27,14 @@ export const usePsiquePayments = (
     appointments: Appointment[],
     patients: Patient[],
     selectedMonth: Date,
-    professionalName?: string  // NEW: filter by professional
+    professionalName?: string, // NEW: filter by professional
 ) => {
     const [psiquePayments, setPsiquePayments] = useState<Record<string, PsiquePayment>>({});
     const [loading, setLoading] = useState(true);
 
     // Get patient IDs that are from Psique
     const psiquePatientIds = useMemo(() => {
-        return new Set(
-            patients
-                .filter(p => p.patientSource === 'psique')
-                .map(p => p.id)
-        );
+        return new Set(patients.filter((p) => p.patientSource === 'psique').map((p) => p.id));
     }, [patients]);
 
     // Generate document key including professional name for isolation
@@ -56,7 +52,7 @@ export const usePsiquePayments = (
         const monthStr = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, '0')}`;
 
         // Filter paid appointments from Psique patients in selected month (excluding those marked to exclude)
-        const psiqueAppointments = appointments.filter(a => {
+        const psiqueAppointments = appointments.filter((a) => {
             if (!a.isPaid || a.status === 'cancelado') return false;
             if (!psiquePatientIds.has(a.patientId)) return false;
             if (a.excludeFromPsique) return false; // Skip excluded appointments
@@ -66,14 +62,14 @@ export const usePsiquePayments = (
         // Group by patient
         const patientMap: Record<string, PsiquePatientBreakdown> = {};
 
-        psiqueAppointments.forEach(appt => {
+        psiqueAppointments.forEach((appt) => {
             if (!patientMap[appt.patientId]) {
                 patientMap[appt.patientId] = {
                     patientId: appt.patientId,
                     patientName: appt.patientName,
                     sessionCount: 0,
                     totalFee: 0,
-                    psiqueAmount: 0
+                    psiqueAmount: 0,
                 };
             }
 
@@ -83,9 +79,7 @@ export const usePsiquePayments = (
             patientMap[appt.patientId].psiqueAmount += fee * PSIQUE_RATE;
         });
 
-        const patientBreakdown = Object.values(patientMap).sort((a, b) =>
-            a.patientName.localeCompare(b.patientName)
-        );
+        const patientBreakdown = Object.values(patientMap).sort((a, b) => a.patientName.localeCompare(b.patientName));
 
         const totalAmount = patientBreakdown.reduce((sum, p) => sum + p.psiqueAmount, 0);
 
@@ -98,7 +92,7 @@ export const usePsiquePayments = (
             totalAmount,
             patientBreakdown,
             isPaid: paymentRecord?.isPaid || false,
-            paidDate: paymentRecord?.paidDate
+            paidDate: paymentRecord?.paidDate,
         };
     }, [appointments, psiquePatientIds, selectedMonth, psiquePayments, professionalName]);
 
@@ -113,17 +107,21 @@ export const usePsiquePayments = (
             ? query(paymentsRef, where('professional', '==', professionalName))
             : paymentsRef;
 
-        const unsubscribe = onSnapshot(paymentsQuery, (snapshot) => {
-            const data: Record<string, PsiquePayment> = {};
-            snapshot.docs.forEach(doc => {
-                data[doc.id] = { id: doc.id, ...doc.data() } as PsiquePayment;
-            });
-            setPsiquePayments(data);
-            setLoading(false);
-        }, (error) => {
-            console.error('Error fetching Psique payments:', error);
-            setLoading(false);
-        });
+        const unsubscribe = onSnapshot(
+            paymentsQuery,
+            (snapshot) => {
+                const data: Record<string, PsiquePayment> = {};
+                snapshot.docs.forEach((doc) => {
+                    data[doc.id] = { id: doc.id, ...doc.data() } as PsiquePayment;
+                });
+                setPsiquePayments(data);
+                setLoading(false);
+            },
+            (error) => {
+                console.error('Error fetching Psique payments:', error);
+                setLoading(false);
+            },
+        );
 
         return () => unsubscribe();
     }, [professionalName]);
@@ -137,8 +135,8 @@ export const usePsiquePayments = (
             month,
             totalAmount: monthData.totalAmount,
             isPaid,
-            professional: professionalName,  // Store professional for filtering
-            ...(isPaid ? { paidDate: new Date().toISOString().split('T')[0] } : {})
+            professional: professionalName, // Store professional for filtering
+            ...(isPaid ? { paidDate: new Date().toISOString().split('T')[0] } : {}),
         };
 
         await setDoc(docRef, data, { merge: true });
@@ -148,6 +146,6 @@ export const usePsiquePayments = (
         monthData,
         loading,
         markAsPaid,
-        PSIQUE_RATE
+        PSIQUE_RATE,
     };
 };

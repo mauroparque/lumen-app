@@ -27,9 +27,9 @@ export const useStaff = (user: User | null) => {
                 setLoading(false);
             },
             (error) => {
-                console.error("Error fetching staff profile:", error);
+                console.error('Error fetching staff profile:', error);
                 setLoading(false);
-            }
+            },
         );
 
         return () => unsubscribe();
@@ -44,7 +44,7 @@ export const useStaff = (user: User | null) => {
             name: data.name,
             role: 'professional', // Default role
             specialty: data.specialty,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
         };
 
         await setDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'staff', user.uid), newProfile);

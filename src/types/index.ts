@@ -1,6 +1,15 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type View = 'home' | 'dashboard' | 'calendar' | 'patients' | 'payments' | 'billing' | 'patient-history' | 'tasks' | 'statistics';
+export type View =
+    | 'home'
+    | 'dashboard'
+    | 'calendar'
+    | 'patients'
+    | 'payments'
+    | 'billing'
+    | 'patient-history'
+    | 'tasks'
+    | 'statistics';
 
 // Relationship types for child patient contacts
 export type ContactRelationship = 'padre' | 'madre' | 'amigo' | 'pareja' | 'otro';
@@ -22,11 +31,11 @@ export interface Patient {
     isActive: boolean;
 
     // Important dates
-    birthDate?: string;  // YYYY-MM-DD format
-    admissionDate?: string;  // YYYY-MM-DD format
+    birthDate?: string; // YYYY-MM-DD format
+    admissionDate?: string; // YYYY-MM-DD format
 
     // Discharge info (only if isActive = false)
-    dischargeType?: 'clinical' | 'dropout';  // Alta clínica o abandono
+    dischargeType?: 'clinical' | 'dropout'; // Alta clínica o abandono
     dischargeDate?: string;
 
     // Patient type
@@ -36,7 +45,7 @@ export interface Patient {
     contactName?: string;
     contactPhone?: string;
     contactRelationship?: ContactRelationship;
-    contactRelationshipOther?: string;  // If relationship is 'otro'
+    contactRelationshipOther?: string; // If relationship is 'otro'
 }
 
 export interface Appointment {

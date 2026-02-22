@@ -38,51 +38,51 @@ export const BillingView = () => {
         endOfMonth.setHours(23, 59, 59, 999);
 
         // Filter: Paid but NOT invoiced AND in selected month
-        const eligible = appointments.filter(a => {
+        const eligible = appointments.filter((a) => {
             const apptDate = new Date(a.date + 'T00:00:00');
-            return a.isPaid &&
-                a.billingStatus !== 'invoiced' &&
-                apptDate >= startOfMonth &&
-                apptDate <= endOfMonth;
+            return a.isPaid && a.billingStatus !== 'invoiced' && apptDate >= startOfMonth && apptDate <= endOfMonth;
         });
 
         // Group by patient
-        const grouped = eligible.reduce((acc, appt) => {
-            if (!acc[appt.patientId]) {
-                acc[appt.patientId] = {
-                    patientId: appt.patientId,
-                    patientName: appt.patientName,
-                    patientEmail: appt.patientEmail,
-                    sessionCount: 0,
-                    totalAmount: 0,
-                    appointments: []
-                };
-            }
+        const grouped = eligible.reduce(
+            (acc, appt) => {
+                if (!acc[appt.patientId]) {
+                    acc[appt.patientId] = {
+                        patientId: appt.patientId,
+                        patientName: appt.patientName,
+                        patientEmail: appt.patientEmail,
+                        sessionCount: 0,
+                        totalAmount: 0,
+                        appointments: [],
+                    };
+                }
 
-            acc[appt.patientId].sessionCount++;
-            acc[appt.patientId].totalAmount += (appt.price || 0);
-            acc[appt.patientId].appointments.push(appt);
+                acc[appt.patientId].sessionCount++;
+                acc[appt.patientId].totalAmount += appt.price || 0;
+                acc[appt.patientId].appointments.push(appt);
 
-            return acc;
-        }, {} as Record<string, PatientBillingSummary>);
+                return acc;
+            },
+            {} as Record<string, PatientBillingSummary>,
+        );
 
         return Object.values(grouped).sort((a, b) => a.patientName.localeCompare(b.patientName));
     }, [appointments, loading, selectedDate]);
 
     const toggleExpand = (patientId: string) => {
-        setExpandedPatients(prev =>
-            prev.includes(patientId) ? prev.filter(id => id !== patientId) : [...prev, patientId]
+        setExpandedPatients((prev) =>
+            prev.includes(patientId) ? prev.filter((id) => id !== patientId) : [...prev, patientId],
         );
     };
 
     const toggleAppointmentSelection = (patientId: string, appointmentId: string) => {
-        setSelectedAppointments(prev => {
+        setSelectedAppointments((prev) => {
             const currentSelected = prev[patientId] || [];
             const isSelected = currentSelected.includes(appointmentId);
 
             let newSelected;
             if (isSelected) {
-                newSelected = currentSelected.filter(id => id !== appointmentId);
+                newSelected = currentSelected.filter((id) => id !== appointmentId);
             } else {
                 newSelected = [...currentSelected, appointmentId];
             }
@@ -92,13 +92,13 @@ export const BillingView = () => {
     };
 
     const toggleSelectAll = (patientId: string, allIds: string[]) => {
-        setSelectedAppointments(prev => {
+        setSelectedAppointments((prev) => {
             const currentSelected = prev[patientId] || [];
             const allSelected = currentSelected.length === allIds.length;
 
             return {
                 ...prev,
-                [patientId]: allSelected ? [] : allIds
+                [patientId]: allSelected ? [] : allIds,
             };
         });
     };
@@ -108,41 +108,40 @@ export const BillingView = () => {
         if (processingIds.includes(patientId)) return;
 
         const selectedIds = selectedAppointments[patientId] || [];
-        // Default to all if none explicitly selected (or enforce selection? User said "Generar Factura debe enviar solo los appointmentIds seleccionados". 
-        // Logic: if granular selection exists, use it. If list is empty, maybe block button or assume none? 
-        // Let's assume if nothing selected, we can't bill. But initially nothing is selected. 
+        // Default to all if none explicitly selected (or enforce selection? User said "Generar Factura debe enviar solo los appointmentIds seleccionados".
+        // Logic: if granular selection exists, use it. If list is empty, maybe block button or assume none?
+        // Let's assume if nothing selected, we can't bill. But initially nothing is selected.
         // Better UX: Pre-select all when expanded? Or assume all if nothing in state?
         // Let's go with: Only send selected. If count is 0, disable button.
 
-        const appointmentsToBill = summary.appointments.filter(a => selectedIds.includes(a.id));
+        const appointmentsToBill = summary.appointments.filter((a) => selectedIds.includes(a.id));
 
         if (appointmentsToBill.length === 0) {
             toast.error('Selecciona al menos una sesión para facturar');
             return;
         }
 
-        setProcessingIds(prev => [...prev, patientId]);
+        setProcessingIds((prev) => [...prev, patientId]);
         const toastId = toast.loading('Solicitando factura...');
 
         try {
             const patientData = {
                 id: patientId,
                 name: summary.patientName,
-                email: summary.patientEmail || "",
-                dni: ''
+                email: summary.patientEmail || '',
+                dni: '',
             };
 
             await requestBatchInvoice(appointmentsToBill, patientData);
             toast.success(`Factura solicitada para ${summary.patientName}`, { id: toastId });
 
             // Clear selection
-            setSelectedAppointments(prev => ({ ...prev, [patientId]: [] }));
-
+            setSelectedAppointments((prev) => ({ ...prev, [patientId]: [] }));
         } catch (error) {
             console.error(error);
             toast.error('Error al solicitar factura', { id: toastId });
         } finally {
-            setProcessingIds(prev => prev.filter(id => id !== patientId));
+            setProcessingIds((prev) => prev.filter((id) => id !== patientId));
         }
     };
 
@@ -156,7 +155,10 @@ export const BillingView = () => {
 
                 {/* Date Selector */}
                 <div className="flex items-center bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
-                    <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500">
+                    <button
+                        onClick={() => changeMonth(-1)}
+                        className="p-1 hover:bg-slate-100 rounded-lg text-slate-500"
+                    >
                         <ChevronLeft size={20} />
                     </button>
                     <span className="mx-4 font-bold text-slate-700 capitalize min-w-[140px] text-center block">
@@ -186,16 +188,19 @@ export const BillingView = () => {
                     billingQueue.map((item) => {
                         const isExpanded = expandedPatients.includes(item.patientId);
                         const selectedIds = selectedAppointments[item.patientId] || [];
-                        const allIds = item.appointments.map(a => a.id);
-                        const isAllSelected = allIds.every(id => selectedIds.includes(id));
+                        const allIds = item.appointments.map((a) => a.id);
+                        const isAllSelected = allIds.every((id) => selectedIds.includes(id));
                         const isIndeterminate = selectedIds.length > 0 && selectedIds.length < allIds.length;
 
-                        // Calculate total based on selection if expanded, otherwise total available? 
+                        // Calculate total based on selection if expanded, otherwise total available?
                         // Requirement: "Nivel 1: Total a Facturar en el mes". Usually implies total available.
                         // But button logic uses selected.
 
                         return (
-                            <div key={item.patientId} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all">
+                            <div
+                                key={item.patientId}
+                                className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all"
+                            >
                                 {/* Summary Row */}
                                 <div
                                     className={`p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${isExpanded ? 'bg-slate-50 border-b border-slate-100' : ''}`}
@@ -213,12 +218,18 @@ export const BillingView = () => {
 
                                     <div className="flex items-center space-x-6">
                                         <div className="text-right hidden md:block">
-                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sesiones</div>
+                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                                Sesiones
+                                            </div>
                                             <div className="font-bold text-slate-700">{item.sessionCount}</div>
                                         </div>
                                         <div className="text-right min-w-[100px]">
-                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total</div>
-                                            <div className="font-bold text-slate-900 text-lg">${item.totalAmount.toLocaleString()}</div>
+                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                                Total
+                                            </div>
+                                            <div className="font-bold text-slate-900 text-lg">
+                                                ${item.totalAmount.toLocaleString()}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -232,20 +243,34 @@ export const BillingView = () => {
                                                     type="checkbox"
                                                     className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                                                     checked={isAllSelected}
-                                                    ref={input => { if (input) input.indeterminate = isIndeterminate; }}
+                                                    ref={(input) => {
+                                                        if (input) input.indeterminate = isIndeterminate;
+                                                    }}
                                                     onChange={() => toggleSelectAll(item.patientId, allIds)}
                                                 />
-                                                <span className="text-sm font-medium text-slate-600">Seleccionar todo</span>
+                                                <span className="text-sm font-medium text-slate-600">
+                                                    Seleccionar todo
+                                                </span>
                                             </div>
                                             <button
                                                 onClick={() => handleGenerateInvoice(item)}
-                                                disabled={processingIds.includes(item.patientId) || selectedIds.length === 0}
+                                                disabled={
+                                                    processingIds.includes(item.patientId) || selectedIds.length === 0
+                                                }
                                                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                                             >
                                                 {processingIds.includes(item.patientId) ? (
-                                                    <> <Loader2 size={16} className="animate-spin mr-2" /> Procesando </>
+                                                    <>
+                                                        {' '}
+                                                        <Loader2 size={16} className="animate-spin mr-2" />{' '}
+                                                        Procesando{' '}
+                                                    </>
                                                 ) : (
-                                                    <> <Receipt size={16} className="mr-2" /> Facturar Seleccionados ({selectedIds.length}) </>
+                                                    <>
+                                                        {' '}
+                                                        <Receipt size={16} className="mr-2" /> Facturar Seleccionados (
+                                                        {selectedIds.length}){' '}
+                                                    </>
                                                 )}
                                             </button>
                                         </div>
@@ -261,14 +286,22 @@ export const BillingView = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100">
-                                                    {item.appointments.map(appt => (
-                                                        <tr key={appt.id} className="hover:bg-slate-50 transition-colors">
+                                                    {item.appointments.map((appt) => (
+                                                        <tr
+                                                            key={appt.id}
+                                                            className="hover:bg-slate-50 transition-colors"
+                                                        >
                                                             <td className="p-3 text-center">
                                                                 <input
                                                                     type="checkbox"
                                                                     className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                                                                     checked={selectedIds.includes(appt.id)}
-                                                                    onChange={() => toggleAppointmentSelection(item.patientId, appt.id)}
+                                                                    onChange={() =>
+                                                                        toggleAppointmentSelection(
+                                                                            item.patientId,
+                                                                            appt.id,
+                                                                        )
+                                                                    }
                                                                 />
                                                             </td>
                                                             <td className="p-3 font-medium text-slate-700">

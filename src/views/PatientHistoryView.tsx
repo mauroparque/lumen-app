@@ -1,6 +1,21 @@
 import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { ArrowLeft, FileText, ListTodo, Calendar, Phone, Mail, MessageCircle, Baby, Plus, Square, CheckSquare, ChevronDown, ChevronUp, Paperclip } from 'lucide-react';
+import {
+    ArrowLeft,
+    FileText,
+    ListTodo,
+    Calendar,
+    Phone,
+    Mail,
+    MessageCircle,
+    Baby,
+    Plus,
+    Square,
+    CheckSquare,
+    ChevronDown,
+    ChevronUp,
+    Paperclip,
+} from 'lucide-react';
 import { View, ClinicalNote } from '../types';
 import { usePatients } from '../hooks/usePatients';
 import { useData } from '../context/DataContext';
@@ -36,7 +51,13 @@ const formatDate = (dateStr: string): string => {
     return date.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, initialTab = 'history' }: PatientHistoryViewProps) => {
+export const PatientHistoryView = ({
+    user,
+    profile,
+    patientId,
+    setCurrentView,
+    initialTab = 'history',
+}: PatientHistoryViewProps) => {
     const [activeTab, setActiveTab] = useState<'history' | 'tasks'>(initialTab);
     const [showAddTask, setShowAddTask] = useState(false);
     const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
@@ -44,48 +65,43 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
     const { appointments } = useData();
 
     // Create set with just this patient's ID for task filtering
-    const myPatientIds = useMemo(() => patientId ? new Set([patientId]) : new Set<string>(), [patientId]);
+    const myPatientIds = useMemo(() => (patientId ? new Set([patientId]) : new Set<string>()), [patientId]);
     const { pendingTasks, completeTask } = usePendingTasks(appointments, myPatientIds);
 
     const { usePatientNotes } = useClinicalNotes(user);
     const { notes: patientNotes, loadingNotes } = usePatientNotes(patientId);
 
-    const patient = useMemo(() =>
-        patients.find(p => p.id === patientId),
-        [patients, patientId]
-    );
+    const patient = useMemo(() => patients.find((p) => p.id === patientId), [patients, patientId]);
 
     // Get all appointments for this patient
-    const patientAppointments = useMemo(() =>
-        appointments
-            .filter(a => a.patientId === patientId)
-            .sort((a, b) => b.date.localeCompare(a.date)),
-        [appointments, patientId]
+    const patientAppointments = useMemo(
+        () => appointments.filter((a) => a.patientId === patientId).sort((a, b) => b.date.localeCompare(a.date)),
+        [appointments, patientId],
     );
 
     // Filter completed appointments (with notes potential)
-    const completedAppointments = useMemo(() =>
-        patientAppointments.filter(a => a.status === 'completado' || new Date(a.date) < new Date()),
-        [patientAppointments]
+    const completedAppointments = useMemo(
+        () => patientAppointments.filter((a) => a.status === 'completado' || new Date(a.date) < new Date()),
+        [patientAppointments],
     );
 
     // Get tasks for this patient only
-    const patientTasks = useMemo(() =>
-        pendingTasks.filter(t => t.patientId === patientId),
-        [pendingTasks, patientId]
+    const patientTasks = useMemo(
+        () => pendingTasks.filter((t) => t.patientId === patientId),
+        [pendingTasks, patientId],
     );
 
     // Create a map of notes by appointmentId for quick lookup
     const notesByAppointment = useMemo(() => {
         const map: Record<string, ClinicalNote> = {};
-        patientNotes.forEach(note => {
+        patientNotes.forEach((note) => {
             map[note.appointmentId] = note;
         });
         return map;
     }, [patientNotes]);
 
     const toggleNoteExpanded = (appointmentId: string) => {
-        setExpandedNotes(prev => {
+        setExpandedNotes((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(appointmentId)) {
                 newSet.delete(appointmentId);
@@ -140,24 +156,42 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold ${isChild ? 'bg-amber-100 text-amber-600' : 'bg-teal-100 text-teal-600'
-                            }`}>
-                            {isChild ? <Baby size={28} /> : patient.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                        <div
+                            className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold ${
+                                isChild ? 'bg-amber-100 text-amber-600' : 'bg-teal-100 text-teal-600'
+                            }`}
+                        >
+                            {isChild ? (
+                                <Baby size={28} />
+                            ) : (
+                                patient.name
+                                    .split(' ')
+                                    .map((n) => n[0])
+                                    .slice(0, 2)
+                                    .join('')
+                                    .toUpperCase()
+                            )}
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-slate-800">{patient.name}</h1>
                             <div className="flex flex-wrap gap-2 mt-1">
                                 {age !== null && (
-                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${isChild ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
-                                        }`}>
+                                    <span
+                                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                            isChild ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                                        }`}
+                                    >
                                         {age} años {isChild && '(Menor)'}
                                     </span>
                                 )}
                                 {patient.patientSource && (
-                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${patient.patientSource === 'psique'
-                                        ? 'bg-purple-100 text-purple-700'
-                                        : 'bg-teal-100 text-teal-700'
-                                        }`}>
+                                    <span
+                                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                            patient.patientSource === 'psique'
+                                                ? 'bg-purple-100 text-purple-700'
+                                                : 'bg-teal-100 text-teal-700'
+                                        }`}
+                                    >
                                         {patient.patientSource === 'psique' ? 'Psique' : 'Particular'}
                                     </span>
                                 )}
@@ -167,8 +201,11 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                                     </span>
                                 ) : (
                                     <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-medium">
-                                        {patient.dischargeType === 'clinical' ? 'Alta Clínica' :
-                                            patient.dischargeType === 'dropout' ? 'Abandono' : 'Inactivo'}
+                                        {patient.dischargeType === 'clinical'
+                                            ? 'Alta Clínica'
+                                            : patient.dischargeType === 'dropout'
+                                              ? 'Abandono'
+                                              : 'Inactivo'}
                                     </span>
                                 )}
                             </div>
@@ -218,12 +255,11 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                                 <span className="ml-2 px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">
                                     {patient.contactRelationship === 'otro'
                                         ? patient.contactRelationshipOther
-                                        : patient.contactRelationship.charAt(0).toUpperCase() + patient.contactRelationship.slice(1)}
+                                        : patient.contactRelationship.charAt(0).toUpperCase() +
+                                          patient.contactRelationship.slice(1)}
                                 </span>
                             )}
-                            {patient.contactPhone && (
-                                <span className="ml-2">· {patient.contactPhone}</span>
-                            )}
+                            {patient.contactPhone && <span className="ml-2">· {patient.contactPhone}</span>}
                         </div>
                     </div>
                 )}
@@ -258,20 +294,22 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                 <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl">
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'history'
-                            ? 'bg-white text-teal-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            activeTab === 'history'
+                                ? 'bg-white text-teal-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                        }`}
                     >
                         <FileText size={16} />
                         Historia Clínica
                     </button>
                     <button
                         onClick={() => setActiveTab('tasks')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'tasks'
-                            ? 'bg-white text-amber-600 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            activeTab === 'tasks'
+                                ? 'bg-white text-amber-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                        }`}
                     >
                         <ListTodo size={16} />
                         Tareas
@@ -308,10 +346,14 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                             No hay sesiones registradas para este paciente.
                         </div>
                     ) : (
-                        completedAppointments.map(appointment => {
+                        completedAppointments.map((appointment) => {
                             const note = notesByAppointment[appointment.id];
                             const isExpanded = expandedNotes.has(appointment.id);
-                            const hasNoteContent = note && (note.content || (note.tasks && note.tasks.length > 0) || (note.attachments && note.attachments.length > 0));
+                            const hasNoteContent =
+                                note &&
+                                (note.content ||
+                                    (note.tasks && note.tasks.length > 0) ||
+                                    (note.attachments && note.attachments.length > 0));
 
                             return (
                                 <div
@@ -347,13 +389,17 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                                                         Pendiente
                                                     </span>
                                                 )}
-                                                {hasNoteContent && (
-                                                    isExpanded ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />
-                                                )}
+                                                {hasNoteContent &&
+                                                    (isExpanded ? (
+                                                        <ChevronUp size={18} className="text-slate-400" />
+                                                    ) : (
+                                                        <ChevronDown size={18} className="text-slate-400" />
+                                                    ))}
                                             </div>
                                         </div>
                                         <div className="text-sm text-slate-600 mt-1">
-                                            {appointment.consultationType || 'Consulta'} · {appointment.type === 'online' ? 'Online' : 'Presencial'}
+                                            {appointment.consultationType || 'Consulta'} ·{' '}
+                                            {appointment.type === 'online' ? 'Online' : 'Presencial'}
                                             {appointment.professional && ` · ${appointment.professional}`}
                                         </div>
                                     </div>
@@ -379,13 +425,23 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                                                 <div>
                                                     <div className="text-xs font-semibold text-slate-500 uppercase mb-2 flex items-center gap-1">
                                                         <ListTodo size={12} />
-                                                        Tareas ({note.tasks.filter(t => !t.completed).length} pendientes)
+                                                        Tareas ({note.tasks.filter((t) => !t.completed).length}{' '}
+                                                        pendientes)
                                                     </div>
                                                     <div className="space-y-1">
                                                         {note.tasks.map((task, idx) => (
-                                                            <div key={idx} className={`flex items-center gap-2 text-sm p-2 rounded ${task.completed ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
-                                                                {task.completed ? <CheckSquare size={14} /> : <Square size={14} />}
-                                                                <span className={task.completed ? 'line-through' : ''}>{task.text}</span>
+                                                            <div
+                                                                key={idx}
+                                                                className={`flex items-center gap-2 text-sm p-2 rounded ${task.completed ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}
+                                                            >
+                                                                {task.completed ? (
+                                                                    <CheckSquare size={14} />
+                                                                ) : (
+                                                                    <Square size={14} />
+                                                                )}
+                                                                <span className={task.completed ? 'line-through' : ''}>
+                                                                    {task.text}
+                                                                </span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -455,8 +511,7 @@ export const PatientHistoryView = ({ user, profile, patientId, setCurrentView, i
                                         <div className="text-xs text-slate-400 mt-1">
                                             {task.appointmentDate.startsWith('standalone-')
                                                 ? 'Tarea independiente'
-                                                : `Sesión: ${formatDate(task.appointmentDate)}`
-                                            }
+                                                : `Sesión: ${formatDate(task.appointmentDate)}`}
                                         </div>
                                     )}
                                 </div>

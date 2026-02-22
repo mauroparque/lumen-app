@@ -7,9 +7,9 @@ const PSIQUE_RATE = 0.25;
 export interface PatientStats {
     patientId: string;
     patientName: string;
-    avgSessions: number;      // Promedio sesiones por mes
-    totalSessions: number;    // Total sesiones en período
-    fee: number;              // Honorario actual
+    avgSessions: number; // Promedio sesiones por mes
+    totalSessions: number; // Total sesiones en período
+    fee: number; // Honorario actual
     isPsique: boolean;
 }
 
@@ -18,14 +18,14 @@ export interface AgendaStats {
     patientStats: PatientStats[];
 
     // Globales
-    avgSessionsPerPatient: number;  // Promedio general de sesiones por mes
-    avgFee: number;                 // Promedio honorarios
-    avgSessionValue: number;        // Valor real por sesión cobrada
-    noShowRate: number;             // Tasa ausentismo (0-1)
-    cancellationRate: number;       // Tasa cancelación (0-1)
+    avgSessionsPerPatient: number; // Promedio general de sesiones por mes
+    avgFee: number; // Promedio honorarios
+    avgSessionValue: number; // Valor real por sesión cobrada
+    noShowRate: number; // Tasa ausentismo (0-1)
+    cancellationRate: number; // Tasa cancelación (0-1)
 
     // Metadata
-    periodMonths: number;           // Período analizado (3)
+    periodMonths: number; // Período analizado (3)
     totalPatients: number;
     totalCompletedSessions: number;
     totalScheduledAppointments: number;
@@ -35,10 +35,7 @@ export interface AgendaStats {
     periodEnd: string;
 }
 
-export const useAgendaStats = (
-    appointments: Appointment[],
-    patients: Patient[]
-): AgendaStats => {
+export const useAgendaStats = (appointments: Appointment[], patients: Patient[]): AgendaStats => {
     return useMemo(() => {
         // Calculate date range: from 3 months ago to today
         const now = new Date();
@@ -52,29 +49,27 @@ export const useAgendaStats = (
         const periodEndStr = today;
 
         // Filter appointments in the period that are completed (not future)
-        const periodAppointments = appointments.filter(a => {
+        const periodAppointments = appointments.filter((a) => {
             // Only include appointments in the date range
             if (a.date < periodStartStr || a.date > periodEndStr) return false;
             return true;
         });
 
         // Create a map of active patients
-        const activePatients = patients.filter(p => p.isActive);
-        const psiquePatientIds = new Set(
-            patients.filter(p => p.patientSource === 'psique').map(p => p.id)
-        );
+        const activePatients = patients.filter((p) => p.isActive);
+        const psiquePatientIds = new Set(patients.filter((p) => p.patientSource === 'psique').map((p) => p.id));
 
         // Count appointments by status
         let totalScheduled = 0;
         let totalCompleted = 0; // completado, presente, or isPaid
-        let totalNoShow = 0;    // ausente
+        let totalNoShow = 0; // ausente
         let totalCancelled = 0; // cancelado
         let totalRevenue = 0;
 
         // Group sessions by patient
         const sessionsByPatient: Record<string, { count: number; revenue: number }> = {};
 
-        periodAppointments.forEach(appt => {
+        periodAppointments.forEach((appt) => {
             totalScheduled++;
 
             // Consider an appointment as "completed" if status is completado/presente OR if it's paid
@@ -98,51 +93,46 @@ export const useAgendaStats = (
         });
 
         // Calculate per-patient stats for active patients
-        const patientStats: PatientStats[] = activePatients.map(patient => {
-            const sessions = sessionsByPatient[patient.id] || { count: 0, revenue: 0 };
-            const avgSessions = sessions.count / PERIOD_MONTHS;
+        const patientStats: PatientStats[] = activePatients
+            .map((patient) => {
+                const sessions = sessionsByPatient[patient.id] || { count: 0, revenue: 0 };
+                const avgSessions = sessions.count / PERIOD_MONTHS;
 
-            return {
-                patientId: patient.id,
-                patientName: patient.name,
-                avgSessions: Math.round(avgSessions * 10) / 10, // 1 decimal
-                totalSessions: sessions.count,
-                fee: patient.fee || 0,
-                isPsique: psiquePatientIds.has(patient.id)
-            };
-        }).sort((a, b) => a.patientName.localeCompare(b.patientName));
+                return {
+                    patientId: patient.id,
+                    patientName: patient.name,
+                    avgSessions: Math.round(avgSessions * 10) / 10, // 1 decimal
+                    totalSessions: sessions.count,
+                    fee: patient.fee || 0,
+                    isPsique: psiquePatientIds.has(patient.id),
+                };
+            })
+            .sort((a, b) => a.patientName.localeCompare(b.patientName));
 
         // Calculate global averages
         // Only count patients who actually had sessions
         const patientsWithSessions = Object.keys(sessionsByPatient).length;
 
         // Average sessions per patient per month
-        const avgSessionsPerPatient = patientsWithSessions > 0
-            ? Math.round((totalCompleted / patientsWithSessions / PERIOD_MONTHS) * 10) / 10
-            : 4; // Default to 4 if no data
+        const avgSessionsPerPatient =
+            patientsWithSessions > 0
+                ? Math.round((totalCompleted / patientsWithSessions / PERIOD_MONTHS) * 10) / 10
+                : 4; // Default to 4 if no data
 
         // Average fee from active patients with fees
-        const patientsWithFees = activePatients.filter(p => (p.fee || 0) > 0);
+        const patientsWithFees = activePatients.filter((p) => (p.fee || 0) > 0);
         const totalFees = patientsWithFees.reduce((sum, p) => sum + (p.fee || 0), 0);
-        const avgFee = patientsWithFees.length > 0
-            ? Math.round(totalFees / patientsWithFees.length)
-            : 0;
+        const avgFee = patientsWithFees.length > 0 ? Math.round(totalFees / patientsWithFees.length) : 0;
 
         // Average value per session (actual revenue)
-        const avgSessionValue = totalCompleted > 0
-            ? Math.round(totalRevenue / totalCompleted)
-            : avgFee;
+        const avgSessionValue = totalCompleted > 0 ? Math.round(totalRevenue / totalCompleted) : avgFee;
 
         // Rates (exclude programado from calculations since those are future)
         const relevantTotal = totalCompleted + totalNoShow + totalCancelled;
 
-        const noShowRate = relevantTotal > 0
-            ? Math.round((totalNoShow / relevantTotal) * 1000) / 1000
-            : 0;
+        const noShowRate = relevantTotal > 0 ? Math.round((totalNoShow / relevantTotal) * 1000) / 1000 : 0;
 
-        const cancellationRate = relevantTotal > 0
-            ? Math.round((totalCancelled / relevantTotal) * 1000) / 1000
-            : 0;
+        const cancellationRate = relevantTotal > 0 ? Math.round((totalCancelled / relevantTotal) * 1000) / 1000 : 0;
 
         return {
             patientStats,
@@ -156,7 +146,7 @@ export const useAgendaStats = (
             totalCompletedSessions: totalCompleted,
             totalScheduledAppointments: relevantTotal,
             periodStart: periodStartStr,
-            periodEnd: periodEndStr
+            periodEnd: periodEndStr,
         };
     }, [appointments, patients]);
 };
@@ -166,7 +156,7 @@ export const calculateProjectedIncome = (
     fee: number,
     sessions: number,
     isPsique: boolean,
-    excludeFromPsique: boolean = false
+    excludeFromPsique: boolean = false,
 ): { gross: number; net: number; psiqueDiscount: number } => {
     const gross = fee * sessions;
     const applyDiscount = isPsique && !excludeFromPsique;

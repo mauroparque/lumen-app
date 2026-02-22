@@ -12,7 +12,7 @@ interface PatientCardProps {
 const getInitials = (name: string) => {
     return name
         .split(' ')
-        .map(n => n[0])
+        .map((n) => n[0])
         .slice(0, 2)
         .join('')
         .toUpperCase();
@@ -36,7 +36,7 @@ const getRandomColor = (name: string) => {
         'bg-purple-100 text-purple-600',
         'bg-fuchsia-100 text-fuchsia-600',
         'bg-pink-100 text-pink-600',
-        'bg-rose-100 text-rose-600'
+        'bg-rose-100 text-rose-600',
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -75,7 +75,9 @@ export const PatientCard = ({ patient, onView, onEdit, onDelete }: PatientCardPr
 
             <div className="flex items-start justify-between mb-4 pr-16">
                 <div className="flex items-center space-x-4">
-                    <div className={`h-12 w-12 rounded-full flex items-center justify-center font-bold text-lg ${getRandomColor(patient.name)}`}>
+                    <div
+                        className={`h-12 w-12 rounded-full flex items-center justify-center font-bold text-lg ${getRandomColor(patient.name)}`}
+                    >
                         {getInitials(patient.name)}
                     </div>
                     <div>
@@ -84,17 +86,20 @@ export const PatientCard = ({ patient, onView, onEdit, onDelete }: PatientCardPr
                         </h3>
                         <div className="flex items-center text-slate-500 text-sm mt-0.5">
                             <Mail size={14} className="mr-1.5 shrink-0" />
-                            <span className="truncate max-w-[140px]" title={patient.email}>{patient.email}</span>
+                            <span className="truncate max-w-[140px]" title={patient.email}>
+                                {patient.email}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="mb-4">
-                <div className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center ${patient.preference === 'online'
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'bg-teal-50 text-teal-700'
-                    }`}>
+                <div
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold inline-flex items-center ${
+                        patient.preference === 'online' ? 'bg-blue-50 text-blue-700' : 'bg-teal-50 text-teal-700'
+                    }`}
+                >
                     {patient.preference === 'online' ? (
                         <Video size={14} className="mr-1" />
                     ) : (
@@ -109,7 +114,11 @@ export const PatientCard = ({ patient, onView, onEdit, onDelete }: PatientCardPr
                     <div className="text-slate-500 flex items-center">
                         <Phone size={14} className="mr-2" />
                         {patient.phone ? (
-                            <a href={`tel:${patient.phone}`} onClick={e => e.stopPropagation()} className="hover:text-teal-600 hover:underline">
+                            <a
+                                href={`tel:${patient.phone}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hover:text-teal-600 hover:underline"
+                            >
                                 {patient.phone}
                             </a>
                         ) : (
@@ -122,7 +131,7 @@ export const PatientCard = ({ patient, onView, onEdit, onDelete }: PatientCardPr
                             href={`https://wa.me/${formatPhoneNumber(patient.phone)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={e => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
                             className="text-green-600 hover:bg-green-50 p-1.5 rounded-full transition-colors"
                             title="Enviar WhatsApp"
                         >
