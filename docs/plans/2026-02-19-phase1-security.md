@@ -2,6 +2,10 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Origen:** [Auditoría 2026-02-19](../audits/2026-02-19_AUDIT.md) — hallazgos SEC-01, SEC-02, SEC-03, SEC-04
+**Fixes post code-review:** [2026-02-19-phase1-security-fixes.md](./2026-02-19-phase1-security-fixes.md)
+**Revisión de cierre:** [2026-02-22_phase1-completion-review.md](../reviews/2026-02-22_phase1-completion-review.md)
+
 **Goal:** Implementar RBAC, onboarding seguro, validación server-side de Turnstile, y CSP estricta para proteger los datos clínicos de la aplicación.
 
 **Architecture:** Firestore rules con role-checking via custom claims (o document reads), allowlist de emails en Firestore, Cloud Function callable para validar Turnstile, CSP con hashes en vez de unsafe-inline/eval.

@@ -2,6 +2,10 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Origen:** [Auditoría 2026-02-19](../audits/2026-02-19_AUDIT.md) — hallazgos SEC-01 a SEC-04
+**Plan principal:** [2026-02-19-phase1-security.md](./2026-02-19-phase1-security.md)
+**Revisión de cierre:** [2026-02-22_phase1-completion-review.md](../reviews/2026-02-22_phase1-completion-review.md)
+
 **Goal:** Corregir los 4 issues encontrados en el code review de `security/phase1`, ordenados por prioridad: 1 critical, 2 important, 1 minor.
 
 **Architecture:** Todos los cambios son en la rama `security/phase1`, worktree en `.worktrees/security-phase1/`. No hay cambios de arquitectura — solo correcciones puntuales.
