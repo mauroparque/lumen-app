@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { User } from 'firebase/auth';
 import { Patient } from '../../types';
 import { usePatientData } from '../../hooks/usePatientData';
 import { Phone, Mail, Calendar, DollarSign, Clock, X, User as UserIcon, Activity } from 'lucide-react';
@@ -8,12 +7,11 @@ import { ModalOverlay } from '../ui';
 interface PatientProfileModalProps {
     patient: Patient;
     onClose: () => void;
-    user: User;
 }
 
-export const PatientProfileModal = ({ patient, onClose, user }: PatientProfileModalProps) => {
+export const PatientProfileModal = ({ patient, onClose }: PatientProfileModalProps) => {
     const [activeTab, setActiveTab] = useState<'details' | 'history' | 'finance'>('details');
-    const { history, payments, loading, stats } = usePatientData(user, patient.id);
+    const { history, payments, loading, stats } = usePatientData(patient.id);
 
     // Preparar datos financieros
     const movements = [
