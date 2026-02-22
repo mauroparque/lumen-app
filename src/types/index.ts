@@ -89,6 +89,14 @@ export interface Payment {
 export type PatientInput = Omit<Patient, 'id'>;
 export type AppointmentInput = Omit<Appointment, 'id'>;
 export type PaymentInput = Omit<Payment, 'id'>;
+export type ClinicalNoteInput = Omit<ClinicalNote, 'id'>;
+
+export interface TaskInput {
+    patientId: string;
+    professional: string;
+    content: string;
+    createdBy: string;
+}
 
 export interface TaskSubitem {
     text: string;

@@ -1,4 +1,4 @@
-import {
+import type {
     Patient,
     Appointment,
     Payment,
@@ -6,6 +6,9 @@ import {
     AppointmentInput,
     PaymentInput,
     PatientBillingData,
+    ClinicalNote,
+    TaskInput,
+    PsiquePayment,
 } from '../types';
 
 export interface IDataService {
@@ -37,4 +40,26 @@ export interface IDataService {
 
     // Facturación
     requestBatchInvoice(appointments: Appointment[], patientData: PatientBillingData): Promise<string>;
+
+    // --- Clinical Notes ---
+    subscribeToClinicalNote(appointmentId: string, onData: (note: ClinicalNote | null) => void): () => void;
+    subscribeToPatientNotes(patientId: string, onData: (notes: ClinicalNote[]) => void): () => void;
+    saveNote(noteData: Partial<ClinicalNote>, appointmentId: string, existingNoteId?: string): Promise<void>;
+    uploadNoteAttachment(file: File, patientId: string): Promise<string>;
+
+    // --- Tasks ---
+    subscribeToAllNotes(onData: (notes: ClinicalNote[]) => void): () => void;
+    completeTask(noteId: string, taskIndex: number): Promise<void>;
+    addTask(task: TaskInput): Promise<string>;
+
+    // --- Psique Payments ---
+    subscribeToPsiquePayments(
+        professionalName: string | undefined,
+        onData: (payments: Record<string, PsiquePayment>) => void,
+    ): () => void;
+    markPsiquePaymentAsPaid(docKey: string, data: Omit<PsiquePayment, 'id'> & { professional?: string }): Promise<void>;
+
+    // --- Patient-specific data ---
+    subscribeToPatientAppointments(patientId: string, onData: (appointments: Appointment[]) => void): () => void;
+    subscribeToPatientPayments(patientId: string, onData: (payments: Payment[]) => void): () => void;
 }
