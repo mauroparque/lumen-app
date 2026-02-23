@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **ESLint 9 flat config** with `@typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, and Prettier integration (LINT-01)
+- **Prettier** `.prettierrc` with opinionated defaults — `singleQuote`, `tabWidth: 4`, `printWidth: 100`
+- **New npm scripts**: `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc --noEmit`), and `ci` (`lint + format:check + type-check + test + build`) (TSC-01)
+- **Global `ErrorBoundary`** using `react-error-boundary` wrapping both Suspense boundaries in `App.tsx` — prevents chunk-load failures from crashing the app silently
+- **Vitest v8 coverage** with reduced-scope thresholds (lines/functions/statements: 80%, branches: 60%) — scope grows incrementally as tests are added per module
+- **14 new `IDataService` methods**: `getClinicalNote`, `subscribeToPatientNotes`, `addClinicalNote`, `updateNote`, `getPatientAppointments`, `getPatientPayments`, `getPsiquePatients`, `subscribeToPsiquePayments`, `getTasks`, `subscribeToTasks`, `addTask`, `updateTask`, `toggleSubtaskCompletion`, `subscribeToStaff` — all implemented in `FirebaseService` (ARCH-01)
+- **`updateTask` and `toggleSubtaskCompletion`** wrappers in `useDataActions` with service-availability guard
+- **Unit tests**: `useAgendaStats.test.ts` (6 pure-logic tests), `IDataService.test.ts` (mock factory + method completeness), expanded `utils.test.ts` (edge cases for `formatPhoneNumber` and `cn`) — total 23 tests across 3 files (up from 7 in 1 file)
+
+### Changed
+
+- **`useClinicalNotes`** rewritten as two independent top-level hooks `useClinicalNote(appointmentId)` and `usePatientNotes(patientId)` — fixes Rules of Hooks violation (HOOK-01)
+- **Migrated direct Firestore access to `IDataService`** in: `usePendingTasks`, `usePsiquePayments`, `usePatientData`, `AddTaskModal`, `TasksView` — 0 direct `firebase/firestore` imports remain in migrated files (ARCH-01)
+- **ESLint config simplified** — ~40 manually declared browser globals replaced by `globals.browser` + `globals.es2021`
+- **`.gitignore`** updated to exclude generated test artifacts: `playwright-report/`, `test-results/`, `.worktrees/`
+
+### Fixed
+
+- `usePsiquePayments`: removed 3 unnecessary regex escape characters — eliminates `no-useless-escape` lint errors
+- `TasksView`: `handleUpdateTask` reduced from 17 to 5 lines; `toggleSubtaskComplete` from 22 to 3 lines — both now delegate to `IDataService` via `useDataActions`
+
 ---
 
 ## [1.0.0] - 2026-02-20
