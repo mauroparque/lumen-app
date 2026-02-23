@@ -8,6 +8,7 @@ import {
     Payment,
     PatientBillingData,
     TaskInput,
+    TaskSubitem,
     ClinicalNote,
     PsiquePayment,
 } from '../types';
@@ -85,6 +86,22 @@ export const useDataActions = () => {
         return ensureService().addTask(task);
     };
 
+    const updateTask = async (
+        noteId: string,
+        taskIndex: number,
+        data: { text: string; subtasks?: TaskSubitem[] },
+    ) => {
+        return ensureService().updateTask(noteId, taskIndex, data);
+    };
+
+    const toggleSubtaskCompletion = async (
+        noteId: string,
+        taskIndex: number,
+        subtaskIndex: number,
+    ) => {
+        return ensureService().toggleSubtaskCompletion(noteId, taskIndex, subtaskIndex);
+    };
+
     const updateNote = async (noteId: string, data: Partial<ClinicalNote>) => {
         return ensureService().updateNote(noteId, data);
     };
@@ -110,6 +127,8 @@ export const useDataActions = () => {
         deleteRecurringFromDate,
         completeTask,
         addTask,
+        updateTask,
+        toggleSubtaskCompletion,
         updateNote,
         markPsiquePaymentAsPaid,
     };
