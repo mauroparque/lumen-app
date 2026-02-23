@@ -423,10 +423,22 @@ export class FirebaseService implements IDataService {
     async addTask(task: TaskInput): Promise<string> {
         const colRef = collection(db, NOTES_COLLECTION);
         const docRef = await addDoc(colRef, {
-            ...task,
+            patientId: task.patientId,
+            appointmentId: `standalone-${task.patientId}-${Date.now()}`,
+            content: task.content,
+            attachments: [],
+            tasks: [
+                {
+                    text: task.content,
+                    completed: false,
+                    subtasks: task.subtasks || [],
+                },
+            ],
+            createdBy: task.createdBy,
+            createdByUid: task.createdByUid,
+            professional: task.professional,
             type: 'task',
             createdAt: Timestamp.now(),
-            tasks: [{ text: task.content, completed: false }],
         });
         return docRef.id;
     }
