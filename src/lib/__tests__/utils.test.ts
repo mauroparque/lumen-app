@@ -4,12 +4,10 @@ import { formatPhoneNumber, cn } from '../utils';
 describe('formatPhoneNumber', () => {
     it('removes non-numeric characters', () => {
         const result = formatPhoneNumber('+54 11 1234-5678');
-        // Keeps only digits
         expect(result).toBe('541112345678');
     });
 
     it('adds 549 prefix to 10-digit numbers (Argentina mobile)', () => {
-        // Numbers like "11 1234 5678" (10 digits) get 549 prefix
         const result = formatPhoneNumber('11 1234 5678');
         expect(result).toBe('5491112345678');
     });
@@ -20,9 +18,23 @@ describe('formatPhoneNumber', () => {
     });
 
     it('replaces leading 0 with 549 prefix', () => {
-        // Numbers starting with 0 get 549 prefix
         const result = formatPhoneNumber('0111234567');
         expect(result).toBe('549111234567');
+    });
+
+    it('handles null/undefined gracefully', () => {
+        expect(formatPhoneNumber(undefined as any)).toBe('');
+        expect(formatPhoneNumber(null as any)).toBe('');
+    });
+
+    it('does not double-prefix numbers already starting with 549', () => {
+        const result = formatPhoneNumber('5491112345678');
+        expect(result).toBe('5491112345678');
+    });
+
+    it('handles numbers with + prefix', () => {
+        const result = formatPhoneNumber('+5491112345678');
+        expect(result).toBe('5491112345678');
     });
 });
 
@@ -42,5 +54,10 @@ describe('cn (classnames utility)', () => {
     it('filters out falsy values', () => {
         const result = cn('base', false && 'hidden', null, undefined);
         expect(result).toBe('base');
+    });
+
+    it('handles empty call', () => {
+        const result = cn();
+        expect(result).toBe('');
     });
 });
