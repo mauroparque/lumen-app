@@ -37,6 +37,8 @@ const createMockService = (overrides?: Partial<IDataService>): IDataService => (
     subscribeToAllNotes: vi.fn(),
     completeTask: vi.fn(),
     addTask: vi.fn(),
+    updateTask: vi.fn(),
+    toggleSubtaskCompletion: vi.fn(),
     subscribeToPsiquePayments: vi.fn(),
     markPsiquePaymentAsPaid: vi.fn(),
     subscribeToPatientAppointments: vi.fn(),
@@ -105,10 +107,61 @@ describe('IDataService Mockability Demo', () => {
         expect(service.subscribeToAllNotes).toBeDefined();
         expect(service.completeTask).toBeDefined();
         expect(service.addTask).toBeDefined();
+        expect(service.updateTask).toBeDefined();
+        expect(service.toggleSubtaskCompletion).toBeDefined();
         expect(service.subscribeToPsiquePayments).toBeDefined();
         expect(service.markPsiquePaymentAsPaid).toBeDefined();
         expect(service.subscribeToPatientAppointments).toBeDefined();
         expect(service.subscribeToPatientPayments).toBeDefined();
         expect(service.updateNote).toBeDefined();
+    });
+
+    it('updateTask mock can be configured with specific behavior', () => {
+        const mockService = createMockService({
+            updateTask: vi.fn().mockResolvedValue(undefined),
+        });
+
+        const result = mockService.updateTask('note-1', 0, {
+            text: 'Updated task',
+            subtasks: [{ text: 'sub', completed: false }],
+        });
+
+        expect(mockService.updateTask).toHaveBeenCalledWith('note-1', 0, {
+            text: 'Updated task',
+            subtasks: [{ text: 'sub', completed: false }],
+        });
+        expect(result).resolves.toBeUndefined();
+    });
+
+    it('toggleSubtaskCompletion mock resolves correctly', () => {
+        const mockService = createMockService({
+            toggleSubtaskCompletion: vi.fn().mockResolvedValue(undefined),
+        });
+
+        const result = mockService.toggleSubtaskCompletion('note-1', 0, 1);
+
+        expect(mockService.toggleSubtaskCompletion).toHaveBeenCalledWith('note-1', 0, 1);
+        expect(result).resolves.toBeUndefined();
+    });
+
+    it('mock factory includes all IDataService methods', () => {
+        const service = createMockService();
+        const expectedMethods = [
+            'subscribeToPatients', 'subscribeToAppointments', 'subscribeToMyAppointments',
+            'subscribeToFinance', 'addPatient', 'updatePatient', 'deletePatient',
+            'addAppointment', 'addRecurringAppointments', 'updateAppointment',
+            'deleteAppointment', 'deleteRecurringSeries', 'deleteRecurringFromDate',
+            'addPayment', 'deletePayment', 'updatePayment', 'requestBatchInvoice',
+            'subscribeToClinicalNote', 'subscribeToPatientNotes', 'saveNote',
+            'updateNote', 'uploadNoteAttachment', 'subscribeToAllNotes',
+            'completeTask', 'addTask', 'updateTask', 'toggleSubtaskCompletion',
+            'subscribeToPsiquePayments', 'markPsiquePaymentAsPaid',
+            'subscribeToPatientAppointments', 'subscribeToPatientPayments',
+        ];
+        for (const method of expectedMethods) {
+            expect(service).toHaveProperty(method);
+            expect(typeof (service as any)[method]).toBe('function');
+        }
+        expect(Object.keys(service).sort()).toEqual(expectedMethods.sort());
     });
 });
