@@ -10,6 +10,7 @@ import type {
     TaskInput,
     TaskSubitem,
     PsiquePayment,
+    StaffProfile,
 } from '../types';
 
 export interface IDataService {
@@ -66,4 +67,9 @@ export interface IDataService {
     // --- Patient-specific data ---
     subscribeToPatientAppointments(patientId: string, onData: (appointments: Appointment[]) => void): () => void;
     subscribeToPatientPayments(patientId: string, onData: (payments: Payment[]) => void): () => void;
+
+    // --- Staff ---
+    subscribeToStaffProfile(uid: string, onData: (profile: StaffProfile | null) => void): () => void;
+    createStaffProfile(uid: string, profile: StaffProfile): Promise<void>;
+    updateStaffProfile(uid: string, data: Partial<StaffProfile>): Promise<void>;
 }

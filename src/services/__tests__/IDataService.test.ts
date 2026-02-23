@@ -44,6 +44,9 @@ const createMockService = (overrides?: Partial<IDataService>): IDataService => (
     subscribeToPatientAppointments: vi.fn(),
     subscribeToPatientPayments: vi.fn(),
     updateNote: vi.fn(),
+    subscribeToStaffProfile: vi.fn(),
+    createStaffProfile: vi.fn(),
+    updateStaffProfile: vi.fn(),
     ...overrides,
 });
 
