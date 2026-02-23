@@ -41,7 +41,7 @@ py C:/Users/mauro/Desktop/Mau/Dev/tools/agent-guardrails-mcp/scripts/wrap_comman
 | ------ | ------------- |
 | **Never execute shell commands directly** | Always use the wrapper |
 | **If a command is blocked** | Report the reason — do NOT attempt to bypass or rewrite the command to avoid the guardrail |
-| **If the server is not running** | Start it first: `python C:/Users/mauro/Desktop/Mau/Dev/tools/agent-guardrails-mcp/scripts/start_server.py` |
+| **If the server is not running** | Start it first: `py C:/Users/mauro/Desktop/Mau/Dev/tools/agent-guardrails-mcp/scripts/start_server.py` |
 
 ### Protected operation categories
 
