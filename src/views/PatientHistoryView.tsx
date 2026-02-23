@@ -527,6 +527,7 @@ export const PatientHistoryView = ({
                     patientId={patient.id}
                     patientName={patient.name}
                     userName={profile?.name || user.displayName || user.email || ''}
+                    userUid={user.uid}
                 />
             )}
         </div>

@@ -96,6 +96,8 @@ export interface TaskInput {
     professional: string;
     content: string;
     createdBy: string;
+    createdByUid: string;
+    subtasks?: { text: string; completed: boolean }[];
 }
 
 export interface TaskSubitem {

@@ -126,7 +126,9 @@ export const TasksView = ({ user, profile }: TasksViewProps) => {
                 patientId: newTask.patientId,
                 professional: profile?.name || user.displayName || user.email || '',
                 content: newTask.text.trim(),
-                createdBy: user.uid,
+                createdBy: profile?.name || user.displayName || user.email || '',
+                createdByUid: user.uid,
+                subtasks: newTask.subtasks.length > 0 ? newTask.subtasks : undefined,
             });
 
             toast.success('Tarea creada');

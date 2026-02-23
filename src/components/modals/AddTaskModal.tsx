@@ -9,9 +9,10 @@ interface AddTaskModalProps {
     patientId: string;
     patientName: string;
     userName: string;
+    userUid: string;
 }
 
-export const AddTaskModal = ({ onClose, patientId, patientName, userName }: AddTaskModalProps) => {
+export const AddTaskModal = ({ onClose, patientId, patientName, userName, userUid }: AddTaskModalProps) => {
     const [taskText, setTaskText] = useState('');
     const [saving, setSaving] = useState(false);
     const { addTask } = useDataActions();
@@ -26,7 +27,8 @@ export const AddTaskModal = ({ onClose, patientId, patientName, userName }: AddT
                 patientId,
                 professional: userName,
                 content: taskText.trim(),
-                createdBy: '',
+                createdBy: userName,
+                createdByUid: userUid,
             });
 
             toast.success('Tarea creada');
