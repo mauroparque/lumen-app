@@ -58,6 +58,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Estado para el diálogo de cancelación
     const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -169,6 +170,8 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
     };
 
     const handleSaveNote = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
         try {
             await saveNote(
                 {
@@ -182,6 +185,8 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
             toast.success('Evolución guardada correctamente');
         } catch (error) {
             toast.error('Error al guardar la evolución');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -667,10 +672,10 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
                                     <div className="flex justify-end border-t border-slate-100 pt-4">
                                         <button
                                             onClick={handleSaveNote}
-                                            disabled={loadingNote}
+                                            disabled={loadingNote || isSaving}
                                             className="px-6 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 shadow-sm font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
-                                            {loadingNote ? (
+                                            {isSaving ? (
                                                 <>
                                                     <Loader2 size={18} className="mr-2 animate-spin" /> Guardando...
                                                 </>
