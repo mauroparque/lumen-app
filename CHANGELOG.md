@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **New npm scripts**: `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc --noEmit`), and `ci` (`lint + format:check + type-check + test + build`) (TSC-01)
 - **Global `ErrorBoundary`** using `react-error-boundary` wrapping both Suspense boundaries in `App.tsx` — prevents chunk-load failures from crashing the app silently
 - **Vitest v8 coverage** with reduced-scope thresholds (lines/functions/statements: 80%, branches: 60%) — scope grows incrementally as tests are added per module
-- **14 new `IDataService` methods**: `getClinicalNote`, `subscribeToPatientNotes`, `addClinicalNote`, `updateNote`, `getPatientAppointments`, `getPatientPayments`, `getPsiquePatients`, `subscribeToPsiquePayments`, `getTasks`, `subscribeToTasks`, `addTask`, `updateTask`, `toggleSubtaskCompletion`, `subscribeToStaff` — all implemented in `FirebaseService` (ARCH-01)
+- **14 new `IDataService` methods**: `subscribeToClinicalNote`, `subscribeToPatientNotes`, `saveNote`, `updateNote`, `uploadNoteAttachment`, `subscribeToAllNotes`, `completeTask`, `addTask`, `updateTask`, `toggleSubtaskCompletion`, `subscribeToPsiquePayments`, `markPsiquePaymentAsPaid`, `subscribeToPatientAppointments`, `subscribeToPatientPayments` — all implemented in `FirebaseService` (ARCH-01)
 - **`updateTask` and `toggleSubtaskCompletion`** wrappers in `useDataActions` with service-availability guard
 - **Unit tests**: `useAgendaStats.test.ts` (6 pure-logic tests), `IDataService.test.ts` (mock factory + method completeness), expanded `utils.test.ts` (edge cases for `formatPhoneNumber` and `cn`) — total 23 tests across 3 files (up from 7 in 1 file)
 
