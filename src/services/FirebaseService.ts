@@ -391,7 +391,10 @@ export class FirebaseService implements IDataService {
 
     // --- Tasks ---
     subscribeToAllNotes(onData: (notes: ClinicalNote[]) => void): () => void {
-        const q = query(collection(db, NOTES_COLLECTION));
+        const q = query(
+            collection(db, NOTES_COLLECTION),
+            where('createdByUid', '==', this.uid),
+        );
 
         return onSnapshot(
             q,
