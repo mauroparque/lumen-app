@@ -82,11 +82,12 @@ export const PatientsView = ({
                 case 'name':
                     comparison = a.name.localeCompare(b.name);
                     break;
-                case 'age':
+                case 'age': {
                     const ageA = calculateAge(a.birthDate) ?? 999;
                     const ageB = calculateAge(b.birthDate) ?? 999;
                     comparison = ageA - ageB;
                     break;
+                }
                 case 'professional':
                     comparison = (a.professional || '').localeCompare(b.professional || '');
                     break;

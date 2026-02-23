@@ -60,7 +60,6 @@ export const useAgendaStats = (appointments: Appointment[], patients: Patient[])
         const psiquePatientIds = new Set(patients.filter((p) => p.patientSource === 'psique').map((p) => p.id));
 
         // Count appointments by status
-        let totalScheduled = 0;
         let totalCompleted = 0; // completado, presente, or isPaid
         let totalNoShow = 0; // ausente
         let totalCancelled = 0; // cancelado
@@ -70,7 +69,6 @@ export const useAgendaStats = (appointments: Appointment[], patients: Patient[])
         const sessionsByPatient: Record<string, { count: number; revenue: number }> = {};
 
         periodAppointments.forEach((appt) => {
-            totalScheduled++;
 
             // Consider an appointment as "completed" if status is completado/presente OR if it's paid
             const isCompleted = appt.status === 'completado' || appt.status === 'presente' || appt.isPaid;

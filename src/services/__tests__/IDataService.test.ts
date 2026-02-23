@@ -116,7 +116,7 @@ describe('IDataService Mockability Demo', () => {
         expect(service.updateNote).toBeDefined();
     });
 
-    it('updateTask mock can be configured with specific behavior', () => {
+    it('updateTask mock can be configured with specific behavior', async () => {
         const mockService = createMockService({
             updateTask: vi.fn().mockResolvedValue(undefined),
         });
@@ -130,10 +130,10 @@ describe('IDataService Mockability Demo', () => {
             text: 'Updated task',
             subtasks: [{ text: 'sub', completed: false }],
         });
-        expect(result).resolves.toBeUndefined();
+        await expect(result).resolves.toBeUndefined();
     });
 
-    it('toggleSubtaskCompletion mock resolves correctly', () => {
+    it('toggleSubtaskCompletion mock resolves correctly', async () => {
         const mockService = createMockService({
             toggleSubtaskCompletion: vi.fn().mockResolvedValue(undefined),
         });
@@ -141,7 +141,7 @@ describe('IDataService Mockability Demo', () => {
         const result = mockService.toggleSubtaskCompletion('note-1', 0, 1);
 
         expect(mockService.toggleSubtaskCompletion).toHaveBeenCalledWith('note-1', 0, 1);
-        expect(result).resolves.toBeUndefined();
+        await expect(result).resolves.toBeUndefined();
     });
 
     it('mock factory includes all IDataService methods', () => {
