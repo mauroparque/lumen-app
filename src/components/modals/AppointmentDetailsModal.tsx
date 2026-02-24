@@ -183,7 +183,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
                 note?.id,
             );
             toast.success('Evolución guardada correctamente');
-        } catch (error) {
+        } catch {
             toast.error('Error al guardar la evolución');
         } finally {
             setIsSaving(false);
@@ -198,7 +198,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
             const url = await uploadAttachment(file, appointment.patientId);
             setAttachments((prev) => [...prev, url]);
             toast.success('Archivo adjuntado');
-        } catch (error) {
+        } catch {
             toast.error('Error al subir archivo');
         }
     };

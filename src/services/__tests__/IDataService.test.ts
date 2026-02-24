@@ -44,6 +44,9 @@ const createMockService = (overrides?: Partial<IDataService>): IDataService => (
     subscribeToPatientAppointments: vi.fn(),
     subscribeToPatientPayments: vi.fn(),
     updateNote: vi.fn(),
+    subscribeToStaffProfile: vi.fn(),
+    createStaffProfile: vi.fn(),
+    updateStaffProfile: vi.fn(),
     ...overrides,
 });
 
@@ -114,9 +117,12 @@ describe('IDataService Mockability Demo', () => {
         expect(service.subscribeToPatientAppointments).toBeDefined();
         expect(service.subscribeToPatientPayments).toBeDefined();
         expect(service.updateNote).toBeDefined();
+        expect(service.subscribeToStaffProfile).toBeDefined();
+        expect(service.createStaffProfile).toBeDefined();
+        expect(service.updateStaffProfile).toBeDefined();
     });
 
-    it('updateTask mock can be configured with specific behavior', () => {
+    it('updateTask mock can be configured with specific behavior', async () => {
         const mockService = createMockService({
             updateTask: vi.fn().mockResolvedValue(undefined),
         });
@@ -130,10 +136,10 @@ describe('IDataService Mockability Demo', () => {
             text: 'Updated task',
             subtasks: [{ text: 'sub', completed: false }],
         });
-        expect(result).resolves.toBeUndefined();
+        await expect(result).resolves.toBeUndefined();
     });
 
-    it('toggleSubtaskCompletion mock resolves correctly', () => {
+    it('toggleSubtaskCompletion mock resolves correctly', async () => {
         const mockService = createMockService({
             toggleSubtaskCompletion: vi.fn().mockResolvedValue(undefined),
         });
@@ -141,7 +147,7 @@ describe('IDataService Mockability Demo', () => {
         const result = mockService.toggleSubtaskCompletion('note-1', 0, 1);
 
         expect(mockService.toggleSubtaskCompletion).toHaveBeenCalledWith('note-1', 0, 1);
-        expect(result).resolves.toBeUndefined();
+        await expect(result).resolves.toBeUndefined();
     });
 
     it('mock factory includes all IDataService methods', () => {
@@ -157,6 +163,7 @@ describe('IDataService Mockability Demo', () => {
             'completeTask', 'addTask', 'updateTask', 'toggleSubtaskCompletion',
             'subscribeToPsiquePayments', 'markPsiquePaymentAsPaid',
             'subscribeToPatientAppointments', 'subscribeToPatientPayments',
+            'subscribeToStaffProfile', 'createStaffProfile', 'updateStaffProfile',
         ];
         for (const method of expectedMethods) {
             expect(service).toHaveProperty(method);

@@ -45,7 +45,7 @@ export const AuthScreen = () => {
             // Validate Turnstile token server-side
             try {
                 await validateTurnstileCallable({ token: turnstileToken });
-            } catch (turnstileErr: any) {
+            } catch {
                 setError('La verificación de seguridad falló. Intentá de nuevo.');
                 setIsLoading(false);
                 return;

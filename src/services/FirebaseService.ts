@@ -25,6 +25,7 @@ import {
     BILLING_QUEUE_COLLECTION,
     NOTES_COLLECTION,
     PSIQUE_PAYMENTS_COLLECTION,
+    STAFF_COLLECTION,
 } from '../lib/routes';
 import { IDataService } from './IDataService';
 import type {
@@ -39,6 +40,7 @@ import type {
     TaskInput,
     TaskSubitem,
     PsiquePayment,
+    StaffProfile,
 } from '../types';
 
 export class FirebaseService implements IDataService {
@@ -569,5 +571,34 @@ export class FirebaseService implements IDataService {
             },
             (error) => console.error('Error fetching patient payments:', error),
         );
+    }
+
+    // --- Staff ---
+    subscribeToStaffProfile(uid: string, onData: (profile: StaffProfile | null) => void): () => void {
+        const docRef = doc(db, STAFF_COLLECTION, uid);
+        return onSnapshot(
+            docRef,
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    onData(docSnap.data() as StaffProfile);
+                } else {
+                    onData(null);
+                }
+            },
+            (error) => {
+                console.error('Error fetching staff profile:', error);
+                onData(null);
+            },
+        );
+    }
+
+    async createStaffProfile(uid: string, profile: StaffProfile): Promise<void> {
+        const docRef = doc(db, STAFF_COLLECTION, uid);
+        await setDoc(docRef, { ...profile, uid });
+    }
+
+    async updateStaffProfile(uid: string, data: Partial<StaffProfile>): Promise<void> {
+        const docRef = doc(db, STAFF_COLLECTION, uid);
+        await setDoc(docRef, data, { merge: true });
     }
 }
