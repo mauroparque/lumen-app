@@ -5,20 +5,13 @@ import { Appointment, Patient, PsiquePayment } from '../types';
 import {
     PSIQUE_RATE,
     calculatePsiqueMonthData,
+    getDocKey,
     type PsiqueMonthData,
     type PsiquePatientBreakdown,
 } from '../lib/psiqueCalculations';
 
 export type { PsiqueMonthData, PsiquePatientBreakdown };
 export { PSIQUE_RATE };
-
-const getDocKey = (month: string, professional?: string): string => {
-    if (professional) {
-        const safeName = professional.replace(/[/.#$[\]]/g, '_');
-        return `${month}_${safeName}`;
-    }
-    return month;
-};
 
 export function usePsiquePayments(
     appointments: Appointment[],

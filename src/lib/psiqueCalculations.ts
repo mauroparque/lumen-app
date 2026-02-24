@@ -24,7 +24,7 @@ export interface PsiqueMonthData {
     paidDate?: string;
 }
 
-const getDocKey = (month: string, professional?: string): string => {
+export const getDocKey = (month: string, professional?: string): string => {
     if (professional) {
         const safeName = professional.replace(/[/.#$[\]]/g, '_');
         return `${month}_${safeName}`;
