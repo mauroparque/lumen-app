@@ -3,16 +3,6 @@ import { renderHook } from '@testing-library/react';
 import { usePendingTasks } from '../usePendingTasks';
 import type { Appointment, ClinicalNote } from '../../types';
 
-vi.mock('../../context/ServiceContext', () => ({
-    useService: vi.fn(() => ({
-        subscribeToAllNotes: vi.fn((cb: (notes: ClinicalNote[]) => void) => {
-            cb([]);
-            return vi.fn();
-        }),
-        completeTask: vi.fn().mockResolvedValue(undefined),
-    })),
-}));
-
 vi.mock('../../context/DataContext', () => ({
     useData: vi.fn(() => ({
         patients: [
