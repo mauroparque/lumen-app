@@ -1,17 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
-
-vi.mock('../../lib/firebase', () => ({
-    appId: 'test-app',
-    CLINIC_ID: 'test-clinic',
-    auth: {},
-    db: {},
-    storage: {},
-}));
+import { describe, it, expect } from 'vitest';
 
 import {
     calculatePsiqueMonthData,
     PSIQUE_RATE,
-} from '../usePsiquePayments';
+} from '../psiqueCalculations';
 import type { Appointment, PsiquePayment } from '../../types';
 
 const makeAppointment = (overrides: Partial<Appointment> = {}): Appointment => ({

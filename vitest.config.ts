@@ -16,8 +16,8 @@ export default defineConfig({
                 // Scope reducido: solo archivos con tests reales.
                 // Ampliar incrementalmente al agregar tests para más módulos.
                 'src/lib/utils.ts',
+                'src/lib/psiqueCalculations.ts',
                 'src/hooks/useAgendaStats.ts',
-                'src/hooks/usePsiquePayments.ts',
                 'src/hooks/usePendingTasks.ts',
             ],
             exclude: [
