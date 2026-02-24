@@ -3,9 +3,9 @@ import { useService } from '../context/ServiceContext';
 import { useData } from '../context/DataContext';
 import { Appointment, Patient, PsiquePayment } from '../types';
 
-const PSIQUE_RATE = 0.25;
+export const PSIQUE_RATE = 0.25;
 
-interface PsiquePatientBreakdown {
+export interface PsiquePatientBreakdown {
     patientId: string;
     patientName: string;
     sessionCount: number;
@@ -13,12 +13,72 @@ interface PsiquePatientBreakdown {
     psiqueAmount: number;
 }
 
-interface PsiqueMonthData {
+export interface PsiqueMonthData {
     month: string;
     totalAmount: number;
     patientBreakdown: PsiquePatientBreakdown[];
     isPaid: boolean;
     paidDate?: string;
+}
+
+const getDocKey = (month: string, professional?: string) => {
+    if (professional) {
+        const safeName = professional.replace(/[/.#$[\]]/g, '_');
+        return `${month}_${safeName}`;
+    }
+    return month;
+};
+
+export function calculatePsiqueMonthData(
+    appointments: Appointment[],
+    psiquePatientIds: Set<string>,
+    selectedMonth: Date,
+    psiquePayments: Record<string, PsiquePayment>,
+    professionalName?: string,
+): PsiqueMonthData {
+    const monthStr = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, '0')}`;
+
+    const psiqueAppointments = appointments.filter((a) => {
+        if (!a.isPaid || a.status === 'cancelado') return false;
+        if (!psiquePatientIds.has(a.patientId)) return false;
+        if (a.excludeFromPsique) return false;
+        return a.date.startsWith(monthStr);
+    });
+
+    const patientMap: Record<string, PsiquePatientBreakdown> = {};
+
+    psiqueAppointments.forEach((appt) => {
+        if (!patientMap[appt.patientId]) {
+            patientMap[appt.patientId] = {
+                patientId: appt.patientId,
+                patientName: appt.patientName,
+                sessionCount: 0,
+                totalFee: 0,
+                psiqueAmount: 0,
+            };
+        }
+
+        const fee = appt.price || 0;
+        patientMap[appt.patientId].sessionCount++;
+        patientMap[appt.patientId].totalFee += fee;
+        patientMap[appt.patientId].psiqueAmount += fee * PSIQUE_RATE;
+    });
+
+    const patientBreakdown = Object.values(patientMap).sort((a, b) =>
+        a.patientName.localeCompare(b.patientName),
+    );
+    const totalAmount = patientBreakdown.reduce((sum, p) => sum + p.psiqueAmount, 0);
+
+    const docKey = getDocKey(monthStr, professionalName);
+    const paymentRecord = psiquePayments[docKey];
+
+    return {
+        month: monthStr,
+        totalAmount,
+        patientBreakdown,
+        isPaid: paymentRecord?.isPaid || false,
+        paidDate: paymentRecord?.paidDate,
+    };
 }
 
 export function usePsiquePayments(
@@ -38,58 +98,17 @@ export function usePsiquePayments(
 
     const effectiveAppointments = appointments?.length ? appointments : contextAppointments;
 
-    const getDocKey = useCallback((month: string, professional?: string) => {
-        if (professional) {
-            const safeName = professional.replace(/[/.#$[\]]/g, '_');
-            return `${month}_${safeName}`;
-        }
-        return month;
-    }, []);
-
-    const monthData = useMemo((): PsiqueMonthData => {
-        const monthStr = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, '0')}`;
-
-        const psiqueAppointments = effectiveAppointments.filter((a) => {
-            if (!a.isPaid || a.status === 'cancelado') return false;
-            if (!psiquePatientIds.has(a.patientId)) return false;
-            if (a.excludeFromPsique) return false;
-            return a.date.startsWith(monthStr);
-        });
-
-        const patientMap: Record<string, PsiquePatientBreakdown> = {};
-
-        psiqueAppointments.forEach((appt) => {
-            if (!patientMap[appt.patientId]) {
-                patientMap[appt.patientId] = {
-                    patientId: appt.patientId,
-                    patientName: appt.patientName,
-                    sessionCount: 0,
-                    totalFee: 0,
-                    psiqueAmount: 0,
-                };
-            }
-
-            const fee = appt.price || 0;
-            patientMap[appt.patientId].sessionCount++;
-            patientMap[appt.patientId].totalFee += fee;
-            patientMap[appt.patientId].psiqueAmount += fee * PSIQUE_RATE;
-        });
-
-        const patientBreakdown = Object.values(patientMap).sort((a, b) => a.patientName.localeCompare(b.patientName));
-
-        const totalAmount = patientBreakdown.reduce((sum, p) => sum + p.psiqueAmount, 0);
-
-        const docKey = getDocKey(monthStr, professionalName);
-        const paymentRecord = psiquePayments[docKey];
-
-        return {
-            month: monthStr,
-            totalAmount,
-            patientBreakdown,
-            isPaid: paymentRecord?.isPaid || false,
-            paidDate: paymentRecord?.paidDate,
-        };
-    }, [effectiveAppointments, psiquePatientIds, selectedMonth, psiquePayments, professionalName, getDocKey]);
+    const monthData = useMemo(
+        () =>
+            calculatePsiqueMonthData(
+                effectiveAppointments,
+                psiquePatientIds,
+                selectedMonth,
+                psiquePayments,
+                professionalName,
+            ),
+        [effectiveAppointments, psiquePatientIds, selectedMonth, psiquePayments, professionalName],
+    );
 
     useEffect(() => {
         if (!service) return;
@@ -116,7 +135,7 @@ export function usePsiquePayments(
             };
             return service.markPsiquePaymentAsPaid(docKey, data);
         },
-        [service, professionalName, monthData, getDocKey],
+        [service, professionalName, monthData],
     );
 
     return {
