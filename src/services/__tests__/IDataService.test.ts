@@ -117,6 +117,9 @@ describe('IDataService Mockability Demo', () => {
         expect(service.subscribeToPatientAppointments).toBeDefined();
         expect(service.subscribeToPatientPayments).toBeDefined();
         expect(service.updateNote).toBeDefined();
+        expect(service.subscribeToStaffProfile).toBeDefined();
+        expect(service.createStaffProfile).toBeDefined();
+        expect(service.updateStaffProfile).toBeDefined();
     });
 
     it('updateTask mock can be configured with specific behavior', async () => {
