@@ -255,7 +255,7 @@ export const AppointmentDetailsModal = ({ appointment, onClose, onEdit }: Appoin
     const statusInfo = getStatusInfo();
 
     return (
-        <ModalOverlay onClose={onClose}>
+        <ModalOverlay onClose={onClose} ariaLabel="Detalle del turno">
             <div className="p-0 w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">

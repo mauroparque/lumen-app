@@ -36,6 +36,7 @@ import type {
     AppointmentInput,
     PaymentInput,
     PatientBillingData,
+    BillingStatusData,
     ClinicalNote,
     TaskInput,
     TaskSubitem,
@@ -308,6 +309,34 @@ export class FirebaseService implements IDataService {
         });
 
         return docRef.id;
+    }
+
+    subscribeToBillingStatus(requestId: string, onData: (status: BillingStatusData) => void): () => void {
+        const docRef = doc(db, BILLING_QUEUE_COLLECTION, requestId);
+
+        return onSnapshot(
+            docRef,
+            (docSnap) => {
+                if (!docSnap.exists()) {
+                    return;
+                }
+
+                const data = docSnap.data();
+                onData({
+                    status: data.status,
+                    invoiceUrl: data.invoiceUrl || undefined,
+                    invoiceNumber: data.invoiceNumber || undefined,
+                    error: data.error,
+                });
+            },
+            (error) => {
+                console.error('Error listening to billing status:', error);
+                onData({
+                    status: 'error',
+                    error: error.message,
+                });
+            },
+        );
     }
 
     // --- Clinical Notes ---

@@ -19,6 +19,7 @@ export default defineConfig({
                 'src/lib/psiqueCalculations.ts',
                 'src/hooks/useAgendaStats.ts',
                 'src/hooks/usePendingTasks.ts',
+                'src/services/FirebaseService.ts',
             ],
             exclude: [
                 'src/test/**',

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db, appId, CLINIC_ID } from '../lib/firebase';
+import { useService } from '../context/ServiceContext';
+import type { BillingStatusData } from '../types';
 
 export interface BillingStatus {
-    status: 'pending' | 'processing' | 'completed' | 'error' | 'error_sending' | 'error_config';
+    status: BillingStatusData['status'];
     invoiceUrl: string | null;
     invoiceNumber: string | null;
     loading: boolean;
@@ -11,6 +11,7 @@ export interface BillingStatus {
 }
 
 export const useBillingStatus = (requestId: string | null) => {
+    const service = useService();
     const [state, setState] = useState<BillingStatus>({
         status: 'pending',
         invoiceUrl: null,
@@ -20,46 +21,25 @@ export const useBillingStatus = (requestId: string | null) => {
     });
 
     useEffect(() => {
-        if (!requestId) {
+        if (!requestId || !service) {
             setState((prev) => ({ ...prev, loading: false }));
             return;
         }
 
         setState((prev) => ({ ...prev, loading: true }));
 
-        const docRef = doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'integrations', 'billing', 'queue', requestId);
-
-        const unsubscribe = onSnapshot(
-            docRef,
-            (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setState({
-                        status: data.status,
-                        invoiceUrl: data.invoiceUrl || null,
-                        invoiceNumber: data.invoiceNumber || null,
-                        loading: data.status === 'pending' || data.status === 'processing',
-                        error: data.error,
-                    });
-                } else {
-                    // Handle case where doc doesn't exist yet or was deleted
-                    setState((prev) => ({ ...prev, loading: true }));
-                }
-            },
-            (error) => {
-                console.error('Error listening to billing status:', error);
-                setState({
-                    status: 'error',
-                    invoiceUrl: null,
-                    invoiceNumber: null,
-                    loading: false,
-                    error: error.message,
-                });
-            },
-        );
+        const unsubscribe = service.subscribeToBillingStatus(requestId, (data) => {
+            setState({
+                status: data.status,
+                invoiceUrl: data.invoiceUrl || null,
+                invoiceNumber: data.invoiceNumber || null,
+                loading: data.status === 'pending' || data.status === 'processing',
+                error: data.error,
+            });
+        });
 
         return () => unsubscribe();
-    }, [requestId]);
+    }, [requestId, service]);
 
     return state;
 };

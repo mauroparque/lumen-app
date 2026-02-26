@@ -70,5 +70,22 @@ export default defineConfig({
                 ]
             }
         })
-    ]
+    ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom'],
+                    'vendor-firebase': [
+                        'firebase/app',
+                        'firebase/auth',
+                        'firebase/firestore',
+                        'firebase/storage',
+                        'firebase/functions',
+                    ],
+                    'vendor-ui': ['lucide-react', 'sonner'],
+                },
+            },
+        },
+    },
 })

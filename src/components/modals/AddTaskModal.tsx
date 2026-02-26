@@ -42,7 +42,7 @@ export const AddTaskModal = ({ onClose, patientId, patientName, userName, userUi
     };
 
     return (
-        <ModalOverlay onClose={onClose}>
+        <ModalOverlay onClose={onClose} ariaLabel="Nueva tarea">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-slate-800">Nueva Tarea</h2>

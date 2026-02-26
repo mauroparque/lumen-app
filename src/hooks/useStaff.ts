@@ -1,59 +1,55 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db, appId, CLINIC_ID } from '../lib/firebase';
-import { StaffProfile } from '../types';
+import { serverTimestamp } from 'firebase/firestore';
+import { useService } from '../context/ServiceContext';
+import type { StaffProfile } from '../types';
 
 export const useStaff = (user: User | null) => {
+    const service = useService();
     const [profile, setProfile] = useState<StaffProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!user) {
+        if (!user || !service) {
             setProfile(null);
             setLoading(false);
             return;
         }
 
         setLoading(true);
-        const unsubscribe = onSnapshot(
-            doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'staff', user.uid),
-            (docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    setProfile(docSnapshot.data() as StaffProfile);
-                } else {
-                    setProfile(null);
-                }
-                setLoading(false);
-            },
-            (error) => {
-                console.error('Error fetching staff profile:', error);
-                setLoading(false);
-            },
-        );
+        const unsubscribe = service.subscribeToStaffProfile(user.uid, (data) => {
+            setProfile(data);
+            setLoading(false);
+        });
 
         return () => unsubscribe();
-    }, [user]);
+    }, [user, service]);
 
-    const createProfile = async (data: { name: string; specialty?: string }) => {
-        if (!user) return;
+    const createProfile = useCallback(
+        async (data: { name: string; specialty?: string }) => {
+            if (!user || !service) return;
 
-        const newProfile: StaffProfile = {
-            uid: user.uid,
-            email: user.email || '',
-            name: data.name,
-            role: 'professional', // Default role
-            specialty: data.specialty,
-            createdAt: serverTimestamp(),
-        };
+            const newProfile: StaffProfile = {
+                uid: user.uid,
+                email: user.email || '',
+                name: data.name,
+                role: 'professional',
+                specialty: data.specialty,
+                createdAt: serverTimestamp() as StaffProfile['createdAt'],
+            };
 
-        await setDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'staff', user.uid), newProfile);
-    };
+            await service.createStaffProfile(user.uid, newProfile);
+        },
+        [user, service],
+    );
 
-    const updateProfile = async (data: Partial<StaffProfile>) => {
-        if (!user) return;
-        await setDoc(doc(db, 'artifacts', appId, 'clinics', CLINIC_ID, 'staff', user.uid), data, { merge: true });
-    };
+    const updateProfile = useCallback(
+        async (data: Partial<StaffProfile>) => {
+            if (!user || !service) return;
+            await service.updateStaffProfile(user.uid, data);
+        },
+        [user, service],
+    );
 
     return { profile, loading, createProfile, updateProfile };
 };

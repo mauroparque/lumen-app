@@ -12,6 +12,8 @@
 
 **Revisión anterior:** [`docs/reviews/2026-02-24_phase3-completion-review.md`](../reviews/2026-02-24_phase3-completion-review.md)
 
+**Review de cierre:** [`docs/reviews/2026-02-26_phase4-completion-review.md`](../reviews/2026-02-26_phase4-completion-review.md)
+
 ---
 
 ## Estado actual del proyecto

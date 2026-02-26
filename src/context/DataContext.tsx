@@ -10,6 +10,18 @@ interface DataContextType {
     loading: boolean;
 }
 
+function getDateWindow(): { start: string; end: string } {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    // Last day of the 6th month ahead (window: 3 months back, 6 months forward)
+    const end = new Date(now.getFullYear(), now.getMonth() + 7, 0);
+
+    return {
+        start: start.toISOString().split('T')[0],
+        end: end.toISOString().split('T')[0],
+    };
+}
+
 const DataContext = createContext<DataContextType>({
     patients: [],
     appointments: [],
@@ -27,6 +39,36 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [dateWindow, setDateWindow] = useState(getDateWindow);
+
+    useEffect(() => {
+        const checkWindow = () => {
+            const nextWindow = getDateWindow();
+
+            setDateWindow((prevWindow) => {
+                if (prevWindow.start !== nextWindow.start || prevWindow.end !== nextWindow.end) {
+                    return nextWindow;
+                }
+
+                return prevWindow;
+            });
+        };
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                checkWindow();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        const interval = setInterval(checkWindow, 4 * 60 * 60 * 1000);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibility);
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         if (!service) return;
@@ -36,22 +78,13 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
             setPatients(data);
         });
 
-        // 2. Subscribe to Appointments
-        // Window: -3 months to +6 months
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-        const end = new Date(now.getFullYear(), now.getMonth() + 6, 0);
-
-        const startStr = start.toISOString().split('T')[0];
-        const endStr = end.toISOString().split('T')[0];
-
         // All appointments (for agenda with "Todos los profesionales")
-        const unsubAllAppointments = service.subscribeToAppointments(startStr, endStr, (data) => {
+        const unsubAllAppointments = service.subscribeToAppointments(dateWindow.start, dateWindow.end, (data) => {
             setAllAppointments(data);
         });
 
         // My appointments only (filtered by professional)
-        const unsubMyAppointments = service.subscribeToMyAppointments(startStr, endStr, (data) => {
+        const unsubMyAppointments = service.subscribeToMyAppointments(dateWindow.start, dateWindow.end, (data) => {
             setMyAppointments(data);
             setLoading(false);
         });
@@ -70,7 +103,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
             unsubMyAppointments();
             unsubFinance();
         };
-    }, [service]);
+    }, [service, dateWindow]);
 
     // Memoize the context value to prevent unnecessary re-renders
     const value = useMemo(
