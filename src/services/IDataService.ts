@@ -6,6 +6,7 @@ import type {
     AppointmentInput,
     PaymentInput,
     PatientBillingData,
+    BillingStatusData,
     ClinicalNote,
     TaskInput,
     TaskSubitem,
@@ -42,6 +43,7 @@ export interface IDataService {
 
     // Facturación
     requestBatchInvoice(appointments: Appointment[], patientData: PatientBillingData): Promise<string>;
+    subscribeToBillingStatus(requestId: string, onData: (status: BillingStatusData) => void): () => void;
 
     // --- Clinical Notes ---
     subscribeToClinicalNote(appointmentId: string, onData: (note: ClinicalNote | null) => void): () => void;

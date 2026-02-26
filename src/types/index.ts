@@ -144,6 +144,13 @@ export interface PatientBillingData {
 
 export type BillingRequestStatus = 'pending' | 'processing' | 'completed' | 'error' | 'error_sending' | 'error_config';
 
+export interface BillingStatusData {
+    status: BillingRequestStatus;
+    invoiceUrl?: string;
+    invoiceNumber?: string;
+    error?: string;
+}
+
 export interface BillingLineItem {
     description: string;
     amount: number;
