@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.1.0] - 2026-02-26
+
 ### Added
 
 - **Bundle splitting** via `manualChunks` in Vite — chunk principal reducido de 693KB a 29.65KB con chunks separados para Firebase, React y UI vendors (BUILD-01)
@@ -14,37 +18,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`subscribeToBillingStatus`** en `IDataService` + `FirebaseService` — suscripción real-time al estado de facturación (ARCH-01)
 - **`BillingStatusData` type** en `src/types/index.ts` — tipo tipado para estados de billing queue
 - **50 tests unitarios para `FirebaseService`** con mocks de Firestore — coverage 88% statements, 78% functions (TEST-01)
+- **ESLint 9 flat config** con `@typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` + integración con Prettier (LINT-01)
+- **Prettier** `.prettierrc` con defaults opinados — `singleQuote`, `tabWidth: 4`, `printWidth: 100`
+- **Nuevos scripts npm**: `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc --noEmit`), y `ci` (`lint + format:check + type-check + test + build`) (TSC-01)
+- **`ErrorBoundary` global** via `react-error-boundary` envolviendo Suspense en `App.tsx` — previene crashes silenciosos por chunk-load failures
+- **Vitest v8 coverage** con thresholds de scope reducido (lines/functions/statements: 80%, branches: 60%) — scope crece incrementalmente
+- **14 nuevos métodos en `IDataService`**: `subscribeToClinicalNote`, `subscribeToPatientNotes`, `saveNote`, `updateNote`, `uploadNoteAttachment`, `subscribeToAllNotes`, `completeTask`, `addTask`, `updateTask`, `toggleSubtaskCompletion`, `subscribeToPsiquePayments`, `markPsiquePaymentAsPaid`, `subscribeToPatientAppointments`, `subscribeToPatientPayments` — todos implementados en `FirebaseService` (ARCH-01)
+- **`updateTask` y `toggleSubtaskCompletion`** wrappers en `useDataActions` con guard de disponibilidad del servicio
+- **Tests unitarios**: `useAgendaStats.test.ts` (6 tests), `IDataService.test.ts` (mock factory + completeness), `usePendingTasks.test.ts` (8 tests), `psiqueCalculations.test.ts` — 92 tests en 6 archivos (TEST-01)
 
 ### Changed
 
 - **Recálculo automático de ventana de datos** en `DataContext` — `visibilitychange` + intervalo 4h previenen stale data en sesiones largas PWA (DATA-01)
 - **`useBillingStatus` migrado a `IDataService`** — ya no importa `firebase/firestore` directamente (ARCH-01)
 - **`useStaff` migrado a `IDataService`** — usa `service.subscribeToStaffProfile` vía `ServiceContext` (ARCH-01)
-- **Provider tree reestructurado en `App.tsx`** — nuevo patrón `StaffGate` + `AuthenticatedApp` permite que `useStaff` acceda a `ServiceContext` (ARCH-01)
+- **Provider tree reestructurado en `App.tsx`** — nuevo patrón `StaffGate` + `AuthenticatedApp` permite que `useStaff` acceda a `ServiceContext` antes de obtener el perfil (ARCH-01)
+- **`useClinicalNotes`** reescrito como dos hooks top-level independientes `useClinicalNote(appointmentId)` y `usePatientNotes(patientId)` — corrige violación de Rules of Hooks (HOOK-01)
+- **Migración de acceso directo a Firestore** en: `usePendingTasks`, `usePsiquePayments`, `usePatientData`, `AddTaskModal`, `TasksView` — 0 imports directos de `firebase/firestore` en archivos migrados (ARCH-01)
+- **ESLint config simplificado** — ~40 globals browser declarados manualmente reemplazados por `globals.browser` + `globals.es2021`
+- **`.gitignore`** actualizado para excluir artefactos de test: `playwright-report/`, `test-results/`, `.worktrees/`
 - **Coverage scope ampliado** a 5 archivos (agrega `FirebaseService.ts`) — 92 tests en 6 archivos
-
-### Added
-
-- **ESLint 9 flat config** with `@typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, and Prettier integration (LINT-01)
-- **Prettier** `.prettierrc` with opinionated defaults — `singleQuote`, `tabWidth: 4`, `printWidth: 100`
-- **New npm scripts**: `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc --noEmit`), and `ci` (`lint + format:check + type-check + test + build`) (TSC-01)
-- **Global `ErrorBoundary`** using `react-error-boundary` wrapping both Suspense boundaries in `App.tsx` — prevents chunk-load failures from crashing the app silently
-- **Vitest v8 coverage** with reduced-scope thresholds (lines/functions/statements: 80%, branches: 60%) — scope grows incrementally as tests are added per module
-- **14 new `IDataService` methods**: `subscribeToClinicalNote`, `subscribeToPatientNotes`, `saveNote`, `updateNote`, `uploadNoteAttachment`, `subscribeToAllNotes`, `completeTask`, `addTask`, `updateTask`, `toggleSubtaskCompletion`, `subscribeToPsiquePayments`, `markPsiquePaymentAsPaid`, `subscribeToPatientAppointments`, `subscribeToPatientPayments` — all implemented in `FirebaseService` (ARCH-01)
-- **`updateTask` and `toggleSubtaskCompletion`** wrappers in `useDataActions` with service-availability guard
-- **Unit tests**: `useAgendaStats.test.ts` (6 pure-logic tests), `IDataService.test.ts` (mock factory + method completeness), expanded `utils.test.ts` (edge cases for `formatPhoneNumber` and `cn`) — total 23 tests across 3 files (up from 7 in 1 file)
-
-### Changed
-
-- **`useClinicalNotes`** rewritten as two independent top-level hooks `useClinicalNote(appointmentId)` and `usePatientNotes(patientId)` — fixes Rules of Hooks violation (HOOK-01)
-- **Migrated direct Firestore access to `IDataService`** in: `usePendingTasks`, `usePsiquePayments`, `usePatientData`, `AddTaskModal`, `TasksView` — 0 direct `firebase/firestore` imports remain in migrated files (ARCH-01)
-- **ESLint config simplified** — ~40 manually declared browser globals replaced by `globals.browser` + `globals.es2021`
-- **`.gitignore`** updated to exclude generated test artifacts: `playwright-report/`, `test-results/`, `.worktrees/`
+- **`psiqueCalculations`** extraído a `src/lib/psiqueCalculations.ts` con función pura `calculatePsiqueMonthData`
 
 ### Fixed
 
-- `usePsiquePayments`: removed 3 unnecessary regex escape characters — eliminates `no-useless-escape` lint errors
-- `TasksView`: `handleUpdateTask` reduced from 17 to 5 lines; `toggleSubtaskComplete` from 22 to 3 lines — both now delegate to `IDataService` via `useDataActions`
+- `usePsiquePayments`: eliminados 3 escapes innecesarios en regex — resuelve errores `no-useless-escape`
+- `TasksView`: `handleUpdateTask` reducido de 17 a 5 líneas — delega a `IDataService` vía `useDataActions`
+- `AppointmentDetailsModal`: previene doble-submit en guardado de notas
+- `usePendingTasks`: tracking real del estado de loading
+- `FirebaseService`: `subscribeToAllNotes` scoped por `createdByUid`; `addTask` alineado con modelo `ClinicalNote`
+- `tasks`: agrega `createdByUid` al payload de `TaskInput` — corrige validación de ownership
+
+### Docs
+
+- Auditoría de calidad post-4 fases (26/02/2026) — score C+ → B+, 34 ítems de deuda técnica documentados
 
 ---
 
@@ -81,5 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Eliminated `unsafe-eval` from CSP — all scripts require nonce-based authorization
 - Server-side Turnstile validation prevents bot and replay attacks on the authentication flow
 
-[Unreleased]: https://github.com/mauroparque/lumen-app-v2/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/mauroparque/lumen-app-v2/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/mauroparque/lumen-app-v2/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mauroparque/lumen-app-v2/releases/tag/v1.0.0
