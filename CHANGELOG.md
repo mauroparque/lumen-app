@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Bundle splitting** via `manualChunks` in Vite — chunk principal reducido de 693KB a 29.65KB con chunks separados para Firebase, React y UI vendors (BUILD-01)
+- **Accesibilidad en `ModalOverlay`** — `role="dialog"`, `aria-modal`, `aria-label`, focus trap (Tab/Shift+Tab), Escape key, save/restore focus (A11Y-01)
+- **`subscribeToBillingStatus`** en `IDataService` + `FirebaseService` — suscripción real-time al estado de facturación (ARCH-01)
+- **`BillingStatusData` type** en `src/types/index.ts` — tipo tipado para estados de billing queue
+- **50 tests unitarios para `FirebaseService`** con mocks de Firestore — coverage 88% statements, 78% functions (TEST-01)
+
+### Changed
+
+- **Recálculo automático de ventana de datos** en `DataContext` — `visibilitychange` + intervalo 4h previenen stale data en sesiones largas PWA (DATA-01)
+- **`useBillingStatus` migrado a `IDataService`** — ya no importa `firebase/firestore` directamente (ARCH-01)
+- **`useStaff` migrado a `IDataService`** — usa `service.subscribeToStaffProfile` vía `ServiceContext` (ARCH-01)
+- **Provider tree reestructurado en `App.tsx`** — nuevo patrón `StaffGate` + `AuthenticatedApp` permite que `useStaff` acceda a `ServiceContext` (ARCH-01)
+- **Coverage scope ampliado** a 5 archivos (agrega `FirebaseService.ts`) — 92 tests en 6 archivos
+
+### Added
+
 - **ESLint 9 flat config** with `@typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, and Prettier integration (LINT-01)
 - **Prettier** `.prettierrc` with opinionated defaults — `singleQuote`, `tabWidth: 4`, `printWidth: 100`
 - **New npm scripts**: `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc --noEmit`), and `ci` (`lint + format:check + type-check + test + build`) (TSC-01)

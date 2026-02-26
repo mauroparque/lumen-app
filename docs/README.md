@@ -69,6 +69,19 @@ Auditoría (misma)
             └── 2026-02-24_phase3-completion-review.md  ✓ COMPLETADA
 ```
 
+### Ciclo 4 — Performance, Accesibilidad y Service Layer (Feb 2026)
+
+```text
+Auditoría (misma)
+  └── 2026-02-19_AUDIT.md  → hallazgos BUILD-01, DATA-01, A11Y-01, ARCH-01 (remanente), TEST-01 (remanente)
+       │
+       ├── Plan
+       │    └── 2026-02-25-phase4-performance-a11y-services.md  (plan principal, 10 tasks)
+       │
+       └── Review
+            └── 2026-02-26_phase4-completion-review.md  ✓ COMPLETADA
+```
+
 | Documento | Tipo | Fecha | Estado |
 | --- | --- | --- | --- |
 | [2026-02-19_AUDIT.md](audits/2026-02-19_AUDIT.md) | Auditoría | 19/02/2026 | Referencia base |
@@ -81,6 +94,8 @@ Auditoría (misma)
 | [2026-02-23-phase3-testing-cleanup.md](plans/2026-02-23-phase3-testing-cleanup.md) | Plan | 23/02/2026 | Ejecutado ✓ |
 | [2026-02-24-phase3-fixes.md](plans/2026-02-24-phase3-fixes.md) | Plan (fixes) | 24/02/2026 | Ejecutado ✓ |
 | [2026-02-24_phase3-completion-review.md](reviews/2026-02-24_phase3-completion-review.md) | Review | 24/02/2026 | Cerrado ✓ |
+| [2026-02-25-phase4-performance-a11y-services.md](plans/2026-02-25-phase4-performance-a11y-services.md) | Plan | 25/02/2026 | Ejecutado ✓ |
+| [2026-02-26_phase4-completion-review.md](reviews/2026-02-26_phase4-completion-review.md) | Review | 26/02/2026 | Cerrado ✓ |
 
 ---
 
@@ -104,8 +119,10 @@ Deuda actualizada tras cierre de Fase 3:
 | ~~DX~~ | ~~LINT-01, TSC-01~~ | ~~Fase 2~~ → Ejecutado ✓ |
 | ~~Coverage expansion~~ | ~~TEST-01 (cont.)~~ | ~~Fase 3~~ → Ejecutado ✓ (4 archivos en scope) |
 | ~~Lint cleanup~~ | ~~7 errores pre-existentes~~ | ~~Fase 3~~ → Ejecutado ✓ (0 errors) |
-| useStaff migration | ARCH-01 (remanente) | Fase 3 → parcial (interface lista, hook pendiente) → Fase 4 |
-| useBillingStatus migration | ARCH-01 (remanente) | Fase 4 |
-| Performance | BUILD-01, DATA-01 | Fase 4 |
-| Accesibilidad | A11Y-01 | Fase 4 |
-| FirebaseService tests | TEST-01 (remanente) | Fase 4 |
+| ~~useStaff migration~~ | ~~ARCH-01 (remanente)~~ | ~~Fase 4~~ → Ejecutado ✓ |
+| ~~useBillingStatus migration~~ | ~~ARCH-01 (remanente)~~ | ~~Fase 4~~ → Ejecutado ✓ |
+| ~~Performance~~ | ~~BUILD-01, DATA-01~~ | ~~Fase 4~~ → Ejecutado ✓ |
+| ~~Accesibilidad~~ | ~~A11Y-01~~ | ~~Fase 4~~ → Ejecutado ✓ |
+| ~~FirebaseService tests~~ | ~~TEST-01 (remanente)~~ | ~~Fase 4~~ → Ejecutado ✓ |
+
+**Todos los hallazgos de la auditoría original han sido resueltos.**
