@@ -274,11 +274,6 @@ export class FirebaseService implements IDataService {
         return paymentRef.id;
     }
 
-    async deletePayment(id: string): Promise<void> {
-        const docRef = doc(db, PAYMENTS_COLLECTION, id);
-        await deleteDoc(docRef);
-    }
-
     async updatePayment(id: string, data: Partial<Payment>): Promise<void> {
         const docRef = doc(db, PAYMENTS_COLLECTION, id);
         await updateDoc(docRef, data);

@@ -832,15 +832,12 @@ describe('FirebaseService', () => {
         expect(onData).toHaveBeenCalledWith([expect.objectContaining({ id: 'pay-1', amount: 2000 })]);
     });
 
-    it('deletePayment y updatePayment delegan en deleteDoc/updateDoc', async () => {
+    it('updatePayment delegates to updateDoc', async () => {
         const service = new FirebaseService('uid-1');
-        mockedDeleteDoc.mockResolvedValue(undefined);
         mockedUpdateDoc.mockResolvedValue(undefined);
 
-        await service.deletePayment('pay-1');
         await service.updatePayment('pay-1', { concept: 'Ajuste' } as never);
 
-        expect(mockedDeleteDoc).toHaveBeenCalled();
         expect(mockedUpdateDoc).toHaveBeenCalledWith(expect.objectContaining({ __type: 'doc' }), { concept: 'Ajuste' });
     });
 });
