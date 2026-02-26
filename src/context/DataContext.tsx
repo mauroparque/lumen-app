@@ -13,7 +13,8 @@ interface DataContextType {
 function getDateWindow(): { start: string; end: string } {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 6, 0);
+    // Last day of the 6th month ahead (window: 3 months back, 6 months forward)
+    const end = new Date(now.getFullYear(), now.getMonth() + 7, 0);
 
     return {
         start: start.toISOString().split('T')[0],
