@@ -5,12 +5,38 @@ import axios from "axios";
 
 admin.initializeApp();
 
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+function checkRateLimit(ip: string): boolean {
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip);
+
+    if (!entry || now > entry.resetAt) {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+        return true;
+    }
+
+    if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+        return false;
+    }
+
+    entry.count++;
+    return true;
+}
+
 export const validateTurnstile = onCall(
     {
         enforceAppCheck: false,
         secrets: ["TURNSTILE_SECRET"],
     },
     async (request) => {
+        const ip = request.rawRequest?.ip || 'unknown';
+        if (!checkRateLimit(ip)) {
+            throw new HttpsError("resource-exhausted", "Too many requests. Try again later.");
+        }
+
         const token = request.data?.token;
 
         if (!token || typeof token !== "string") {
