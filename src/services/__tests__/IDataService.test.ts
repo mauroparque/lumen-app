@@ -30,6 +30,7 @@ const createMockService = (overrides?: Partial<IDataService>): IDataService => (
     deletePayment: vi.fn(),
     updatePayment: vi.fn(),
     requestBatchInvoice: vi.fn(),
+    subscribeToBillingStatus: vi.fn(),
     subscribeToClinicalNote: vi.fn(),
     subscribeToPatientNotes: vi.fn(),
     saveNote: vi.fn(),
@@ -103,6 +104,7 @@ describe('IDataService Mockability Demo', () => {
         expect(service.deletePayment).toBeDefined();
         expect(service.updatePayment).toBeDefined();
         expect(service.requestBatchInvoice).toBeDefined();
+        expect(service.subscribeToBillingStatus).toBeDefined();
         expect(service.subscribeToClinicalNote).toBeDefined();
         expect(service.subscribeToPatientNotes).toBeDefined();
         expect(service.saveNote).toBeDefined();
@@ -158,6 +160,7 @@ describe('IDataService Mockability Demo', () => {
             'addAppointment', 'addRecurringAppointments', 'updateAppointment',
             'deleteAppointment', 'deleteRecurringSeries', 'deleteRecurringFromDate',
             'addPayment', 'deletePayment', 'updatePayment', 'requestBatchInvoice',
+            'subscribeToBillingStatus',
             'subscribeToClinicalNote', 'subscribeToPatientNotes', 'saveNote',
             'updateNote', 'uploadNoteAttachment', 'subscribeToAllNotes',
             'completeTask', 'addTask', 'updateTask', 'toggleSubtaskCompletion',
