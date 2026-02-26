@@ -39,7 +39,7 @@ export const PatientProfileModal = ({ patient, onClose }: PatientProfileModalPro
     const whatsappLink = patient.phone ? `https://wa.me/${patient.phone.replace(/\D/g, '').replace(/^0/, '549')}` : '#';
 
     return (
-        <ModalOverlay onClose={onClose}>
+        <ModalOverlay onClose={onClose} ariaLabel={`Perfil de ${patient.name}`}>
             {/* --- CONTENEDOR MAESTRO --- */}
             <div className="w-full max-w-[calc(100vw-2rem)] h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-row animate-in fade-in zoom-in duration-200 font-sans">
                 {/* === ZONA 1: SIDEBAR DE IDENTIDAD (Fijo a la izquierda) === */}

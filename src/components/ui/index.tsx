@@ -29,7 +29,7 @@ export const ModalOverlay = ({ children, onClose, ariaLabel }: ModalOverlayProps
         if (!overlay) return;
 
         const focusableSelector =
-            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]:not([contenteditable="false"]), audio[controls], video[controls], iframe';
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {

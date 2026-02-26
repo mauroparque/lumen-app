@@ -89,7 +89,7 @@ export const PaymentModal = ({
               : '';
 
     return (
-        <ModalOverlay onClose={onClose}>
+        <ModalOverlay onClose={onClose} ariaLabel={mode === 'edit' ? 'Editar pago' : 'Registrar pago'}>
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
                 <h2 className="text-xl font-bold mb-2 text-slate-800">
                     {mode === 'edit' ? 'Editar Pago' : 'Regularizar Sesión'}

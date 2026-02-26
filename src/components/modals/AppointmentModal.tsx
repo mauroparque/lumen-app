@@ -120,7 +120,7 @@ export const AppointmentModal = ({
     };
 
     return (
-        <ModalOverlay onClose={onClose}>
+        <ModalOverlay onClose={onClose} ariaLabel={existingAppointment ? 'Editar turno' : 'Nuevo turno'}>
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-xl font-bold mb-3 text-slate-800">
                     {existingAppointment ? 'Editar Turno' : 'Nuevo Turno'}
