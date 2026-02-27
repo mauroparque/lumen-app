@@ -42,9 +42,11 @@ vi.mock('firebase/firestore', () => {
     }));
 
     const serverTimestamp = vi.fn(() => ({ __type: 'serverTimestamp' }));
-    const Timestamp = {
-        now: vi.fn(() => ({ __type: 'timestampNow' })),
-    };
+    class TimestampMock {
+        __type = 'timestamp';
+        static now = vi.fn((): Record<string, unknown> => ({ __type: 'timestampNow' }));
+    }
+    const Timestamp = TimestampMock;
 
     const getDocs = vi.fn();
     const getDoc = vi.fn();
@@ -267,6 +269,53 @@ describe('FirebaseService', () => {
         expect(activeBatch.update).toHaveBeenCalledTimes(1);
         expect(activeBatch.commit).toHaveBeenCalledTimes(1);
         expect(paymentId).toMatch(/^mock-doc-/);
+    });
+
+    it('addPayment respeta date del input si es un Timestamp', async () => {
+        const service = new FirebaseService('uid-10', 'Dr. Test');
+        const fakeTimestamp = new (Timestamp as unknown as new () => { __type: string })();
+        fakeTimestamp.__type = 'custom-ts';
+
+        await service.addPayment({
+            patientName: 'Paciente Fecha',
+            amount: 5000,
+            date: fakeTimestamp as unknown as InstanceType<typeof Timestamp>,
+            concept: 'Sesión',
+        });
+
+        const firstBatchCall = mockedWriteBatch.mock.results[0];
+        if (!firstBatchCall || firstBatchCall.type !== 'return') {
+            throw new Error('writeBatch no devolvió un batch válido');
+        }
+        const activeBatch = firstBatchCall.value as unknown as {
+            set: ReturnType<typeof vi.fn>;
+        };
+        const setCall = (activeBatch.set.mock.calls[0] as [unknown, Record<string, unknown>]);
+        expect(setCall[1].date).toBe(fakeTimestamp);
+        expect(mockedTimestamp).not.toHaveBeenCalled();
+    });
+
+    it('addPayment usa Timestamp.now() cuando date es null', async () => {
+        const service = new FirebaseService('uid-10', 'Dr. Test');
+        mockedTimestamp.mockReturnValue({ __type: 'ts-now' } as never);
+
+        await service.addPayment({
+            patientName: 'Paciente Sin Fecha',
+            amount: 3000,
+            date: null,
+            concept: 'Sesión',
+        });
+
+        expect(mockedTimestamp).toHaveBeenCalledTimes(1);
+        const firstBatchCall = mockedWriteBatch.mock.results[0];
+        if (!firstBatchCall || firstBatchCall.type !== 'return') {
+            throw new Error('writeBatch no devolvió un batch válido');
+        }
+        const activeBatch = firstBatchCall.value as unknown as {
+            set: ReturnType<typeof vi.fn>;
+        };
+        const setCall = (activeBatch.set.mock.calls[0] as [unknown, Record<string, unknown>]);
+        expect(setCall[1].date).toEqual({ __type: 'ts-now' });
     });
 
     it('subscribeToAppointments registra query por ventana de fechas', () => {

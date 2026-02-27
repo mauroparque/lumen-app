@@ -28,6 +28,9 @@ function checkRateLimit(ip: string): boolean {
 
 export const validateTurnstile = onCall(
     {
+        // TODO: Habilitar enforceAppCheck: true una vez que App Check esté configurado
+        // en el proyecto Firebase (SEC-N03). Requiere registrar la app con reCAPTCHA v3
+        // o Device Check y activar la aplicación en Firebase Console.
         enforceAppCheck: false,
         secrets: ["TURNSTILE_SECRET"],
     },
