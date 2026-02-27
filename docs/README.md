@@ -106,6 +106,7 @@ Auditoría (misma)
 | Documento                                            | Descripción                 |
 | ---------------------------------------------------- | --------------------------- |
 | [v1.0.0_TECHNICAL.md](technical/v1.0.0_TECHNICAL.md) | Arquitectura técnica v1.0.0 |
+| [v1.1.0_TECHNICAL.md](technical/v1.1.0_TECHNICAL.md) | Arquitectura técnica v1.1.0 |
 
 ---
 
