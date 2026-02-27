@@ -2,7 +2,7 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     // Adjuntos de pacientes: solo usuarios autenticados
-    // Límite: 10MB, solo tipos dedocs, imágenes, archivo seguros ( PDFs)
+    // Límite: 10MB, solo tipos de docs, imágenes, archivo seguros ( PDFs)
     match /patients/{patientId}/attachments/{allPaths=**} {
       allow read: if request.auth != null;
 
