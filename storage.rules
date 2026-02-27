@@ -1,14 +1,43 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Adjuntos de pacientes: solo usuarios autenticados
-    // Límite: 10MB, solo tipos de docs, imágenes, archivo seguros (PDFs)
     match /patients/{patientId}/attachments/{allPaths=**} {
-      allow read: if request.auth != null;
+      // Resolve staff document for the authenticated user
+      function staffData() {
+        return firestore.get(
+          /databases/(default)/documents/artifacts/lumen-production/clinics/lumen-general/staff/$(request.auth.uid)
+        ).data;
+      }
 
+      // Resolve the professional name assigned to this patient
+      function patientProfessional() {
+        return firestore.get(
+          /databases/(default)/documents/artifacts/lumen-production/clinics/lumen-general/patients/$(patientId)
+        ).data.professional;
+      }
+
+      function isStaff() {
+        return staffData().keys().hasAny(['role']);
+      }
+
+      function isAdmin() {
+        return staffData().role == 'admin';
+      }
+
+      function isOwnerProfessional() {
+        return staffData().name == patientProfessional();
+      }
+
+      // Read: any active staff member (consistent with Firestore patients rule)
+      allow read: if request.auth != null && isStaff();
+
+      // Write: admin or the professional who owns this patient + size/MIME guard
       allow write: if request.auth != null
-        && request.resource.size < 10 * 1024 * 1024  // 10MB máximo
-        && request.resource.contentType.matches('image/.*|application/pdf|application/msword|application/vnd\\.openxmlformats-officedocument\\.wordprocessingml\\.document|text/plain');
+        && (isAdmin() || isOwnerProfessional())
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches(
+          'image/.*|application/pdf|application/msword|application/vnd\\.openxmlformats-officedocument\\.wordprocessingml\\.document|text/plain'
+        );
     }
   }
 }
