@@ -5,12 +5,41 @@ import axios from "axios";
 
 admin.initializeApp();
 
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+function checkRateLimit(ip: string): boolean {
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip);
+
+    if (!entry || now > entry.resetAt) {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+        return true;
+    }
+
+    if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+        return false;
+    }
+
+    entry.count++;
+    return true;
+}
+
 export const validateTurnstile = onCall(
     {
+        // TODO: Habilitar enforceAppCheck: true una vez que App Check esté configurado
+        // en el proyecto Firebase (SEC-N03). Requiere registrar la app con reCAPTCHA v3
+        // o Device Check y activar la aplicación en Firebase Console.
         enforceAppCheck: false,
         secrets: ["TURNSTILE_SECRET"],
     },
     async (request) => {
+        const ip = request.rawRequest?.ip || 'unknown';
+        if (!checkRateLimit(ip)) {
+            throw new HttpsError("resource-exhausted", "Too many requests. Try again later.");
+        }
+
         const token = request.data?.token;
 
         if (!token || typeof token !== "string") {
@@ -63,14 +92,29 @@ export const triggerInvoiceGeneration = functions.firestore
             return snap.ref.update({ status: "error_config" });
         }
 
+        // 3. Sanitizar: solo campos permitidos del billing queue
+        const allowedFields = {
+            type: data.type,
+            appointmentIds: data.appointmentIds,
+            patientId: data.patientId,
+            patientName: data.patientName,
+            patientDni: data.patientDni,
+            patientEmail: data.patientEmail,
+            totalPrice: data.totalPrice,
+            lineItems: data.lineItems,
+            requestedAt: data.requestedAt,
+            requestedBy: data.requestedBy,
+            status: data.status,
+        };
+
         try {
-            // 3. Marcar como procesando
+            // 4. Marcar como procesando
             await snap.ref.update({ status: "processing" });
 
-            // 4. Enviar a n8n con Header de Seguridad
+            // 5. Enviar a n8n con Header de Seguridad — solo campos sanitizados
             await axios.post(config.url, {
                 queueDocId: docId,
-                ...data
+                ...allowedFields
             }, {
                 headers: { "x-lumen-secret": config.secret }
             });

@@ -42,14 +42,12 @@ export const useDataActions = () => {
         return ensureService().addPayment(payment, appointmentId);
     };
 
-    const deleteItem = async (collectionName: 'patients' | 'appointments' | 'payments', id: string) => {
+    const deleteItem = async (collectionName: 'patients' | 'appointments', id: string) => {
         const s = ensureService();
         if (collectionName === 'patients') {
             return s.deletePatient(id);
         } else if (collectionName === 'appointments') {
             return s.deleteAppointment(id);
-        } else if (collectionName === 'payments') {
-            return s.deletePayment(id);
         }
         throw new Error(`Unknown collection: ${collectionName}`);
     };

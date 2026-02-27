@@ -38,7 +38,6 @@ export interface IDataService {
     deleteRecurringFromDate(recurrenceId: string, fromDate: string): Promise<number>;
 
     addPayment(payment: PaymentInput, appointmentId?: string): Promise<string>;
-    deletePayment(id: string): Promise<void>;
     updatePayment(id: string, data: Partial<Payment>): Promise<void>;
 
     // Facturación

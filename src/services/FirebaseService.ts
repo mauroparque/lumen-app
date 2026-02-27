@@ -261,7 +261,7 @@ export class FirebaseService implements IDataService {
 
         batch.set(paymentRef, {
             ...payment,
-            date: Timestamp.now(),
+            date: (payment.date && payment.date instanceof Timestamp) ? payment.date : Timestamp.now(),
             createdByUid: this.uid,
         });
 
@@ -272,11 +272,6 @@ export class FirebaseService implements IDataService {
 
         await batch.commit();
         return paymentRef.id;
-    }
-
-    async deletePayment(id: string): Promise<void> {
-        const docRef = doc(db, PAYMENTS_COLLECTION, id);
-        await deleteDoc(docRef);
     }
 
     async updatePayment(id: string, data: Partial<Payment>): Promise<void> {
