@@ -82,22 +82,24 @@ Auditoría (misma)
             └── 2026-02-26_phase4-completion-review.md  ✓ COMPLETADA
 ```
 
-| Documento                                                                                                                  | Tipo         | Fecha      | Estado                           |
-| -------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- | -------------------------------- |
-| [2026-02-19_AUDIT.md](audits/2026-02-19_AUDIT.md)                                                                          | Auditoría    | 19/02/2026 | Referencia base                  |
-| [2026-02-19-phase1-security.md](plans/2026-02-19-phase1-security.md)                                                       | Plan         | 19/02/2026 | Ejecutado ✓                      |
-| [2026-02-19-phase1-security-fixes.md](plans/2026-02-19-phase1-security-fixes.md)                                           | Plan (fixes) | 19/02/2026 | Ejecutado ✓                      |
-| [2026-02-22_phase1-completion-review.md](reviews/2026-02-22_phase1-completion-review.md)                                   | Review       | 22/02/2026 | Cerrado ✓                        |
-| [2026-02-22-phase2-stability-dx-architecture.md](plans/2026-02-22-phase2-stability-dx-architecture.md)                     | Plan         | 22/02/2026 | Ejecutado ✓                      |
-| [2026-02-23-phase2-fixes.md](plans/2026-02-23-phase2-fixes.md)                                                             | Plan (fixes) | 23/02/2026 | Ejecutado ✓                      |
-| [2026-02-23_phase2-completion-review.md](reviews/2026-02-23_phase2-completion-review.md)                                   | Review       | 23/02/2026 | Cerrado ✓                        |
-| [2026-02-23-phase3-testing-cleanup.md](plans/2026-02-23-phase3-testing-cleanup.md)                                         | Plan         | 23/02/2026 | Ejecutado ✓                      |
-| [2026-02-24-phase3-fixes.md](plans/2026-02-24-phase3-fixes.md)                                                             | Plan (fixes) | 24/02/2026 | Ejecutado ✓                      |
-| [2026-02-24_phase3-completion-review.md](reviews/2026-02-24_phase3-completion-review.md)                                   | Review       | 24/02/2026 | Cerrado ✓                        |
-| [2026-02-25-phase4-performance-a11y-services.md](plans/2026-02-25-phase4-performance-a11y-services.md)                     | Plan         | 25/02/2026 | Ejecutado ✓                      |
-| [2026-02-26_phase4-completion-review.md](reviews/2026-02-26_phase4-completion-review.md)                                   | Review       | 26/02/2026 | Cerrado ✓                        |
-| [2026-02-26_AUDIT.md](audits/2026-02-26_AUDIT.md)                                                                          | Auditoría    | 26/02/2026 | Referencia actual (post-4 fases) |
-| [2026-02-26-phase5-high-priority-security-architecture.md](plans/2026-02-26-phase5-high-priority-security-architecture.md) | Plan         | 26/02/2026 | Pendiente de ejecución           |
+| Documento                                                                                                                    | Tipo         | Fecha      | Estado                           |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- | -------------------------------- |
+| [2026-02-19_AUDIT.md](audits/2026-02-19_AUDIT.md)                                                                            | Auditoría    | 19/02/2026 | Referencia base                  |
+| [2026-02-19-phase1-security.md](plans/2026-02-19-phase1-security.md)                                                         | Plan         | 19/02/2026 | Ejecutado ✓                      |
+| [2026-02-19-phase1-security-fixes.md](plans/2026-02-19-phase1-security-fixes.md)                                             | Plan (fixes) | 19/02/2026 | Ejecutado ✓                      |
+| [2026-02-22_phase1-completion-review.md](reviews/2026-02-22_phase1-completion-review.md)                                     | Review       | 22/02/2026 | Cerrado ✓                        |
+| [2026-02-22-phase2-stability-dx-architecture.md](plans/2026-02-22-phase2-stability-dx-architecture.md)                       | Plan         | 22/02/2026 | Ejecutado ✓                      |
+| [2026-02-23-phase2-fixes.md](plans/2026-02-23-phase2-fixes.md)                                                               | Plan (fixes) | 23/02/2026 | Ejecutado ✓                      |
+| [2026-02-23_phase2-completion-review.md](reviews/2026-02-23_phase2-completion-review.md)                                     | Review       | 23/02/2026 | Cerrado ✓                        |
+| [2026-02-23-phase3-testing-cleanup.md](plans/2026-02-23-phase3-testing-cleanup.md)                                           | Plan         | 23/02/2026 | Ejecutado ✓                      |
+| [2026-02-24-phase3-fixes.md](plans/2026-02-24-phase3-fixes.md)                                                               | Plan (fixes) | 24/02/2026 | Ejecutado ✓                      |
+| [2026-02-24_phase3-completion-review.md](reviews/2026-02-24_phase3-completion-review.md)                                     | Review       | 24/02/2026 | Cerrado ✓                        |
+| [2026-02-25-phase4-performance-a11y-services.md](plans/2026-02-25-phase4-performance-a11y-services.md)                       | Plan         | 25/02/2026 | Ejecutado ✓                      |
+| [2026-02-26_phase4-completion-review.md](reviews/2026-02-26_phase4-completion-review.md)                                     | Review       | 26/02/2026 | Cerrado ✓                        |
+| [2026-02-26_AUDIT.md](audits/2026-02-26_AUDIT.md)                                                                            | Auditoría    | 26/02/2026 | Referencia actual (post-4 fases) |
+| [2026-02-26-phase5-high-priority-security-architecture.md](plans/2026-02-26-phase5-high-priority-security-architecture.md)   | Plan         | 26/02/2026 | Ejecutado ✓                      |
+| [2026-03-01_phase5-completion-review.md](reviews/2026-03-01_phase5-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
+| [2026-03-01-phase6-medium-priority-quality-architecture.md](plans/2026-03-01-phase6-medium-priority-quality-architecture.md) | Plan         | 01/03/2026 | Pendiente                        |
 
 ---
 
@@ -132,24 +134,42 @@ Deuda actualizada tras cierre de Fase 3:
 
 ### Deuda de la auditoría 26/02/2026 (post-4 fases)
 
-| Área                 | IDs                                              | Estado               |
-| -------------------- | ------------------------------------------------ | -------------------- |
-| Seguridad (alta)     | SEC-N01, SEC-N02, SEC-N03, SEC-07                | Fase 5 → Plan creado |
-| Arquitectura (alta)  | ARCH-N01, ARCH-N02                               | Fase 5 → Plan creado |
-| Seguridad (media)    | SEC-N04, SEC-N05, SEC-06, SEC-10, SEC-11, SEC-13 | Pendiente            |
-| Arquitectura (media) | ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07 | Pendiente            |
-| Hooks/Componentes    | HOOK-N01..N04, COMP-N01, COMP-N02                | Pendiente            |
-| Testing gaps         | 8/10 hooks, 0 componentes, 0 vistas              | Pendiente            |
-| Configuración        | Path aliases, engines, sourcemaps, etc.          | Pendiente            |
+| Área                    | IDs                                              | Estado                                                          |
+| ----------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| ~~Seguridad (alta)~~    | ~~SEC-N01, SEC-N02, SEC-N03, SEC-07~~            | ~~Fase 5~~ → Ejecutado ✓ (SEC-N03 parcial: App Check pendiente) |
+| ~~Arquitectura (alta)~~ | ~~ARCH-N01, ARCH-N02~~                           | ~~Fase 5~~ → Ejecutado ✓                                        |
+| Seguridad (media)       | SEC-N05, SEC-06, SEC-11, SEC-13                  | Fase 6 → Plan creado                                            |
+| Arquitectura (media)    | ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07 | Fase 6 → Plan creado                                            |
+| Hooks/Componentes       | HOOK-N01..N04, COMP-N01, COMP-N02                | Fase 6 → Plan creado                                            |
+| Duplicación             | calculateAge, isOverdue, PSIQUE_RATE             | Fase 6 → Plan creado                                            |
+| SEC-N04 (axios)         | —                                                | Falso positivo (axios sí se usa)                                |
+| Testing gaps            | 8/10 hooks, 0 componentes, 0 vistas              | Pendiente (Fase 7)                                              |
+| Configuración           | Path aliases, engines, sourcemaps, etc.          | Pendiente                                                       |
 
 → Nueva auditoría post-4 fases: [2026-02-26_AUDIT.md](audits/2026-02-26_AUDIT.md) — Score **B+** con 26 hallazgos nuevos de severidad media-baja.
 
-### Ciclo 5 — Seguridad y Arquitectura: Prioridad Alta (Feb 2026)
+### Ciclo 5 — Seguridad y Arquitectura: Prioridad Alta (Feb-Mar 2026)
 
 ```text
 Auditoría
   └── 2026-02-26_AUDIT.md  (score B+, 6 hallazgos prioridad alta)
        │
-       └── Plan
-            └── 2026-02-26-phase5-high-priority-security-architecture.md  (6 tasks)
+       ├── Plan
+       │    └── 2026-02-26-phase5-high-priority-security-architecture.md  (6 tasks)
+       │
+       └── Review
+            └── 2026-03-01_phase5-completion-review.md  ✓ COMPLETADA
+```
+
+### Ciclo 6 — Calidad de Código y Arquitectura: Prioridad Media (Mar 2026)
+
+```text
+Auditoría
+  └── 2026-02-26_AUDIT.md  (17 hallazgos prioridad media: DUP, HOOK, COMP, ARCH, SEC)
+       │
+       ├── Plan
+       │    └── 2026-03-01-phase6-medium-priority-quality-architecture.md  (17 tasks, TDD estricto)
+       │
+       └── Review
+            └── (pendiente)
 ```
