@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { formatPhoneNumber, cn } from '../utils';
+import { describe, it, expect, vi } from 'vitest';
+import { formatPhoneNumber, cn, calculateAge, isOverdue } from '../utils';
 
 describe('formatPhoneNumber', () => {
     it('removes non-numeric characters', () => {
@@ -60,5 +60,71 @@ describe('cn (classnames utility)', () => {
     it('handles empty call', () => {
         const result = cn();
         expect(result).toBe('');
+    });
+});
+
+describe('calculateAge', () => {
+    it('retorna edad correcta para fecha pasada', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01'));
+
+        expect(calculateAge('1990-06-15')).toBe(35);
+
+        vi.useRealTimers();
+    });
+
+    it('retorna edad decrementada si aún no cumplió años este año', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01'));
+
+        expect(calculateAge('1990-12-25')).toBe(35);
+
+        vi.useRealTimers();
+    });
+
+    it('retorna null si birthDate es undefined', () => {
+        expect(calculateAge(undefined)).toBeNull();
+    });
+
+    it('retorna null si birthDate es string vacío', () => {
+        expect(calculateAge('')).toBeNull();
+    });
+});
+
+describe('isOverdue', () => {
+    it('retorna true si la cita ya pasó (más de 1 hora)', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01T15:00:00'));
+
+        expect(isOverdue({ date: '2026-03-01', time: '10:00' })).toBe(true);
+
+        vi.useRealTimers();
+    });
+
+    it('retorna false si la cita es futura', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01T09:00:00'));
+
+        expect(isOverdue({ date: '2026-03-01', time: '10:00' })).toBe(false);
+
+        vi.useRealTimers();
+    });
+
+    it('retorna false si la cita es hoy y dentro de la ventana de 1h', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01T10:30:00'));
+
+        expect(isOverdue({ date: '2026-03-01', time: '10:00' })).toBe(false);
+
+        vi.useRealTimers();
+    });
+
+    it('maneja time ausente usando 00:00 como default', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01T15:00:00'));
+
+        expect(isOverdue({ date: '2026-03-01' })).toBe(true);
+
+        vi.useRealTimers();
     });
 });

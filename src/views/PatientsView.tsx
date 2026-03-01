@@ -9,6 +9,7 @@ import { usePatients } from '../hooks/usePatients';
 import { useDataActions } from '../hooks/useDataActions';
 import { toast } from 'sonner';
 import { StaffProfile } from '../types';
+import { calculateAge } from '../lib/utils';
 
 type SortField = 'name' | 'age' | 'professional' | 'fee' | 'admissionDate';
 type SortDirection = 'asc' | 'desc';
@@ -21,18 +22,6 @@ interface PatientsViewProps {
     setSelectedPatientId: (id: string | null) => void;
     setPatientHistoryInitialTab: (tab: 'history' | 'tasks') => void;
 }
-
-const calculateAge = (birthDate?: string): number | null => {
-    if (!birthDate) return null;
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
-    return age;
-};
 
 export const PatientsView = ({
     user,
