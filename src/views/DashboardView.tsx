@@ -5,6 +5,7 @@ import { useData } from '../context/DataContext';
 import { usePatients } from '../hooks/usePatients';
 import { usePendingTasks } from '../hooks/usePendingTasks';
 import { usePsiquePayments } from '../hooks/usePsiquePayments';
+import { isOverdue } from '../lib/utils';
 import {
     Calendar,
     Users,
@@ -66,15 +67,6 @@ export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps)
             .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
             .slice(0, 5);
     }, [appointments]);
-
-    // Helper para verificar si un turno está vencido (1 hora después de la hora de inicio)
-    const isOverdue = (appointment: any) => {
-        const now = new Date();
-        const apptDateTime = new Date(appointment.date + 'T' + (appointment.time || '00:00') + ':00');
-        // Agregar 1 hora al turno
-        apptDateTime.setHours(apptDateTime.getHours() + 1);
-        return now > apptDateTime;
-    };
 
     // Deudas pendientes (turnos vencidos no pagados - 1 hora después del inicio)
     const pendingDebts = useMemo(() => {
