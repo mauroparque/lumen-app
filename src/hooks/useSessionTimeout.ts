@@ -9,7 +9,8 @@ export const useSessionTimeout = (enabled: boolean) => {
     const resetTimer = useCallback(() => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-            signOut(auth);
+            timeoutRef.current = null;
+            void signOut(auth).catch((err) => console.error('Session timeout signOut failed:', err));
         }, SESSION_TIMEOUT_MS);
     }, []);
 
