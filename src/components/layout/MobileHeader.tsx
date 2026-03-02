@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
+import { isOverdue } from '../../lib/utils';
 import { View } from '../../types';
 import { useData } from '../../context/DataContext';
 
@@ -28,11 +29,7 @@ export const MobileHeader = ({ mobileMenuOpen, setMobileMenuOpen, setCurrentView
     const hasPendingDebts = appointments.some((a) => {
         if (a.isPaid) return false;
         if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
-
-        const apptDate = new Date(a.date + 'T00:00:00');
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        return apptDate < now;
+        return isOverdue(a);
     });
     return (
         <>
