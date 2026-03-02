@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useService } from '../context/ServiceContext';
 import {
     PatientInput,
@@ -16,118 +17,48 @@ import {
 export const useDataActions = () => {
     const service = useService();
 
-    // Helper to ensure service is available
-    const ensureService = () => {
-        if (!service) throw new Error('Service not available. Is user logged in?');
-        return service;
-    };
+    return useMemo(() => {
+        const ensureService = () => {
+            if (!service) throw new Error('Service not available. Is user logged in?');
+            return service;
+        };
 
-    const addPatient = async (patient: PatientInput) => {
-        return ensureService().addPatient(patient);
-    };
-
-    const addAppointment = async (appointment: AppointmentInput) => {
-        return ensureService().addAppointment(appointment);
-    };
-
-    const addRecurringAppointments = async (
-        baseAppointment: AppointmentInput,
-        dates: string[],
-        recurrenceRule: string = 'WEEKLY',
-    ) => {
-        return ensureService().addRecurringAppointments(baseAppointment, dates, recurrenceRule);
-    };
-
-    const addPayment = async (payment: PaymentInput, appointmentId?: string) => {
-        return ensureService().addPayment(payment, appointmentId);
-    };
-
-    const deleteItem = async (collectionName: 'patients' | 'appointments', id: string) => {
-        const s = ensureService();
-        if (collectionName === 'patients') {
-            return s.deletePatient(id);
-        } else if (collectionName === 'appointments') {
-            return s.deleteAppointment(id);
-        }
-        throw new Error(`Unknown collection: ${collectionName}`);
-    };
-
-    const updateAppointment = async (id: string, data: Partial<Appointment>) => {
-        return ensureService().updateAppointment(id, data);
-    };
-
-    const updatePatient = async (id: string, data: Partial<Patient>) => {
-        return ensureService().updatePatient(id, data);
-    };
-
-    const requestBatchInvoice = async (appointments: Appointment[], patientData: PatientBillingData) => {
-        return ensureService().requestBatchInvoice(appointments, patientData);
-    };
-
-    const deleteRecurringSeries = async (recurrenceId: string) => {
-        return ensureService().deleteRecurringSeries(recurrenceId);
-    };
-
-    const deleteRecurringFromDate = async (recurrenceId: string, fromDate: string) => {
-        return ensureService().deleteRecurringFromDate(recurrenceId, fromDate);
-    };
-
-    const updatePayment = async (id: string, data: Partial<Payment>) => {
-        return ensureService().updatePayment(id, data);
-    };
-
-    const completeTask = async (noteId: string, taskIndex: number) => {
-        return ensureService().completeTask(noteId, taskIndex);
-    };
-
-    const addTask = async (task: TaskInput) => {
-        return ensureService().addTask(task);
-    };
-
-    const updateTask = async (
-        noteId: string,
-        taskIndex: number,
-        data: { text: string; subtasks?: TaskSubitem[] },
-    ) => {
-        return ensureService().updateTask(noteId, taskIndex, data);
-    };
-
-    const toggleSubtaskCompletion = async (
-        noteId: string,
-        taskIndex: number,
-        subtaskIndex: number,
-    ) => {
-        return ensureService().toggleSubtaskCompletion(noteId, taskIndex, subtaskIndex);
-    };
-
-    const updateNote = async (noteId: string, data: Partial<ClinicalNote>) => {
-        return ensureService().updateNote(noteId, data);
-    };
-
-    const markPsiquePaymentAsPaid = async (
-        docKey: string,
-        data: Omit<PsiquePayment, 'id'> & { professional?: string },
-    ) => {
-        return ensureService().markPsiquePaymentAsPaid(docKey, data);
-    };
-
-    return {
-        addPatient,
-        addAppointment,
-        addRecurringAppointments,
-        updateAppointment,
-        updatePatient,
-        addPayment,
-        updatePayment,
-        deleteItem,
-        requestBatchInvoice,
-        deleteRecurringSeries,
-        deleteRecurringFromDate,
-        completeTask,
-        addTask,
-        updateTask,
-        toggleSubtaskCompletion,
-        updateNote,
-        markPsiquePaymentAsPaid,
-    };
+        return {
+            addPatient: async (patient: PatientInput) => ensureService().addPatient(patient),
+            addAppointment: async (appointment: AppointmentInput) => ensureService().addAppointment(appointment),
+            addRecurringAppointments: async (
+                baseAppointment: AppointmentInput,
+                dates: string[],
+                recurrenceRule: string = 'WEEKLY',
+            ) => ensureService().addRecurringAppointments(baseAppointment, dates, recurrenceRule),
+            addPayment: async (payment: PaymentInput, appointmentId?: string) =>
+                ensureService().addPayment(payment, appointmentId),
+            deleteItem: async (collectionName: 'patients' | 'appointments', id: string) => {
+                const s = ensureService();
+                if (collectionName === 'patients') return s.deletePatient(id);
+                if (collectionName === 'appointments') return s.deleteAppointment(id);
+                throw new Error(`Unknown collection: ${collectionName}`);
+            },
+            updateAppointment: async (id: string, data: Partial<Appointment>) =>
+                ensureService().updateAppointment(id, data),
+            updatePatient: async (id: string, data: Partial<Patient>) => ensureService().updatePatient(id, data),
+            requestBatchInvoice: async (appointments: Appointment[], patientData: PatientBillingData) =>
+                ensureService().requestBatchInvoice(appointments, patientData),
+            deleteRecurringSeries: async (recurrenceId: string) => ensureService().deleteRecurringSeries(recurrenceId),
+            deleteRecurringFromDate: async (recurrenceId: string, fromDate: string) =>
+                ensureService().deleteRecurringFromDate(recurrenceId, fromDate),
+            updatePayment: async (id: string, data: Partial<Payment>) => ensureService().updatePayment(id, data),
+            completeTask: async (noteId: string, taskIndex: number) => ensureService().completeTask(noteId, taskIndex),
+            addTask: async (task: TaskInput) => ensureService().addTask(task),
+            updateTask: async (noteId: string, taskIndex: number, data: { text: string; subtasks?: TaskSubitem[] }) =>
+                ensureService().updateTask(noteId, taskIndex, data),
+            toggleSubtaskCompletion: async (noteId: string, taskIndex: number, subtaskIndex: number) =>
+                ensureService().toggleSubtaskCompletion(noteId, taskIndex, subtaskIndex),
+            updateNote: async (noteId: string, data: Partial<ClinicalNote>) => ensureService().updateNote(noteId, data),
+            markPsiquePaymentAsPaid: async (
+                docKey: string,
+                data: Omit<PsiquePayment, 'id'> & { professional?: string },
+            ) => ensureService().markPsiquePaymentAsPaid(docKey, data),
+        };
+    }, [service]);
 };
