@@ -31,7 +31,9 @@ export const formatPhoneNumber = (phone: string | null | undefined): string => {
 export const calculateAge = (birthDate?: string): number | null => {
     if (!birthDate) return null;
     const today = new Date();
-    const birth = new Date(birthDate);
+    // Usar T00:00:00 fuerza parsing como hora local en lugar de UTC midnight.
+    // Evita que en TZ < 0 (ej. Argentina UTC-3) la fecha se desplace al día anterior.
+    const birth = new Date(birthDate + 'T00:00:00');
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {

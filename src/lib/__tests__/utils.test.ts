@@ -89,6 +89,21 @@ describe('calculateAge', () => {
     it('retorna null si birthDate es string vacío', () => {
         expect(calculateAge('')).toBeNull();
     });
+
+    it('parsea birthDate como fecha local (no UTC) para evitar adelanto de día en TZ negativas', () => {
+        // Nota: "YYYY-MM-DD" sin sufijo se parsea como UTC midnight en JS.
+        // En TZ=-3 (Argentina), eso resuelve al día anterior en hora local,
+        // causando errores de +1 año cerca del cumpleaños.
+        // Con T00:00:00 se fuerza parsing local. Este test verifica el contrato en UTC,
+        // pero la regresión real aplica en TZ < 0.
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-01T03:00:00')); // 03:00 local = mediodía en UTC-9
+
+        // Persona nacida el 1 de marzo de 1990: hoy ES su cumpleaños
+        expect(calculateAge('1990-03-01')).toBe(36); // debe dar 36, no 35
+
+        vi.useRealTimers();
+    });
 });
 
 describe('isOverdue', () => {
