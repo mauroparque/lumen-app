@@ -5,7 +5,9 @@ import * as admin from 'firebase-admin';
 import axios from 'axios';
 
 const billingUrl = defineString('BILLING_URL');
-const billingSecret = defineString('BILLING_SECRET');
+// BILLING_SECRET se gestiona via Secret Manager (no defineString) para evitar
+// exposición accidental en logs o metadata de deploy.
+// Declarado en runWith({ secrets }) y accesible via process.env.BILLING_SECRET.
 
 admin.initializeApp();
 
@@ -75,8 +77,9 @@ export const validateTurnstile = onCall(
     },
 );
 
-export const triggerInvoiceGeneration = functions.firestore
-    .document('artifacts/{appId}/clinics/{clinicId}/integrations/billing/queue/{docId}')
+export const triggerInvoiceGeneration = functions
+    .runWith({ secrets: ['BILLING_SECRET'] })
+    .firestore.document('artifacts/{appId}/clinics/{clinicId}/integrations/billing/queue/{docId}')
     .onCreate(async (snap, context) => {
         const data = snap.data();
         const { docId } = context.params;
@@ -86,7 +89,7 @@ export const triggerInvoiceGeneration = functions.firestore
 
         // 2. Obtener configuración
         const url = billingUrl.value();
-        const secret = billingSecret.value();
+        const secret = process.env.BILLING_SECRET;
 
         if (!url || !secret) {
             console.error('Falta configuración de billing (BILLING_URL o BILLING_SECRET)');
