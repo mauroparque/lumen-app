@@ -285,6 +285,7 @@ export class FirebaseService implements IDataService {
 
         batch.set(paymentRef, {
             ...payment,
+            professional: this.professionalName || '',
             date: payment.date && payment.date instanceof Timestamp ? payment.date : Timestamp.now(),
             createdByUid: this.uid,
         });

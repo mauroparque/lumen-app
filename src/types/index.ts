@@ -84,6 +84,7 @@ export interface Payment {
     amount: number;
     date: Timestamp | null;
     concept: string;
+    professional?: string;
 }
 
 export type PatientInput = Omit<Patient, 'id'>;

@@ -314,6 +314,27 @@ describe('FirebaseService', () => {
         expect(setCall[1].date).toEqual({ __type: 'ts-now' });
     });
 
+    it('addPayment incluye el professional del servicio para habilitar RBAC en Firestore', async () => {
+        const service = new FirebaseService('uid-10', 'Dra. García');
+
+        await service.addPayment({
+            patientName: 'Paciente RBAC',
+            amount: 5000,
+            date: null,
+            concept: 'Sesión',
+        });
+
+        const firstBatchCall = mockedWriteBatch.mock.results[0];
+        if (!firstBatchCall || firstBatchCall.type !== 'return') {
+            throw new Error('writeBatch no devolvió un batch válido');
+        }
+        const activeBatch = firstBatchCall.value as unknown as {
+            set: ReturnType<typeof vi.fn>;
+        };
+        const setCall = activeBatch.set.mock.calls[0] as [unknown, Record<string, unknown>];
+        expect(setCall[1].professional).toBe('Dra. García');
+    });
+
     it('subscribeToAppointments registra query por ventana de fechas', () => {
         const service = new FirebaseService('uid-1');
         const onData = vi.fn();
