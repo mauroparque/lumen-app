@@ -1,7 +1,20 @@
-import { Menu, X, ChevronRight, LogOut, Home, Calendar, Users, DollarSign, FileText, ListTodo } from 'lucide-react';
+import {
+    Menu,
+    X,
+    ChevronRight,
+    LogOut,
+    Home,
+    Calendar,
+    Users,
+    DollarSign,
+    FileText,
+    ListTodo,
+    BarChart3,
+} from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { View } from '../../types';
+import { useData } from '../../context/DataContext';
 
 interface MobileHeaderProps {
     mobileMenuOpen: boolean;
@@ -10,6 +23,17 @@ interface MobileHeaderProps {
 }
 
 export const MobileHeader = ({ mobileMenuOpen, setMobileMenuOpen, setCurrentView }: MobileHeaderProps) => {
+    const { appointments } = useData();
+
+    const hasPendingDebts = appointments.some((a) => {
+        if (a.isPaid) return false;
+        if (a.status === 'cancelado' && !a.chargeOnCancellation) return false;
+
+        const apptDate = new Date(a.date + 'T00:00:00');
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return apptDate < now;
+    });
     return (
         <>
             <div className="md:hidden fixed top-0 w-full h-16 bg-white border-b z-50 flex items-center justify-between px-4">
@@ -78,6 +102,9 @@ export const MobileHeader = ({ mobileMenuOpen, setMobileMenuOpen, setCurrentView
                     >
                         <span className="flex items-center">
                             <DollarSign size={20} className="mr-3" /> Pagos
+                            {hasPendingDebts && (
+                                <span className="ml-2 w-2 h-2 bg-red-500 rounded-full inline-block"></span>
+                            )}
                         </span>{' '}
                         <ChevronRight size={16} className="text-slate-400" />
                     </button>
@@ -90,6 +117,18 @@ export const MobileHeader = ({ mobileMenuOpen, setMobileMenuOpen, setCurrentView
                     >
                         <span className="flex items-center">
                             <FileText size={20} className="mr-3" /> Facturación
+                        </span>{' '}
+                        <ChevronRight size={16} className="text-slate-400" />
+                    </button>
+                    <button
+                        onClick={() => {
+                            setCurrentView('statistics');
+                            setMobileMenuOpen(false);
+                        }}
+                        className="block w-full text-left text-lg py-3 border-b text-slate-700 font-medium flex justify-between items-center"
+                    >
+                        <span className="flex items-center">
+                            <BarChart3 size={20} className="mr-3" /> Estadísticas
                         </span>{' '}
                         <ChevronRight size={16} className="text-slate-400" />
                     </button>
