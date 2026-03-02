@@ -19,7 +19,7 @@ interface StatisticsViewProps {
     user: User;
 }
 
-export const StatisticsView = ({ user }: StatisticsViewProps) => {
+export const StatisticsView = ({}: StatisticsViewProps) => {
     const { appointments, patients } = useData();
     const stats = useAgendaStats(appointments, patients);
 

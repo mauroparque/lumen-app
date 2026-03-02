@@ -26,7 +26,7 @@ interface DashboardViewProps {
     onNavigate: (view: string) => void;
 }
 
-export const DashboardView = ({ user, profile, onNavigate }: DashboardViewProps) => {
+export const DashboardView = ({ profile, onNavigate }: DashboardViewProps) => {
     const { appointments, loading, patients } = useData();
 
     // Create set of patient IDs for filtering tasks

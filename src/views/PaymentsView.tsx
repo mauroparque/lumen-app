@@ -29,7 +29,7 @@ interface PaymentsViewProps {
     profile: { name?: string };
 }
 
-export const PaymentsView = ({ user, profile }: PaymentsViewProps) => {
+export const PaymentsView = ({ profile }: PaymentsViewProps) => {
     const { appointments, payments, loading, patients } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'overdue' | 'upcoming' | 'history' | 'psique' | 'projection'>('overdue');
