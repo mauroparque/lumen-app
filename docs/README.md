@@ -135,17 +135,17 @@ Deuda actualizada tras cierre de Fase 3:
 
 ### Deuda de la auditoría 26/02/2026 (post-4 fases)
 
-| Área                    | IDs                                              | Estado                                                          |
-| ----------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
-| ~~Seguridad (alta)~~    | ~~SEC-N01, SEC-N02, SEC-N03, SEC-07~~            | ~~Fase 5~~ → Ejecutado ✓ (SEC-N03 parcial: App Check pendiente) |
-| ~~Arquitectura (alta)~~ | ~~ARCH-N01, ARCH-N02~~                           | ~~Fase 5~~ → Ejecutado ✓                                        |
-| ~~Seguridad (media)~~   | ~~SEC-N05, SEC-06, SEC-11, SEC-13~~              | ~~Fase 6~~ → Ejecutado ✓                                        |
-| ~~Arquitectura (media)~~ | ~~ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07~~ | ~~Fase 6~~ → Ejecutado ✓                                  |
-| ~~Hooks/Componentes~~   | ~~HOOK-N01..N04, COMP-N01, COMP-N02~~            | ~~Fase 6~~ → Ejecutado ✓                                        |
-| ~~Duplicación~~         | ~~calculateAge, isOverdue, PSIQUE_RATE~~          | ~~Fase 6~~ → Ejecutado ✓                                        |
-| SEC-N04 (axios)         | —                                                | Falso positivo (axios sí se usa)                                |
-| Testing gaps            | 8/10 hooks, 0 componentes, 0 vistas              | Pendiente (Fase 7)                                              |
-| Configuración           | Path aliases, engines, sourcemaps, etc.          | Pendiente                                                       |
+| Área                     | IDs                                                  | Estado                                                          |
+| ------------------------ | ---------------------------------------------------- | --------------------------------------------------------------- |
+| ~~Seguridad (alta)~~     | ~~SEC-N01, SEC-N02, SEC-N03, SEC-07~~                | ~~Fase 5~~ → Ejecutado ✓ (SEC-N03 parcial: App Check pendiente) |
+| ~~Arquitectura (alta)~~  | ~~ARCH-N01, ARCH-N02~~                               | ~~Fase 5~~ → Ejecutado ✓                                        |
+| ~~Seguridad (media)~~    | ~~SEC-N05, SEC-06, SEC-11, SEC-13~~                  | ~~Fase 6~~ → Ejecutado ✓                                        |
+| ~~Arquitectura (media)~~ | ~~ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07~~ | ~~Fase 6~~ → Ejecutado ✓                                        |
+| ~~Hooks/Componentes~~    | ~~HOOK-N01..N04, COMP-N01, COMP-N02~~                | ~~Fase 6~~ → Ejecutado ✓                                        |
+| ~~Duplicación~~          | ~~calculateAge, isOverdue, PSIQUE_RATE~~             | ~~Fase 6~~ → Ejecutado ✓                                        |
+| SEC-N04 (axios)          | —                                                    | Falso positivo (axios sí se usa)                                |
+| Testing gaps             | 8/10 hooks, 0 componentes, 0 vistas                  | Pendiente (Fase 7)                                              |
+| Configuración            | Path aliases, engines, sourcemaps, etc.              | Pendiente                                                       |
 
 → Nueva auditoría post-4 fases: [2026-02-26_AUDIT.md](audits/2026-02-26_AUDIT.md) — Score **B+** con 26 hallazgos nuevos de severidad media-baja.
 
