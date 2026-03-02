@@ -46,3 +46,20 @@ export const isOverdue = (appointment: { date: string; time?: string }): boolean
     apptDateTime.setHours(apptDateTime.getHours() + 1);
     return now > apptDateTime;
 };
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+    'auth/user-not-found': 'No se encontró una cuenta con ese email.',
+    'auth/wrong-password': 'Contraseña incorrecta.',
+    'auth/invalid-credential': 'Email o contraseña incorrectos.',
+    'auth/invalid-email': 'El formato del email no es válido.',
+    'auth/user-disabled': 'Esta cuenta ha sido deshabilitada.',
+    'auth/too-many-requests': 'Demasiados intentos. Esperá unos minutos e intentá de nuevo.',
+    'auth/network-request-failed': 'Error de red. Verificá tu conexión a internet.',
+    'auth/email-already-in-use': 'Ya existe una cuenta con ese email.',
+};
+
+export const getAuthErrorMessage = (errorMessage: string): string => {
+    const match = errorMessage.match(/\(([^)]+)\)/);
+    const code = match?.[1];
+    return (code && AUTH_ERROR_MESSAGES[code]) || 'Error de autenticación. Intentá de nuevo.';
+};

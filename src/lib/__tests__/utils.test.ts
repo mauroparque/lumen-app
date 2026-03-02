@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { formatPhoneNumber, cn, calculateAge, isOverdue } from '../utils';
+import { formatPhoneNumber, cn, calculateAge, isOverdue, getAuthErrorMessage } from '../utils';
 
 describe('formatPhoneNumber', () => {
     it('removes non-numeric characters', () => {
@@ -126,5 +126,33 @@ describe('isOverdue', () => {
         expect(isOverdue({ date: '2026-03-01' })).toBe(true);
 
         vi.useRealTimers();
+    });
+});
+
+describe('getAuthErrorMessage', () => {
+    it('mapea auth/user-not-found a mensaje en español', () => {
+        expect(getAuthErrorMessage('Firebase: Error (auth/user-not-found).')).toBe(
+            'No se encontró una cuenta con ese email.',
+        );
+    });
+
+    it('mapea auth/wrong-password a mensaje en español', () => {
+        expect(getAuthErrorMessage('Firebase: Error (auth/wrong-password).')).toBe('Contraseña incorrecta.');
+    });
+
+    it('mapea auth/invalid-credential a mensaje genérico', () => {
+        expect(getAuthErrorMessage('Firebase: Error (auth/invalid-credential).')).toBe(
+            'Email o contraseña incorrectos.',
+        );
+    });
+
+    it('mapea auth/too-many-requests a mensaje de rate limit', () => {
+        expect(getAuthErrorMessage('Firebase: Error (auth/too-many-requests).')).toBe(
+            'Demasiados intentos. Esperá unos minutos e intentá de nuevo.',
+        );
+    });
+
+    it('retorna mensaje genérico para errores desconocidos', () => {
+        expect(getAuthErrorMessage('Something unexpected')).toBe('Error de autenticación. Intentá de nuevo.');
     });
 });

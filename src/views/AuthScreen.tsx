@@ -3,6 +3,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth, db } from '../lib/firebase';
+import { getAuthErrorMessage } from '../lib/utils';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { ALLOWED_EMAILS_COLLECTION, STAFF_COLLECTION } from '../lib/routes';
 import type { AllowedEmail } from '../types';
@@ -88,8 +89,9 @@ export const AuthScreen = () => {
                     createdAt: Timestamp.now(),
                 });
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            setError(getAuthErrorMessage(message));
         } finally {
             setIsLoading(false);
         }
