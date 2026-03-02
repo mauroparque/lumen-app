@@ -4,6 +4,7 @@ import { auth } from './lib/firebase';
 import type { View, StaffProfile } from './types';
 import { Toaster } from 'sonner';
 import { useStaff } from './hooks/useStaff';
+import { useSessionTimeout } from './hooks/useSessionTimeout';
 import { ServiceProvider } from './context/ServiceContext';
 import { DataProvider } from './context/DataContext';
 
@@ -45,6 +46,8 @@ function AuthenticatedApp({ user, profile }: { user: User; profile: StaffProfile
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
     const [patientHistoryInitialTab, setPatientHistoryInitialTab] = useState<'history' | 'tasks'>('history');
+
+    useSessionTimeout(!!user);
 
     return (
         <ServiceProvider user={user} profile={profile}>

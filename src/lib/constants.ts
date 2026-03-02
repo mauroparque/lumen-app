@@ -6,3 +6,5 @@ export const CONSULTATION_TYPES = [
     'Orientación a Padres',
     'Otro',
 ];
+
+export const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
