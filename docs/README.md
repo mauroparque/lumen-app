@@ -99,7 +99,8 @@ Auditoría (misma)
 | [2026-02-26_AUDIT.md](audits/2026-02-26_AUDIT.md)                                                                            | Auditoría    | 26/02/2026 | Referencia actual (post-4 fases) |
 | [2026-02-26-phase5-high-priority-security-architecture.md](plans/2026-02-26-phase5-high-priority-security-architecture.md)   | Plan         | 26/02/2026 | Ejecutado ✓                      |
 | [2026-03-01_phase5-completion-review.md](reviews/2026-03-01_phase5-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
-| [2026-03-01-phase6-medium-priority-quality-architecture.md](plans/2026-03-01-phase6-medium-priority-quality-architecture.md) | Plan         | 01/03/2026 | Pendiente                        |
+| [2026-03-01-phase6-medium-priority-quality-architecture.md](plans/2026-03-01-phase6-medium-priority-quality-architecture.md) | Plan         | 01/03/2026 | Ejecutado ✓                      |
+| [2026-03-01_phase6-completion-review.md](reviews/2026-03-01_phase6-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
 
 ---
 
@@ -138,10 +139,10 @@ Deuda actualizada tras cierre de Fase 3:
 | ----------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
 | ~~Seguridad (alta)~~    | ~~SEC-N01, SEC-N02, SEC-N03, SEC-07~~            | ~~Fase 5~~ → Ejecutado ✓ (SEC-N03 parcial: App Check pendiente) |
 | ~~Arquitectura (alta)~~ | ~~ARCH-N01, ARCH-N02~~                           | ~~Fase 5~~ → Ejecutado ✓                                        |
-| Seguridad (media)       | SEC-N05, SEC-06, SEC-11, SEC-13                  | Fase 6 → Plan creado                                            |
-| Arquitectura (media)    | ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07 | Fase 6 → Plan creado                                            |
-| Hooks/Componentes       | HOOK-N01..N04, COMP-N01, COMP-N02                | Fase 6 → Plan creado                                            |
-| Duplicación             | calculateAge, isOverdue, PSIQUE_RATE             | Fase 6 → Plan creado                                            |
+| ~~Seguridad (media)~~   | ~~SEC-N05, SEC-06, SEC-11, SEC-13~~              | ~~Fase 6~~ → Ejecutado ✓                                        |
+| ~~Arquitectura (media)~~ | ~~ARCH-N03, ARCH-N04, ARCH-N05, ARCH-N06, ARCH-N07~~ | ~~Fase 6~~ → Ejecutado ✓                                  |
+| ~~Hooks/Componentes~~   | ~~HOOK-N01..N04, COMP-N01, COMP-N02~~            | ~~Fase 6~~ → Ejecutado ✓                                        |
+| ~~Duplicación~~         | ~~calculateAge, isOverdue, PSIQUE_RATE~~          | ~~Fase 6~~ → Ejecutado ✓                                        |
 | SEC-N04 (axios)         | —                                                | Falso positivo (axios sí se usa)                                |
 | Testing gaps            | 8/10 hooks, 0 componentes, 0 vistas              | Pendiente (Fase 7)                                              |
 | Configuración           | Path aliases, engines, sourcemaps, etc.          | Pendiente                                                       |
@@ -171,5 +172,5 @@ Auditoría
        │    └── 2026-03-01-phase6-medium-priority-quality-architecture.md  (17 tasks, TDD estricto)
        │
        └── Review
-            └── (pendiente)
+            └── 2026-03-01_phase6-completion-review.md  ✓ COMPLETADA
 ```

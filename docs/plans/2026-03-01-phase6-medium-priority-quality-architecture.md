@@ -10,7 +10,8 @@
 
 **Auditoría de origen:** [`docs/audits/2026-02-26_AUDIT.md`](../audits/2026-02-26_AUDIT.md)  
 **Plan anterior:** [`docs/plans/2026-02-26-phase5-high-priority-security-architecture.md`](../plans/2026-02-26-phase5-high-priority-security-architecture.md)  
-**Review anterior:** [`docs/reviews/2026-03-01_phase5-completion-review.md`](../reviews/2026-03-01_phase5-completion-review.md)
+**Review anterior:** [`docs/reviews/2026-03-01_phase5-completion-review.md`](../reviews/2026-03-01_phase5-completion-review.md)  
+**Review de cierre:** [`docs/reviews/2026-03-01_phase6-completion-review.md`](../reviews/2026-03-01_phase6-completion-review.md)
 
 ---
 
