@@ -99,7 +99,14 @@ export const Sidebar = ({ user, currentView, setCurrentView }: SidebarProps) => 
     );
 };
 
-const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
+interface SidebarItemProps {
+    icon: React.ComponentType<{ size?: number | string; className?: string }>;
+    label: string;
+    active: boolean;
+    onClick: () => void;
+}
+
+const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active ? 'bg-teal-50 text-teal-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
