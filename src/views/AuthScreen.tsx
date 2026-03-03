@@ -60,17 +60,11 @@ export const AuthScreen = () => {
         setTurnstileToken(null);
     };
 
-    const handleTurnstileRetry = () => {
-        setTurnstileFailed(false);
-        setTurnstileLoaded(false);
-        setTurnstileToken(null);
-    };
-
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        if (!turnstileToken && !turnstileFailed) {
+        if (!turnstileToken) {
             setError('Por favor, completa la verificación de seguridad.');
             return;
         }
@@ -78,15 +72,13 @@ export const AuthScreen = () => {
         setIsLoading(true);
 
         try {
-            // Validate Turnstile token server-side (solo si hay token)
-            if (turnstileToken) {
-                try {
-                    await validateTurnstileCallable({ token: turnstileToken });
-                } catch {
-                    setError('La verificación de seguridad falló. Intentá de nuevo.');
-                    setIsLoading(false);
-                    return;
-                }
+            // Validate Turnstile token server-side
+            try {
+                await validateTurnstileCallable({ token: turnstileToken });
+            } catch {
+                setError('La verificación de seguridad falló. Intentá de nuevo.');
+                setIsLoading(false);
+                return;
             }
 
             // Save or clear remembered email
@@ -179,14 +171,14 @@ export const AuthScreen = () => {
                         {turnstileFailed ? (
                             <div className="text-center">
                                 <p className="text-xs text-amber-600 mb-2">
-                                    La verificación no pudo cargar. Podés intentar de nuevo o continuar sin ella.
+                                    La verificación de seguridad no pudo cargar. Recargá la página para intentar de nuevo.
                                 </p>
                                 <button
                                     type="button"
-                                    onClick={handleTurnstileRetry}
-                                    className="text-xs text-teal-600 underline hover:text-teal-800"
+                                    onClick={() => window.location.reload()}
+                                    className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded hover:bg-teal-700 transition-colors"
                                 >
-                                    Reintentar verificación
+                                    Recargar página
                                 </button>
                             </div>
                         ) : (
@@ -202,9 +194,9 @@ export const AuthScreen = () => {
 
                     <button
                         type="submit"
-                        disabled={(!turnstileToken && !turnstileFailed) || isLoading}
+                        disabled={!turnstileToken || isLoading}
                         className={`w-full py-2 rounded font-medium transition-colors ${
-                            (turnstileToken || turnstileFailed) && !isLoading
+                            turnstileToken && !isLoading
                                 ? 'bg-teal-600 text-white hover:bg-teal-700'
                                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                         }`}
