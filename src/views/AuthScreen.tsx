@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -9,6 +9,7 @@ import { ALLOWED_EMAILS_COLLECTION, STAFF_COLLECTION } from '../lib/routes';
 import type { AllowedEmail } from '../types';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+const TURNSTILE_TIMEOUT_MS = 10000; // 10s antes de mostrar fallback
 
 // Initialize Firebase Functions once at module level (singleton)
 const firebaseFunctions = getFunctions();
@@ -21,6 +22,9 @@ export const AuthScreen = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+    const [turnstileFailed, setTurnstileFailed] = useState(false);
+    const turnstileRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Load remembered email on mount
     useEffect(() => {
@@ -31,11 +35,42 @@ export const AuthScreen = () => {
         }
     }, []);
 
+    // Timeout fallback: si Turnstile no carga en TURNSTILE_TIMEOUT_MS, marcar como fallido
+    useEffect(() => {
+        if (turnstileLoaded || turnstileFailed) return;
+        turnstileRef.current = setTimeout(() => {
+            if (!turnstileLoaded) {
+                setTurnstileFailed(true);
+            }
+        }, TURNSTILE_TIMEOUT_MS);
+        return () => {
+            if (turnstileRef.current) clearTimeout(turnstileRef.current);
+        };
+    }, [turnstileLoaded, turnstileFailed]);
+
+    const handleTurnstileSuccess = (token: string) => {
+        setTurnstileLoaded(true);
+        setTurnstileFailed(false);
+        setTurnstileToken(token);
+        if (turnstileRef.current) clearTimeout(turnstileRef.current);
+    };
+
+    const handleTurnstileError = () => {
+        setTurnstileFailed(true);
+        setTurnstileToken(null);
+    };
+
+    const handleTurnstileRetry = () => {
+        setTurnstileFailed(false);
+        setTurnstileLoaded(false);
+        setTurnstileToken(null);
+    };
+
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        if (!turnstileToken) {
+        if (!turnstileToken && !turnstileFailed) {
             setError('Por favor, completa la verificación de seguridad.');
             return;
         }
@@ -43,13 +78,15 @@ export const AuthScreen = () => {
         setIsLoading(true);
 
         try {
-            // Validate Turnstile token server-side
-            try {
-                await validateTurnstileCallable({ token: turnstileToken });
-            } catch {
-                setError('La verificación de seguridad falló. Intentá de nuevo.');
-                setIsLoading(false);
-                return;
+            // Validate Turnstile token server-side (solo si hay token)
+            if (turnstileToken) {
+                try {
+                    await validateTurnstileCallable({ token: turnstileToken });
+                } catch {
+                    setError('La verificación de seguridad falló. Intentá de nuevo.');
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Save or clear remembered email
@@ -135,20 +172,39 @@ export const AuthScreen = () => {
                     </label>
 
                     {/* Cloudflare Turnstile */}
-                    <div className="flex justify-center">
-                        <Turnstile
-                            siteKey={TURNSTILE_SITE_KEY}
-                            onSuccess={(token) => setTurnstileToken(token)}
-                            onError={() => setTurnstileToken(null)}
-                            onExpire={() => setTurnstileToken(null)}
-                        />
+                    <div className="flex justify-center flex-col items-center gap-2">
+                        {!turnstileLoaded && !turnstileFailed && (
+                            <p className="text-xs text-slate-400 animate-pulse">Cargando verificación de seguridad...</p>
+                        )}
+                        {turnstileFailed ? (
+                            <div className="text-center">
+                                <p className="text-xs text-amber-600 mb-2">
+                                    La verificación no pudo cargar. Podés intentar de nuevo o continuar sin ella.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={handleTurnstileRetry}
+                                    className="text-xs text-teal-600 underline hover:text-teal-800"
+                                >
+                                    Reintentar verificación
+                                </button>
+                            </div>
+                        ) : (
+                            <Turnstile
+                                siteKey={TURNSTILE_SITE_KEY}
+                                onSuccess={handleTurnstileSuccess}
+                                onError={handleTurnstileError}
+                                onExpire={() => setTurnstileToken(null)}
+                                options={{ retry: 'auto', retryInterval: 3000 }}
+                            />
+                        )}
                     </div>
 
                     <button
                         type="submit"
-                        disabled={!turnstileToken || isLoading}
+                        disabled={(!turnstileToken && !turnstileFailed) || isLoading}
                         className={`w-full py-2 rounded font-medium transition-colors ${
-                            turnstileToken && !isLoading
+                            (turnstileToken || turnstileFailed) && !isLoading
                                 ? 'bg-teal-600 text-white hover:bg-teal-700'
                                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                         }`}
