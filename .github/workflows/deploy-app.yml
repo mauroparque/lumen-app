@@ -18,4 +18,4 @@ jobs:
                     -H "Authorization: Bearer ${{ secrets.COOLIFY_DEPLOY_TOKEN }}" \
                     -H "Content-Type: application/json" \
                     -d '{"resourceId": "ygkk0o88ckkkk08gcswosoc8"}' \
-                    "https://app.lumensaludmental.com/api/v1/deploy"
+                    "https://dev.lumensaludmental.com/api/v1/deploy"
