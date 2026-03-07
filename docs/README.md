@@ -82,6 +82,44 @@ Auditoría (misma)
             └── 2026-02-26_phase4-completion-review.md  ✓ COMPLETADA
 ```
 
+### Ciclo 5 — Seguridad y Arquitectura de Alta Prioridad (Feb–Mar 2026)
+
+```text
+Auditoría
+  └── 2026-02-26_AUDIT.md  (score B+, hallazgos PSIQUE-RBAC, SEC-06, SEC-11, SEC-13, ARCH-N03–07...)
+       │
+       ├── Plan
+       │    └── 2026-02-26-phase5-high-priority-security-architecture.md  (plan principal, tasks SEC/ARCH alta prioridad)
+       │
+       └── Review
+            └── 2026-03-01_phase5-completion-review.md  ✓ COMPLETADA
+```
+
+### Ciclo 6 — Calidad de Código y Arquitectura de Prioridad Media (Mar 2026)
+
+```text
+Auditoría (misma)
+  └── 2026-02-26_AUDIT.md  → 17 hallazgos medios: DUP, HOOK-N01–04, COMP-N01–02, ARCH-N03–07, SEC-06/11/13
+       │
+       ├── Plan
+       │    └── 2026-03-01-phase6-medium-priority-quality-architecture.md  (17 tasks)
+       │
+       └── Review
+            └── 2026-03-01_phase6-completion-review.md  ✓ COMPLETADA
+```
+
+### Ciclo 7 — Hotfixes Post-Phase 6: Permisos Firestore, Turnstile y PWA (Mar 2026)
+
+```text
+Hotfixes reactivos (sin auditoría nueva)
+       │
+       ├── Plan
+       │    └── 2026-03-02-debug-permissions.md  (diagnóstico y fix de permisos Firestore)
+       │
+       └── Review
+            └── 2026-03-04_debug-permissions-review.md  ✓ COMPLETADA
+```
+
 | Documento                                                                                                                    | Tipo         | Fecha      | Estado                           |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- | -------------------------------- |
 | [2026-02-19_AUDIT.md](audits/2026-02-19_AUDIT.md)                                                                            | Auditoría    | 19/02/2026 | Referencia base                  |
@@ -101,6 +139,8 @@ Auditoría (misma)
 | [2026-03-01_phase5-completion-review.md](reviews/2026-03-01_phase5-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
 | [2026-03-01-phase6-medium-priority-quality-architecture.md](plans/2026-03-01-phase6-medium-priority-quality-architecture.md) | Plan         | 01/03/2026 | Ejecutado ✓                      |
 | [2026-03-01_phase6-completion-review.md](reviews/2026-03-01_phase6-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
+| [2026-03-02-debug-permissions.md](plans/2026-03-02-debug-permissions.md)                                                     | Plan (debug) | 02/03/2026 | Ejecutado ✓                      |
+| [2026-03-04_debug-permissions-review.md](reviews/2026-03-04_debug-permissions-review.md)                                     | Review       | 04/03/2026 | Cerrado ✓                        |
 
 ---
 
@@ -115,8 +155,8 @@ Auditoría (misma)
 
 ## Deuda técnica abierta
 
-Deuda actualizada tras cierre de Fase 3:
-→ [2026-02-24_phase3-completion-review.md — Deuda técnica pendiente](reviews/2026-02-24_phase3-completion-review.md#deuda-técnica-pendiente)
+Deuda actualizada tras cierre de hotfixes Post-Phase 6 (4 mar 2026):
+→ [2026-03-04_debug-permissions-review.md — Deuda técnica generada / pendiente](reviews/2026-03-04_debug-permissions-review.md#deuda-técnica-generada--pendiente)
 
 | Área                           | IDs                          | Estado                                         |
 | ------------------------------ | ---------------------------- | ---------------------------------------------- |

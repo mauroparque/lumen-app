@@ -8,6 +8,8 @@
 
 **Tech Stack:** Firebase Firestore, TypeScript, Firestore Security Rules
 
+**Review de cierre:** [`docs/reviews/2026-03-04_debug-permissions-review.md`](../reviews/2026-03-04_debug-permissions-review.md)
+
 ---
 
 ## Context
