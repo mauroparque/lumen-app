@@ -120,6 +120,18 @@ Hotfixes reactivos (sin auditoría nueva)
             └── 2026-03-04_debug-permissions-review.md  ✓ COMPLETADA
 ```
 
+### Ciclo 8 — Integración Google Calendar (Mar 2026)
+
+```text
+Feature nueva (sin auditoría — plan directo desde estrategia de diseño)
+       │
+       ├── Plan
+       │    └── 2026-03-08-google-calendar-integration.md  (20 tasks, 4 fases)
+       │
+       └── Review
+            └── pendiente
+```
+
 | Documento                                                                                                                    | Tipo         | Fecha      | Estado                           |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- | -------------------------------- |
 | [2026-02-19_AUDIT.md](audits/2026-02-19_AUDIT.md)                                                                            | Auditoría    | 19/02/2026 | Referencia base                  |
@@ -141,6 +153,7 @@ Hotfixes reactivos (sin auditoría nueva)
 | [2026-03-01_phase6-completion-review.md](reviews/2026-03-01_phase6-completion-review.md)                                     | Review       | 01/03/2026 | Cerrado ✓                        |
 | [2026-03-02-debug-permissions.md](plans/2026-03-02-debug-permissions.md)                                                     | Plan (debug) | 02/03/2026 | Ejecutado ✓                      |
 | [2026-03-04_debug-permissions-review.md](reviews/2026-03-04_debug-permissions-review.md)                                     | Review       | 04/03/2026 | Cerrado ✓                        |
+| [2026-03-08-google-calendar-integration.md](plans/2026-03-08-google-calendar-integration.md)                                 | Plan         | 08/03/2026 | Pendiente                        |
 
 ---
 
